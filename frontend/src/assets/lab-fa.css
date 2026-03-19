@@ -1,0 +1,550 @@
+/* Lab FA - Custom styles over PicoCSS */
+
+:root {
+  --lab-primary: #2563eb;
+  --lab-primary-hover: #1d4ed8;
+  --lab-bg-subtle: #f8fafc;
+  --lab-border: #e2e8f0;
+}
+
+/* Sticky nav */
+.nav-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--pico-background-color);
+  border-bottom: 1px solid var(--lab-border);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Cards for homepage */
+.tipus-card {
+  border: 1px solid var(--lab-border);
+  border-radius: 0.5rem;
+  transition: box-shadow 0.2s;
+}
+
+.tipus-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Pagination nav */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pagination button {
+  margin-bottom: 0;
+}
+
+/* Table overflow */
+.overflow-auto {
+  overflow-x: auto;
+}
+
+/* Search form inline */
+[role="search"] {
+  display: flex;
+  gap: 0.5rem;
+}
+
+[role="search"] input {
+  margin-bottom: 0;
+}
+
+/* Detail toolbar */
+.detall-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--lab-border);
+  flex-wrap: wrap;
+}
+
+.detall-toolbar-info h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.detall-toolbar-meta {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.detall-toolbar-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.detall-toolbar-actions a,
+.detall-toolbar-actions button {
+  margin: 0;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+/* Detail sections */
+.analisis-seccions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.analisis-seccio {
+  border: 1px solid var(--lab-border);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.analisis-seccio.seccio-wide {
+  grid-column: 1 / -1;
+}
+
+.seccio-titol {
+  margin: 0 0 0.35rem 0;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid var(--lab-primary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lab-primary);
+}
+
+.camps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.15rem 1rem;
+}
+
+.camps-grid-narrow {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.camps-grid-narrow .camp-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.camps-grid-narrow .camp-value {
+  white-space: normal;
+}
+
+.camp-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.15rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  min-width: 0;
+}
+
+.camp-item-wide {
+  grid-column: 1 / -1;
+}
+
+.camp-item-textarea {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.camp-item-textarea .camp-value {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.camp-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.camp-value {
+  font-size: 0.88rem;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* ============ Sub-groups (detail) ============ */
+.detail-subgrup {
+  border: 1px solid var(--lab-border);
+  border-radius: 0.375rem;
+  padding: 0.4rem 0.6rem;
+  margin: 0.4rem 0;
+  background: var(--lab-bg-subtle);
+}
+
+.detail-subgrup-titol {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid var(--lab-border);
+}
+
+/* ============ Compact form ============ */
+.form-compact {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.form-compact > button[type="submit"] {
+  grid-column: 1 / -1;
+}
+
+.form-seccio {
+  border: 1px solid var(--lab-border);
+  border-radius: 0.375rem;
+  padding: 0.4rem 0.65rem 0.5rem;
+  margin: 0;
+}
+
+.form-seccio.form-seccio-wide {
+  grid-column: 1 / -1;
+}
+
+.form-seccio-legend {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lab-primary);
+  padding: 0 0.3rem;
+}
+
+.form-camps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.2rem 0.75rem;
+}
+
+.form-camps-grid-narrow {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.form-camp {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+.form-camp-wide {
+  grid-column: 1 / -1;
+}
+
+.form-camp-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.1rem;
+  line-height: 1.2;
+}
+
+.form-camp input,
+.form-camp textarea,
+.form-camp select {
+  margin-bottom: 0;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+  height: auto;
+}
+
+.form-camp textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+/* Sub-groups (form) */
+.form-subgrup {
+  border: 1px solid var(--lab-border);
+  border-radius: 0.375rem;
+  padding: 0.4rem 0.6rem;
+  margin: 0.4rem 0;
+  background: var(--lab-bg-subtle);
+}
+
+.form-subgrup-titol {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid var(--lab-border);
+}
+
+.form-camp-check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  margin-bottom: 0;
+  padding: 0.2rem 0;
+}
+
+.form-camp-check input[type="checkbox"] {
+  margin: 0;
+}
+
+/* (submit button rule moved to .form-compact block above) */
+
+/* ============ Dashboard ============ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+  border: 1px solid var(--lab-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  text-align: center;
+  background: var(--lab-bg-subtle);
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-avg {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--lab-primary);
+}
+
+.kpi-range {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+}
+
+.kpi-count {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 0.15rem;
+}
+
+.dashboard-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.dashboard-chart-box {
+  position: relative;
+  height: 280px;
+  border: 1px solid var(--lab-border);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  background: var(--lab-bg-subtle);
+}
+
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print header hidden on screen */
+.print-header {
+  display: none;
+}
+
+/* ============ Print styles ============ */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 5mm 7mm;
+  }
+
+  *, *::before, *::after {
+    box-shadow: none !important;
+  }
+
+  body {
+    font-size: 6.5pt !important;
+    line-height: 1.1 !important;
+    background: #fff !important;
+    color: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  main, .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .no-print,
+  nav,
+  .nav-sticky,
+  .pagination {
+    display: none !important;
+  }
+
+  /* Print header — minimal */
+  .print-header {
+    display: block;
+    margin-bottom: 3pt;
+  }
+
+  .print-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1.5pt solid #000;
+    padding-bottom: 1pt;
+    margin-bottom: 1pt;
+  }
+
+  .print-header-top h1 {
+    font-size: 10pt;
+    margin: 0;
+  }
+
+  .print-header-date {
+    font-size: 7.5pt;
+    color: #333;
+  }
+
+  .print-header-meta {
+    display: flex;
+    gap: 2rem;
+    font-size: 6.5pt;
+    padding-bottom: 1pt;
+    border-bottom: 0.5pt solid #999;
+  }
+
+  .print-header-meta span {
+    margin: 0;
+  }
+
+  /* Sections — 3 columns, NO section spans full width */
+  .analisis-seccions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2pt;
+    align-items: start;
+  }
+
+  .analisis-seccio {
+    break-inside: avoid;
+    border: 0.5pt solid #aaa;
+    border-radius: 1pt;
+    padding: 1.5pt 3pt;
+  }
+
+  /* Override: in print, wide sections do NOT span full width */
+  .analisis-seccio.seccio-wide {
+    grid-column: auto;
+  }
+
+  .seccio-titol {
+    font-size: 6pt;
+    margin: 0 0 1pt 0;
+    padding-bottom: 0.5pt;
+    border-bottom: 0.75pt solid #444;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #000;
+  }
+
+  /* Camps grid — 2 columns base */
+  .camps-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 4pt;
+  }
+
+  /* Narrow numeric sections: 3 columns */
+  .camps-grid-narrow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .camp-item {
+    display: flex;
+    align-items: baseline;
+    gap: 2pt;
+    padding: 0.2pt 0;
+    border-bottom: 0.25pt solid #ddd;
+    min-width: 0;
+  }
+
+  .camp-item-wide {
+    grid-column: 1 / -1;
+  }
+
+  .camp-item-textarea {
+    flex-direction: column;
+  }
+
+  .camp-item-textarea .camp-value {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 6pt;
+  }
+
+  .camp-label {
+    font-size: 5pt;
+    color: #444;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .camp-value {
+    font-size: 6.5pt;
+    font-weight: 600;
+  }
+
+  /* Sub-groups in print — very compact */
+  .detail-subgrup {
+    border: 0.5pt solid #ccc;
+    border-radius: 1pt;
+    padding: 1pt 2pt;
+    margin: 1pt 0;
+    background: none;
+  }
+
+  .detail-subgrup-titol {
+    font-size: 5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #555;
+    margin-bottom: 0.5pt;
+    padding-bottom: 0.5pt;
+    border-bottom: 0.5pt solid #ccc;
+  }
+}

@@ -1,73 +1,145 @@
-from datetime import date, datetime
-
+from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.dialects.postgresql import JSONB
 from app import db
 
 
-class AnalisiBlatT1(db.Model):
-    __tablename__ = "analisi_blat_t1"
+# --------------- User model ---------------
+
+class User(db.Model):
+    __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    email = db.Column(db.String(120), nullable=False, unique=True)
+    nom = db.Column(db.String(100), nullable=False, default="")
+    password_hash = db.Column(db.String(256), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default="user")
 
-    # --- Identificació ---
-    data = db.Column(db.Date, nullable=False)
-    codi = db.Column(db.String(50), nullable=False)
-    analista = db.Column(db.String(100))
-    farina = db.Column(db.String(100))
-    lot = db.Column(db.String(100))
-    data_produccio = db.Column(db.Date)
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-    # --- Resultats farina ---
-    rebuig_percentatge = db.Column(db.Float)
-    rebuig_g = db.Column(db.Float)
-    farina_w = db.Column(db.Float)
-    farina_pl = db.Column(db.Float)
-    farina_p = db.Column(db.Float)
-    farina_l = db.Column(db.Float)
-    farina_ie = db.Column(db.Float)
-    farina_g = db.Column(db.Float)
-    humitat = db.Column(db.Float)
-    proteina = db.Column(db.Float)
-    gindex = db.Column(db.Float)
-    ghumit = db.Column(db.Float)
-    gsec = db.Column(db.Float)
-    pes_gluten_tamisat = db.Column(db.Float)
-    pes_gluten_total = db.Column(db.Float)
-    pes_gluten_sec = db.Column(db.Float)
-
-    # --- Alveo 2h ---
-    alveo2_w = db.Column(db.Float)
-    alveo2_pl = db.Column(db.Float)
-    alveo2_p = db.Column(db.Float)
-    alveo2_l = db.Column(db.Float)
-    alveo2_idp = db.Column(db.Float)
-    alveo2_g = db.Column(db.Float)
-
-    # --- NIR ---
-    nir_cendres = db.Column(db.Float)
-    nir_ghumit = db.Column(db.Float)
-    nir_absorcio = db.Column(db.Float)
-
-    # --- Especificacions ---
-    espec_w = db.Column(db.Float)
-    espec_pl = db.Column(db.Float)
-    espec_proteina_min = db.Column(db.Float)
-    espec_gluten_min = db.Column(db.Float)
-    espec_p = db.Column(db.Float)
-    espec_l = db.Column(db.Float)
-
-    # --- Qualitat ---
-    observacions = db.Column(db.Text)
-    verificacio = db.Column(db.Boolean, default=False)
-    persona_verificacio = db.Column(db.String(100))
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def to_dict(self):
-        def _ser(v):
-            if isinstance(v, (date, datetime)):
-                return v.isoformat()
-            return v
-
         return {
-            c.name: _ser(getattr(self, c.name))
-            for c in self.__table__.columns
+            "id": self.id,
+            "email": self.email,
+            "nom": self.nom,
+            "role": self.role,
         }
+
+
+# --------------- Config models (CRUD-manageable) ---------------
+
+class TipusAnalisi(db.Model):
+    __tablename__ = "tipus_analisi"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(50), nullable=False, unique=True, index=True)
+    descripcio = db.Column(db.String(255), default="")
+    columnes_llista = db.Column(JSONB, default=list)
+
+    seccions = db.relationship("Seccio", backref="tipus", cascade="all, delete-orphan",
+                               order_by="Seccio.ordre")
+
+    def get_columnes_llista(self):
+        return self.columnes_llista or []
+
+    def set_columnes_llista(self, cols):
+        self.columnes_llista = cols
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nom": self.nom,
+            "slug": self.slug,
+            "descripcio": self.descripcio,
+            "columnes_llista": self.get_columnes_llista(),
+        }
+
+    def to_config(self):
+        """Full config dict compatible with frontend expectations."""
+        return {
+            "id": self.id,
+            "nom": self.nom,
+            "slug": self.slug,
+            "descripcio": self.descripcio,
+            "columnes_llista": self.get_columnes_llista(),
+            "seccions": [s.to_dict() for s in self.seccions],
+        }
+
+
+class Seccio(db.Model):
+    __tablename__ = "seccio"
+
+    id = db.Column(db.Integer, primary_key=True)
+    tipus_id = db.Column(db.Integer, db.ForeignKey("tipus_analisi.id"), nullable=False)
+    titol = db.Column(db.String(100), nullable=False)
+    ordre = db.Column(db.Integer, default=0)
+
+    camps = db.relationship("Camp", backref="seccio", cascade="all, delete-orphan",
+                            order_by="Camp.ordre")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "titol": self.titol,
+            "ordre": self.ordre,
+            "camps": [c.to_dict() for c in self.camps],
+        }
+
+
+class Camp(db.Model):
+    __tablename__ = "camp"
+
+    id = db.Column(db.Integer, primary_key=True)
+    seccio_id = db.Column(db.Integer, db.ForeignKey("seccio.id"), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    label = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(20), nullable=False, default="text")
+    required = db.Column(db.Boolean, default=False)
+    ordre = db.Column(db.Integer, default=0)
+    grup = db.Column(db.String(100), default="")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "label": self.label,
+            "type": self.type,
+            "required": self.required,
+            "ordre": self.ordre,
+            "grup": self.grup or "",
+        }
+
+
+# --------------- Data model ---------------
+
+class Analisi(db.Model):
+    __tablename__ = "analisi"
+
+    id = db.Column(db.Integer, primary_key=True)
+    tipus = db.Column(db.String(50), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    dades = db.Column(JSONB, nullable=False, default=dict)
+    created_by = db.Column(db.String(120))
+    updated_by = db.Column(db.String(120))
+
+    def get_dades(self):
+        return self.dades or {}
+
+    def set_dades(self, data):
+        self.dades = data
+
+    def to_dict(self):
+        d = self.get_dades()
+        d["id"] = self.id
+        d["tipus"] = self.tipus
+        d["created_at"] = self.created_at.isoformat() if self.created_at else None
+        d["updated_at"] = self.updated_at.isoformat() if self.updated_at else None
+        d["created_by"] = self.created_by
+        d["updated_by"] = self.updated_by
+        return d

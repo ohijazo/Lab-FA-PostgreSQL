@@ -1,21 +1,51 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import LlistaPage from './pages/LlistaPage'
 import NouAnalisiPage from './pages/NouAnalisiPage'
 import EditarAnalisiPage from './pages/EditarAnalisiPage'
 import DetallPage from './pages/DetallPage'
+import DashboardPage from './pages/DashboardPage'
+import AdminTipusPage from './pages/AdminTipusPage'
+import AdminSeccionsPage from './pages/AdminSeccionsPage'
+import AdminCampsPage from './pages/AdminCampsPage'
+import AdminUsersPage from './pages/AdminUsersPage'
+import LoginPage from './pages/LoginPage'
 
-export default function App() {
+function AdminRoute({ children }) {
+  const { user } = useAuth()
+  if (user?.role !== 'admin') return <Navigate to="/" replace />
+  return children
+}
+
+function AppRoutes() {
+  const { user } = useAuth()
+
+  if (!user) return <LoginPage />
+
   return (
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/analisis" element={<LlistaPage />} />
-        <Route path="/analisis/nou" element={<NouAnalisiPage />} />
-        <Route path="/analisis/:id" element={<DetallPage />} />
-        <Route path="/analisis/:id/editar" element={<EditarAnalisiPage />} />
+        <Route path="/admin" element={<AdminRoute><AdminTipusPage /></AdminRoute>} />
+        <Route path="/admin/tipus/:tipusId/seccions" element={<AdminRoute><AdminSeccionsPage /></AdminRoute>} />
+        <Route path="/admin/seccions/:seccioId/camps" element={<AdminRoute><AdminCampsPage /></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+        <Route path="/dashboard/:tipus" element={<DashboardPage />} />
+        <Route path="/:tipus" element={<LlistaPage />} />
+        <Route path="/:tipus/nou" element={<NouAnalisiPage />} />
+        <Route path="/:tipus/:id" element={<DetallPage />} />
+        <Route path="/:tipus/:id/editar" element={<EditarAnalisiPage />} />
       </Routes>
     </Layout>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }
