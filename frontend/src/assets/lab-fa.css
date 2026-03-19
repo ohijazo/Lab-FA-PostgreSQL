@@ -18,15 +18,20 @@
   padding-bottom: 0.5rem;
 }
 
-/* Cards for homepage */
-.tipus-card {
-  border: 1px solid var(--lab-border);
-  border-radius: 0.5rem;
-  transition: box-shadow 0.2s;
+/* Tipus table on homepage */
+.tipus-table thead {
+  background: var(--lab-bg-subtle);
 }
 
-.tipus-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.tipus-table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.tipus-table tbody tr:hover {
+  background: var(--lab-bg-subtle);
 }
 
 /* Pagination nav */

@@ -81,47 +81,53 @@ export default function HomePage() {
         placeholder="Cercar tipus d'anàlisi..."
         value={cerca}
         onChange={(e) => setCerca(e.target.value)}
+        style={{ marginBottom: '0.75rem' }}
       />
 
-      {/* Targetes per tipus */}
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        {filtrats.map((t) => (
-          <article key={t.slug} className="tipus-card" style={{ margin: 0 }}>
-            <header style={{ paddingBottom: '0.5rem' }}>
-              <strong>{t.nom}</strong>
-              {t.descripcio && <small style={{ display: 'block', color: '#64748b' }}>{t.descripcio}</small>}
-            </header>
-            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '0.75rem' }}>
-              <div>
-                <div className="kpi-label">Total</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--lab-primary)' }}>{t.total}</div>
-              </div>
-              <div>
-                <div className="kpi-label">Aquest mes</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--lab-primary)' }}>{t.mes_actual}</div>
-              </div>
-              {t.ultima && (
-                <div>
-                  <div className="kpi-label">Última</div>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{formatDate(t.ultima)}</div>
-                </div>
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <Link to={`/${t.slug}/nou`} role="button" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85em' }}>Nou</Link>
-              <Link to={`/${t.slug}`} role="button" className="outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85em' }}>Llista</Link>
-              <Link to={`/dashboard/${t.slug}`} role="button" className="secondary outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85em' }}>Dashboard</Link>
-            </div>
-          </article>
-        ))}
-        {filtrats.length === 0 && <p>Cap resultat trobat.</p>}
+      {/* Taula de tipus */}
+      <h3 style={{ marginBottom: '0.5rem' }}>Tipus d'anàlisi</h3>
+      <div className="overflow-auto" style={{ marginBottom: '2rem' }}>
+        <table className="tipus-table">
+          <thead>
+            <tr>
+              <th>Tipus</th>
+              <th style={{ textAlign: 'right' }}>Total</th>
+              <th style={{ textAlign: 'right' }}>Mes</th>
+              <th>Última</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtrats.map((t) => (
+              <tr key={t.slug}>
+                <td>
+                  <Link to={`/${t.slug}`} style={{ fontWeight: 700, fontSize: '1rem' }}>{t.nom}</Link>
+                  {t.descripcio && <small style={{ display: 'block', color: '#64748b' }}>{t.descripcio}</small>}
+                </td>
+                <td style={{ textAlign: 'right', fontWeight: 700, fontSize: '1.1rem', color: 'var(--lab-primary)' }}>{t.total}</td>
+                <td style={{ textAlign: 'right', fontWeight: 700, fontSize: '1.1rem', color: 'var(--lab-primary)' }}>{t.mes_actual}</td>
+                <td style={{ color: '#64748b', fontSize: '0.85rem' }}>{formatDate(t.ultima)}</td>
+                <td>
+                  <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end' }}>
+                    <Link to={`/${t.slug}/nou`} role="button" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8em', margin: 0 }}>Nou</Link>
+                    <Link to={`/${t.slug}`} role="button" className="outline" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8em', margin: 0 }}>Llista</Link>
+                    <Link to={`/dashboard/${t.slug}`} role="button" className="secondary outline" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8em', margin: 0 }}>Dashboard</Link>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {filtrats.length === 0 && (
+              <tr><td colSpan={5}>Cap resultat trobat.</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Activitat recent */}
       {data.activitat_recent.length > 0 && (
-        <>
-          <h3>Activitat recent</h3>
-          <table>
+        <details open style={{ marginBottom: '1rem' }}>
+          <summary style={{ fontSize: '0.9rem', fontWeight: 600, color: '#64748b', cursor: 'pointer' }}>Activitat recent</summary>
+          <table style={{ fontSize: '0.85rem' }}>
             <thead>
               <tr>
                 <th>Tipus</th>
@@ -134,7 +140,7 @@ export default function HomePage() {
             <tbody>
               {data.activitat_recent.map((a) => (
                 <tr key={a.id}>
-                  <td><strong>{a.tipus_nom}</strong></td>
+                  <td>{a.tipus_nom}</td>
                   <td>{a.resum || '—'}</td>
                   <td>{formatDateTime(a.created_at)}</td>
                   <td>{a.created_by || '—'}</td>
@@ -145,7 +151,7 @@ export default function HomePage() {
               ))}
             </tbody>
           </table>
-        </>
+        </details>
       )}
 
       {/* Dialog exportar */}
