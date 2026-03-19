@@ -88,8 +88,7 @@ export default function DashboardPage() {
             )}
           </p>
 
-          <h3>Indicadors clau</h3>
-          <KpiCards kpis={data.kpis} />
+          <KpiCards kpis={data.kpis} kpiOrder={data.kpi_order} fieldSeccio={data.field_seccio} />
 
           <div className="dashboard-charts">
             <GraficLinia

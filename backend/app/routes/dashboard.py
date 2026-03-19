@@ -116,11 +116,22 @@ def _get_config(slug):
     numeric_fields = []  # (name, label)
     text_fields = []     # (name, label) — candidates for grouping
     all_fields = {}      # name -> label
+    field_seccio = {}    # name -> seccio titol
 
-    for s in t.seccions:
-        for c in s.camps:
+    # Labels to exclude from KPI cards (identification/metadata fields)
+    kpi_exclude_labels = {
+        "codi", "nº tiguet", "nº tiquet", "analista", "farina", "lot", "fabrica",
+        "sitja", "observacions", "proveïdor", "sitja origen",
+        "tipus de blat", "varietat", "ordre de compra",
+        "responsable entrada camió", "data",
+    }
+
+    for s in sorted(t.seccions, key=lambda x: (x.ordre or 0)):
+        for c in sorted(s.camps, key=lambda x: (x.ordre or 0)):
             all_fields[c.name] = c.label
-            if c.type == "number":
+            field_seccio[c.name] = s.titol
+            excluded = c.label.strip().lower() in kpi_exclude_labels
+            if c.type == "number" and not excluded:
                 numeric_fields.append((c.name, c.label))
             elif c.type == "text":
                 text_fields.append((c.name, c.label))
@@ -162,6 +173,7 @@ def _get_config(slug):
         "all_fields": all_fields,
         "metric_keys": metric_keys[:4],
         "group_fields": group_fields,
+        "field_seccio": field_seccio,
         "filter_field": filter_field,
     }
 
@@ -196,6 +208,7 @@ def dashboard(slug):
     metric_keys = config["metric_keys"]
     group_fields = config["group_fields"]
     all_labels = config["all_fields"]
+    field_seccio = config["field_seccio"]
 
     # Filter options (all unique values, unfiltered by filter_val)
     filter_options = []
@@ -218,10 +231,12 @@ def dashboard(slug):
         "total_registres": 0,
         "rang_dates": {"min": None, "max": None},
         "kpis": {},
+        "kpi_order": [],
         "groups": {},
         "serie_temporal": {},
         "metric_keys": metric_keys,
         "metric_labels": {mk: all_labels.get(mk, mk) for mk in metric_keys},
+        "field_seccio": field_seccio,
         "filter_field": filter_field,
         "filter_label": all_labels.get(filter_field, filter_field) if filter_field else None,
         "filter_options": filter_options,
@@ -271,8 +286,9 @@ def dashboard(slug):
                 if v is not None:
                     group_accum[gf][gname]["metrics"][mk].append(v)
 
-    # Build KPIs
+    # Build KPIs (preserve field order from config)
     kpis = {}
+    kpi_order = []
     for name, _ in numeric_fields:
         vals = kpi_accum.get(name)
         if vals:
@@ -284,6 +300,7 @@ def dashboard(slug):
                 "max": round(max(vals), 2),
                 "count": len(vals),
             }
+            kpi_order.append(name)
 
     # Date range
     rang_dates = {"min": min(dates) if dates else None, "max": max(dates) if dates else None}
@@ -316,10 +333,12 @@ def dashboard(slug):
         "total_registres": total,
         "rang_dates": rang_dates,
         "kpis": kpis,
+        "kpi_order": kpi_order,
         "groups": groups_out,
         "serie_temporal": serie_temporal,
         "metric_keys": metric_keys,
         "metric_labels": metric_labels,
+        "field_seccio": field_seccio,
         "filter_field": filter_field,
         "filter_label": all_labels.get(filter_field, filter_field) if filter_field else None,
         "filter_options": filter_options,

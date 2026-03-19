@@ -56,7 +56,7 @@ export default function HomePage() {
       </div>
 
       {/* KPIs globals */}
-      <div className="kpi-grid">
+      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         <div className="kpi-card">
           <div className="kpi-label">Total anàlisis</div>
           <div className="kpi-avg">{data.total_analisis}</div>
