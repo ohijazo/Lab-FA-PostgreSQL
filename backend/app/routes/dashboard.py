@@ -1,11 +1,110 @@
 from collections import defaultdict
+from datetime import datetime
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy import func
 
 from app import db
 from app.models import Analisi, TipusAnalisi
 
 bp = Blueprint("dashboard", __name__)
+
+
+@bp.route("/api/dashboard/global")
+def dashboard_global():
+    """Estadístiques agregades de tots els tipus."""
+    # All types
+    all_tipus = TipusAnalisi.query.order_by(TipusAnalisi.nom).all()
+    tipus_map = {t.slug: t for t in all_tipus}
+
+    # Load all analyses with their data field for date-based stats
+    all_analisis = Analisi.query.with_entities(
+        Analisi.id, Analisi.tipus, Analisi.created_at,
+        Analisi.dades, Analisi.created_by,
+    ).order_by(Analisi.created_at.desc()).all()
+
+    # Current month/year prefixes
+    now = datetime.utcnow()
+    current_month = now.strftime("%Y-%m")
+    current_year = now.strftime("%Y")
+
+    # Valid slugs (only count analyses that belong to existing types)
+    valid_slugs = {t.slug for t in all_tipus}
+
+    # Aggregate per type using dades->'data' field
+    per_type_total = defaultdict(int)
+    per_type_mes = defaultdict(int)
+    per_type_any = defaultdict(int)
+    per_type_ultima = {}  # slug -> latest data date string
+
+    for row in all_analisis:
+        slug = row.tipus
+        if slug not in valid_slugs:
+            continue
+        dades = row.dades or {}
+        data_val = dades.get("data", "")
+
+        per_type_total[slug] += 1
+
+        # Date checks on the 'data' field (format YYYY-MM-DD)
+        if isinstance(data_val, str) and len(data_val) >= 7:
+            if data_val[:7] == current_month:
+                per_type_mes[slug] += 1
+            if data_val[:4] == current_year:
+                per_type_any[slug] += 1
+            # Track latest date per type
+            if slug not in per_type_ultima or data_val > per_type_ultima[slug]:
+                per_type_ultima[slug] = data_val
+
+    total_analisis = sum(per_type_total.values())
+    analisis_mes = sum(per_type_mes.values())
+    analisis_any = sum(per_type_any.values())
+    ultima_global = max(per_type_ultima.values()) if per_type_ultima else None
+
+    # Per-type stats
+    per_tipus = []
+    for t in all_tipus:
+        ultima = per_type_ultima.get(t.slug)
+        per_tipus.append({
+            "slug": t.slug,
+            "nom": t.nom,
+            "descripcio": t.descripcio or "",
+            "total": per_type_total.get(t.slug, 0),
+            "mes_actual": per_type_mes.get(t.slug, 0),
+            "any_actual": per_type_any.get(t.slug, 0),
+            "ultima": ultima,
+        })
+
+    # Recent activity: last 10 analyses
+    activitat = []
+    for row in all_analisis[:10]:
+        t = tipus_map.get(row.tipus)
+        dades = row.dades or {}
+        # Build summary from columnes_llista
+        resum_parts = []
+        if t:
+            cols = t.get_columnes_llista()[:3]
+            for col in cols:
+                val = dades.get(col)
+                if val:
+                    resum_parts.append(f"{col}: {val}")
+        activitat.append({
+            "id": row.id,
+            "tipus_slug": row.tipus,
+            "tipus_nom": t.nom if t else row.tipus,
+            "created_at": row.created_at.isoformat() if row.created_at else None,
+            "created_by": row.created_by,
+            "resum": ", ".join(resum_parts) if resum_parts else None,
+        })
+
+    return jsonify({
+        "total_analisis": total_analisis,
+        "analisis_any_actual": analisis_any,
+        "analisis_mes_actual": analisis_mes,
+        "ultima_analisi": ultima_global,
+        "per_tipus": per_tipus,
+        "activitat_recent": activitat,
+    })
 
 
 def _get_config(slug):

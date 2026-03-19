@@ -1,6 +1,24 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { obtenirTipusAdmin, llistarSeccions, crearSeccio, editarSeccio, eliminarSeccio, editarTipus } from '../api/admin'
+import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { obtenirTipusAdmin, llistarSeccions, crearSeccio, editarSeccio, eliminarSeccio, editarTipus, reordenarSeccions } from '../api/admin'
+
+function SortableRow({ id, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+  return (
+    <tr ref={setNodeRef} style={style}>
+      <td {...attributes} {...listeners} className="drag-handle">⠿</td>
+      {children}
+    </tr>
+  )
+}
 
 export default function AdminSeccionsPage() {
   const { tipusId } = useParams()
@@ -10,8 +28,13 @@ export default function AdminSeccionsPage() {
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [form, setForm] = useState({ titol: '', ordre: '' })
+  const [form, setForm] = useState({ titol: '' })
   const [columnesLlista, setColumnesLlista] = useState([])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor)
+  )
 
   async function fetchData() {
     setLoading(true)
@@ -54,13 +77,13 @@ export default function AdminSeccionsPage() {
   }
 
   function resetForm() {
-    setForm({ titol: '', ordre: '' })
+    setForm({ titol: '' })
     setEditingId(null)
     setShowForm(false)
   }
 
   function startEdit(s) {
-    setForm({ titol: s.titol, ordre: String(s.ordre) })
+    setForm({ titol: s.titol })
     setEditingId(s.id)
     setShowForm(true)
   }
@@ -69,7 +92,6 @@ export default function AdminSeccionsPage() {
     e.preventDefault()
     setError(null)
     const data = { titol: form.titol }
-    if (form.ordre) data.ordre = parseInt(form.ordre)
     try {
       if (editingId) {
         await editarSeccio(editingId, data)
@@ -93,6 +115,23 @@ export default function AdminSeccionsPage() {
     }
   }
 
+  async function handleDragEnd(event) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = seccions.findIndex(s => s.id === active.id)
+    const newIndex = seccions.findIndex(s => s.id === over.id)
+    const newOrder = arrayMove(seccions, oldIndex, newIndex)
+    setSeccions(newOrder)
+
+    try {
+      await reordenarSeccions(tipusId, newOrder.map(s => s.id))
+    } catch (err) {
+      setError(err.message)
+      await fetchData()
+    }
+  }
+
   if (loading) return <p aria-busy="true">Carregant...</p>
   if (!tipus) return <p>Tipus no trobat.</p>
 
@@ -107,7 +146,7 @@ export default function AdminSeccionsPage() {
 
       <hgroup>
         <h1>Seccions de {tipus.nom}</h1>
-        <p>Gestiona les seccions i els seus camps</p>
+        <p>Gestiona les seccions i els seus camps. Arrossega per reordenar.</p>
       </hgroup>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
@@ -120,26 +159,15 @@ export default function AdminSeccionsPage() {
         <form onSubmit={handleSubmit}>
           <fieldset>
             <legend><strong>{editingId ? 'Editar seccio' : 'Nova seccio'}</strong></legend>
-            <div className="grid">
-              <label>
-                Titol
-                <input
-                  type="text"
-                  value={form.titol}
-                  onChange={e => setForm({ ...form, titol: e.target.value })}
-                  required
-                />
-              </label>
-              <label>
-                Ordre
-                <input
-                  type="number"
-                  value={form.ordre}
-                  onChange={e => setForm({ ...form, ordre: e.target.value })}
-                  placeholder="Auto"
-                />
-              </label>
-            </div>
+            <label>
+              Titol
+              <input
+                type="text"
+                value={form.titol}
+                onChange={e => setForm({ ...form, titol: e.target.value })}
+                required
+              />
+            </label>
             <button type="submit">{editingId ? 'Desar canvis' : 'Crear'}</button>
           </fieldset>
         </form>
@@ -149,36 +177,39 @@ export default function AdminSeccionsPage() {
         <p>No hi ha seccions. Crea'n una per comencar.</p>
       ) : (
         <>
-          <table>
-            <thead>
-              <tr>
-                <th>Ordre</th>
-                <th>Titol</th>
-                <th>Camps</th>
-                <th>Accions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {seccions.map(s => (
-                <tr key={s.id}>
-                  <td>{s.ordre}</td>
-                  <td><strong>{s.titol}</strong></td>
-                  <td>{s.camps.length}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <Link to={`/admin/seccions/${s.id}/camps`} role="button" className="outline">
-                        Camps
-                      </Link>
-                      <button className="outline" onClick={() => startEdit(s)}>Editar</button>
-                      <button className="outline secondary" onClick={() => handleDelete(s.id, s.titol)}>
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <table>
+              <thead>
+                <tr>
+                  <th style={{ width: '3rem' }}></th>
+                  <th>Titol</th>
+                  <th>Camps</th>
+                  <th>Accions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <SortableContext items={seccions.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                <tbody>
+                  {seccions.map(s => (
+                    <SortableRow key={s.id} id={s.id}>
+                      <td><strong>{s.titol}</strong></td>
+                      <td>{s.camps.length}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <Link to={`/admin/seccions/${s.id}/camps`} role="button" className="outline">
+                            Camps
+                          </Link>
+                          <button className="outline" onClick={() => startEdit(s)}>Editar</button>
+                          <button className="outline secondary" onClick={() => handleDelete(s.id, s.titol)}>
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </SortableRow>
+                  ))}
+                </tbody>
+              </SortableContext>
+            </table>
+          </DndContext>
 
           {totsCamps.length > 0 && (
             <article>

@@ -84,6 +84,17 @@ export async function eliminarSeccio(id) {
   return res.json()
 }
 
+export async function reordenarSeccions(tipusId, orderedIds) {
+  const res = await fetch(`${BASE}/tipus/${tipusId}/seccions/reorder`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ order: orderedIds }),
+  })
+  if (!res.ok) throw new Error('Error reordenant seccions')
+  return res.json()
+}
+
 // ---- Camps ----
 
 export async function llistarCamps(seccioId) {
@@ -111,6 +122,17 @@ export async function editarCamp(id, data) {
     body: JSON.stringify(data),
   })
   if (!res.ok) throw new Error('Error editant camp')
+  return res.json()
+}
+
+export async function reordenarCamps(seccioId, orderedIds) {
+  const res = await fetch(`${BASE}/seccions/${seccioId}/camps/reorder`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ order: orderedIds }),
+  })
+  if (!res.ok) throw new Error('Error reordenant camps')
   return res.json()
 }
 

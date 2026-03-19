@@ -127,6 +127,21 @@ def crear_seccio(tipus_id):
     return jsonify(s.to_dict()), 201
 
 
+@bp.route("/api/admin/tipus/<int:tipus_id>/seccions/reorder", methods=["PUT"])
+@admin_required
+def reordenar_seccions(tipus_id):
+    db.get_or_404(TipusAnalisi, tipus_id)
+    data = request.get_json()
+    ordered_ids = data.get("order", [])
+    for idx, sid in enumerate(ordered_ids):
+        s = Seccio.query.get(sid)
+        if s and s.tipus_id == tipus_id:
+            s.ordre = idx
+    db.session.commit()
+    seccions = Seccio.query.filter_by(tipus_id=tipus_id).order_by(Seccio.ordre).all()
+    return jsonify([s.to_dict() for s in seccions])
+
+
 @bp.route("/api/admin/seccions/<int:id>", methods=["PUT"])
 @admin_required
 def editar_seccio(id):
@@ -184,6 +199,21 @@ def crear_camp(seccio_id):
     db.session.add(c)
     db.session.commit()
     return jsonify(c.to_dict()), 201
+
+
+@bp.route("/api/admin/seccions/<int:seccio_id>/camps/reorder", methods=["PUT"])
+@admin_required
+def reordenar_camps(seccio_id):
+    db.get_or_404(Seccio, seccio_id)
+    data = request.get_json()
+    ordered_ids = data.get("order", [])
+    for idx, cid in enumerate(ordered_ids):
+        c = Camp.query.get(cid)
+        if c and c.seccio_id == seccio_id:
+            c.ordre = idx
+    db.session.commit()
+    camps = Camp.query.filter_by(seccio_id=seccio_id).order_by(Camp.ordre).all()
+    return jsonify([c.to_dict() for c in camps])
 
 
 @bp.route("/api/admin/camps/<int:id>", methods=["PUT"])

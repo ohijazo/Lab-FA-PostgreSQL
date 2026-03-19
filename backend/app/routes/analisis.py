@@ -1,5 +1,8 @@
+import io
+from datetime import date, datetime
 from functools import wraps
-from flask import Blueprint, jsonify, request, abort, session
+from flask import Blueprint, jsonify, request, abort, session, send_file
+from openpyxl import Workbook
 from app import db
 from app.models import Analisi, TipusAnalisi
 
@@ -78,6 +81,80 @@ def llistar(slug):
         "per_page": per_page,
         "pages": (total + per_page - 1) // per_page if per_page else 1,
     })
+
+
+@bp.route("/api/analisis/<slug>/export", methods=["GET"])
+@login_required
+def exportar(slug):
+    t = _get_tipus_or_404(slug)
+    q = request.args.get("q", "").strip().lower()
+    date_from = request.args.get("date_from", "").strip()
+    date_to = request.args.get("date_to", "").strip()
+    all_fields = request.args.get("all_fields", "0").strip() == "1"
+
+    query = Analisi.query.filter_by(tipus=slug)
+    if q:
+        query = query.filter(Analisi.dades.cast(db.Text).ilike(f"%{q}%"))
+    if date_from:
+        try:
+            dt_from = datetime.strptime(date_from, "%Y-%m-%d")
+            query = query.filter(Analisi.created_at >= dt_from)
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            dt_to = datetime.strptime(date_to, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+            query = query.filter(Analisi.created_at <= dt_to)
+        except ValueError:
+            pass
+    query = query.order_by(Analisi.id.desc())
+    analisis = query.all()
+
+    # Build ordered list of all camps from config (secció.ordre → camp.ordre)
+    seccions_ordered = sorted(t.seccions, key=lambda s: (s.ordre or 0))
+    all_camps_ordered = []
+    camp_labels = {}
+    for seccio in seccions_ordered:
+        for camp in sorted(seccio.camps, key=lambda c: (c.ordre or 0)):
+            camp_labels[camp.name] = camp.label
+            all_camps_ordered.append(camp.name)
+
+    # Determine columns to export
+    if all_fields:
+        columnes = all_camps_ordered
+    else:
+        columnes = t.columnes_llista or []
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = t.nom
+
+    # Header row
+    headers = ["ID", "Data creació"] + [camp_labels.get(c, c) for c in columnes]
+    ws.append(headers)
+
+    # Data rows
+    for a in analisis:
+        dades = a.dades if isinstance(a.dades, dict) else {}
+        row = [
+            a.id,
+            a.created_at.strftime("%Y-%m-%d %H:%M") if a.created_at else "",
+        ]
+        for c in columnes:
+            row.append(dades.get(c, ""))
+        ws.append(row)
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename = f"{slug}_{date.today().isoformat()}.xlsx"
+    return send_file(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=filename,
+    )
 
 
 @bp.route("/api/analisis/<slug>/<int:id>", methods=["GET"])

@@ -27,10 +27,17 @@ function groupCamps(camps) {
 
 export default function AnalisisForm({ seccions, initialData = {}, onSubmit, submitting }) {
   const [form, setForm] = useState(() => {
+    const today = new Date().toISOString().slice(0, 10)
     const defaults = {}
     for (const seccio of seccions) {
       for (const camp of seccio.camps) {
-        defaults[camp.name] = camp.type === 'checkbox' ? false : ''
+        if (camp.type === 'checkbox') {
+          defaults[camp.name] = false
+        } else if (camp.type === 'date') {
+          defaults[camp.name] = today
+        } else {
+          defaults[camp.name] = ''
+        }
       }
     }
     return { ...defaults, ...initialData }

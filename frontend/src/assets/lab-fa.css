@@ -42,6 +42,20 @@
   margin-bottom: 0;
 }
 
+/* Drag and drop */
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+  font-size: 1.2rem;
+  color: #94a3b8;
+  text-align: center;
+  width: 3rem;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
 /* Table overflow */
 .overflow-auto {
   overflow-x: auto;
