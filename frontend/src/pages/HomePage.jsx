@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchDashboardGlobal } from '../api/dashboard'
 
@@ -6,6 +6,10 @@ export default function HomePage() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [cerca, setCerca] = useState('')
+  const dialogRef = useRef(null)
+  const [exportSlugs, setExportSlugs] = useState([])
+  const [exportFrom, setExportFrom] = useState('')
+  const [exportTo, setExportTo] = useState('')
 
   useEffect(() => {
     fetchDashboardGlobal()
@@ -36,8 +40,20 @@ export default function HomePage() {
 
   return (
     <>
-      <h1>Lab FA</h1>
-      <p>Gestió d'anàlisis de laboratori</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div>
+          <h1 style={{ marginBottom: 0 }}>Lab FA</h1>
+          <p>Gestió d'anàlisis de laboratori</p>
+        </div>
+        <button className="outline" onClick={() => {
+          setExportSlugs([])
+          setExportFrom('')
+          setExportTo('')
+          dialogRef.current?.showModal()
+        }}>
+          Exportar Excel
+        </button>
+      </div>
 
       {/* KPIs globals */}
       <div className="kpi-grid">
@@ -92,7 +108,7 @@ export default function HomePage() {
               )}
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <Link to={`/${t.slug}/nou`} role="button" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85em' }}>Nova</Link>
+              <Link to={`/${t.slug}/nou`} role="button" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85em' }}>Nou</Link>
               <Link to={`/${t.slug}`} role="button" className="outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85em' }}>Llista</Link>
               <Link to={`/dashboard/${t.slug}`} role="button" className="secondary outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85em' }}>Dashboard</Link>
             </div>
@@ -131,6 +147,66 @@ export default function HomePage() {
           </table>
         </>
       )}
+
+      {/* Dialog exportar */}
+      <dialog ref={dialogRef}>
+        <article>
+          <header>
+            <button aria-label="Tancar" rel="prev" onClick={() => dialogRef.current?.close()}></button>
+            <h3>Exportar Excel</h3>
+          </header>
+
+          <label>De
+            <input type="date" value={exportFrom} onChange={(e) => setExportFrom(e.target.value)} />
+          </label>
+          <label>A
+            <input type="date" value={exportTo} onChange={(e) => setExportTo(e.target.value)} />
+          </label>
+
+          <fieldset>
+            <legend>Tipus d'anàlisi</legend>
+            <label style={{ marginBottom: '0.25rem' }}>
+              <input
+                type="checkbox"
+                checked={exportSlugs.length === data.per_tipus.length}
+                onChange={(e) => setExportSlugs(e.target.checked ? data.per_tipus.map(t => t.slug) : [])}
+              />
+              Seleccionar tots
+            </label>
+            {data.per_tipus.map((t) => (
+              <label key={t.slug} style={{ marginBottom: '0.25rem' }}>
+                <input
+                  type="checkbox"
+                  checked={exportSlugs.includes(t.slug)}
+                  onChange={(e) => {
+                    setExportSlugs(prev =>
+                      e.target.checked ? [...prev, t.slug] : prev.filter(s => s !== t.slug)
+                    )
+                  }}
+                />
+                {t.nom}
+              </label>
+            ))}
+          </fieldset>
+
+          <footer>
+            <button className="secondary" onClick={() => dialogRef.current?.close()}>Cancel·lar</button>
+            <button
+              disabled={exportSlugs.length === 0}
+              onClick={() => {
+                const params = new URLSearchParams()
+                exportSlugs.forEach(s => params.append('tipus', s))
+                if (exportFrom) params.set('date_from', exportFrom)
+                if (exportTo) params.set('date_to', exportTo)
+                window.location.href = `/api/analisis/export-multi?${params.toString()}`
+                dialogRef.current?.close()
+              }}
+            >
+              Exportar
+            </button>
+          </footer>
+        </article>
+      </dialog>
     </>
   )
 }

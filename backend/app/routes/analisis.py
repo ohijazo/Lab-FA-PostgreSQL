@@ -3,6 +3,8 @@ from datetime import date, datetime
 from functools import wraps
 from flask import Blueprint, jsonify, request, abort, session, send_file
 from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font
+from openpyxl.utils import get_column_letter
 from app import db
 from app.models import Analisi, TipusAnalisi
 
@@ -83,6 +85,64 @@ def llistar(slug):
     })
 
 
+def _build_export_sheet(ws, tipus_obj, analisis_list):
+    """Build a worksheet with merged section headers (row 1) and camp labels (row 2)."""
+    seccions_ordered = sorted(tipus_obj.seccions, key=lambda s: (s.ordre or 0))
+
+    # Build structure: list of (seccio_titol, [(camp_name, camp_label), ...])
+    seccio_camps = []
+    for seccio in seccions_ordered:
+        camps = sorted(seccio.camps, key=lambda c: (c.ordre or 0))
+        if camps:
+            seccio_camps.append((seccio.titol, [(c.name, c.label) for c in camps]))
+
+    # Fixed columns before sections
+    fixed_cols = 2  # ID, Data creació
+
+    # Row 1: section headers (merged)
+    # Row 2: camp labels
+    section_header = Font(bold=True)
+    center = Alignment(horizontal="center", vertical="center")
+
+    # Write fixed column headers spanning both rows
+    ws.cell(row=1, column=1, value="ID").font = section_header
+    ws.merge_cells(start_row=1, start_column=1, end_row=2, end_column=1)
+    ws.cell(row=1, column=1).alignment = center
+
+    ws.cell(row=1, column=2, value="Data creació").font = section_header
+    ws.merge_cells(start_row=1, start_column=2, end_row=2, end_column=2)
+    ws.cell(row=1, column=2).alignment = center
+
+    col = fixed_cols + 1  # next column (1-indexed)
+    all_camp_names = []
+    for titol, camps in seccio_camps:
+        num_camps = len(camps)
+        # Merge section title across its camps in row 1
+        ws.cell(row=1, column=col, value=titol).font = section_header
+        ws.cell(row=1, column=col).alignment = center
+        if num_camps > 1:
+            ws.merge_cells(
+                start_row=1, start_column=col,
+                end_row=1, end_column=col + num_camps - 1,
+            )
+        # Write camp labels in row 2
+        for i, (name, label) in enumerate(camps):
+            ws.cell(row=2, column=col + i, value=label)
+            all_camp_names.append(name)
+        col += num_camps
+
+    # Data rows starting from row 3
+    for a in analisis_list:
+        dades = a.dades if isinstance(a.dades, dict) else {}
+        row = [
+            a.id,
+            a.created_at.strftime("%Y-%m-%d %H:%M") if a.created_at else "",
+        ]
+        for name in all_camp_names:
+            row.append(dades.get(name, ""))
+        ws.append(row)
+
+
 @bp.route("/api/analisis/<slug>/export", methods=["GET"])
 @login_required
 def exportar(slug):
@@ -96,59 +156,83 @@ def exportar(slug):
     if q:
         query = query.filter(Analisi.dades.cast(db.Text).ilike(f"%{q}%"))
     if date_from:
-        try:
-            dt_from = datetime.strptime(date_from, "%Y-%m-%d")
-            query = query.filter(Analisi.created_at >= dt_from)
-        except ValueError:
-            pass
+        query = query.filter(Analisi.dades["data"].as_string() >= date_from)
     if date_to:
-        try:
-            dt_to = datetime.strptime(date_to, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
-            query = query.filter(Analisi.created_at <= dt_to)
-        except ValueError:
-            pass
+        query = query.filter(Analisi.dades["data"].as_string() <= date_to)
     query = query.order_by(Analisi.id.desc())
     analisis = query.all()
-
-    # Build ordered list of all camps from config (secció.ordre → camp.ordre)
-    seccions_ordered = sorted(t.seccions, key=lambda s: (s.ordre or 0))
-    all_camps_ordered = []
-    camp_labels = {}
-    for seccio in seccions_ordered:
-        for camp in sorted(seccio.camps, key=lambda c: (c.ordre or 0)):
-            camp_labels[camp.name] = camp.label
-            all_camps_ordered.append(camp.name)
-
-    # Determine columns to export
-    if all_fields:
-        columnes = all_camps_ordered
-    else:
-        columnes = t.columnes_llista or []
 
     wb = Workbook()
     ws = wb.active
     ws.title = t.nom
 
-    # Header row
-    headers = ["ID", "Data creació"] + [camp_labels.get(c, c) for c in columnes]
-    ws.append(headers)
-
-    # Data rows
-    for a in analisis:
-        dades = a.dades if isinstance(a.dades, dict) else {}
-        row = [
-            a.id,
-            a.created_at.strftime("%Y-%m-%d %H:%M") if a.created_at else "",
-        ]
-        for c in columnes:
-            row.append(dades.get(c, ""))
-        ws.append(row)
+    if all_fields:
+        _build_export_sheet(ws, t, analisis)
+    else:
+        # Simple export with columnes_llista only (no section headers)
+        columnes = t.columnes_llista or []
+        seccions_ordered = sorted(t.seccions, key=lambda s: (s.ordre or 0))
+        camp_labels = {}
+        for seccio in seccions_ordered:
+            for camp in seccio.camps:
+                camp_labels[camp.name] = camp.label
+        headers = ["ID", "Data creació"] + [camp_labels.get(c, c) for c in columnes]
+        ws.append(headers)
+        for a in analisis:
+            dades = a.dades if isinstance(a.dades, dict) else {}
+            row = [a.id, a.created_at.strftime("%Y-%m-%d %H:%M") if a.created_at else ""]
+            for c in columnes:
+                row.append(dades.get(c, ""))
+            ws.append(row)
 
     output = io.BytesIO()
     wb.save(output)
     output.seek(0)
 
     filename = f"{slug}_{date.today().isoformat()}.xlsx"
+    return send_file(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+@bp.route("/api/analisis/export-multi", methods=["GET"])
+@login_required
+def exportar_multi():
+    slugs = request.args.getlist("tipus")
+    date_from = request.args.get("date_from", "").strip()
+    date_to = request.args.get("date_to", "").strip()
+
+    if not slugs:
+        abort(400, description="Cal seleccionar almenys un tipus")
+
+    tipus_list = TipusAnalisi.query.filter(TipusAnalisi.slug.in_(slugs)).all()
+    if not tipus_list:
+        abort(404, description="Cap tipus trobat")
+
+    wb = Workbook()
+    wb.remove(wb.active)  # Remove default empty sheet
+
+    for t in sorted(tipus_list, key=lambda x: x.nom):
+        query = Analisi.query.filter_by(tipus=t.slug)
+        if date_from:
+            query = query.filter(Analisi.dades["data"].as_string() >= date_from)
+        if date_to:
+            query = query.filter(Analisi.dades["data"].as_string() <= date_to)
+        query = query.order_by(Analisi.id.desc())
+        analisis = query.all()
+
+        # Sheet title max 31 chars (Excel limit)
+        ws = wb.create_sheet(title=t.nom[:31])
+        _build_export_sheet(ws, t, analisis)
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename = f"analisis_{date.today().isoformat()}.xlsx"
     return send_file(
         output,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

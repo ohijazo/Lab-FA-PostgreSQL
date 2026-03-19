@@ -18,7 +18,6 @@ export default function LlistaPage() {
   const dialogRef = useRef(null)
   const [exportDateFrom, setExportDateFrom] = useState('')
   const [exportDateTo, setExportDateTo] = useState('')
-  const [exportAllFields, setExportAllFields] = useState(false)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -67,7 +66,6 @@ export default function LlistaPage() {
   function openExportDialog() {
     setExportDateFrom('')
     setExportDateTo('')
-    setExportAllFields(false)
     dialogRef.current?.showModal()
   }
 
@@ -76,13 +74,11 @@ export default function LlistaPage() {
   }
 
   function handleExport() {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams({ all_fields: '1' })
     if (q) params.set('q', q)
     if (exportDateFrom) params.set('date_from', exportDateFrom)
     if (exportDateTo) params.set('date_to', exportDateTo)
-    if (exportAllFields) params.set('all_fields', '1')
-    const qs = params.toString()
-    window.location.href = `/api/analisis/${tipus}/export${qs ? `?${qs}` : ''}`
+    window.location.href = `/api/analisis/${tipus}/export?${params.toString()}`
     closeExportDialog()
   }
 
@@ -136,15 +132,6 @@ export default function LlistaPage() {
               value={exportDateTo}
               onChange={(e) => setExportDateTo(e.target.value)}
             />
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              checked={exportAllFields}
-              onChange={(e) => setExportAllFields(e.target.checked)}
-            />
-            Exportar tots els camps
           </label>
 
           {q && (
