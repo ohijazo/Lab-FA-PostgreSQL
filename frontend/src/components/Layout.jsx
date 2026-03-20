@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import BarcodeScanner from './BarcodeScanner'
 import logoApp from '../logos/logoApp.png'
 
 export default function Layout({ children }) {
@@ -8,6 +9,7 @@ export default function Layout({ children }) {
   const location = useLocation()
   const isHome = location.pathname === '/'
   const [configOpen, setConfigOpen] = useState(false)
+  const [scannerOpen, setScannerOpen] = useState(false)
   const dropdownRef = useRef(null)
 
   // Close dropdown on click outside
@@ -40,6 +42,10 @@ export default function Layout({ children }) {
             </div>
           </Link>
           <div className="nav-actions">
+            <a href="#" className="nav-link" onClick={(e) => {
+              e.preventDefault()
+              setScannerOpen(true)
+            }}>Escàner</a>
             {isHome && (
               <a href="#" className="nav-link" onClick={(e) => {
                 e.preventDefault()
@@ -79,6 +85,7 @@ export default function Layout({ children }) {
       <main className="container">
         {children}
       </main>
+      <BarcodeScanner open={scannerOpen} onClose={() => setScannerOpen(false)} />
     </>
   )
 }

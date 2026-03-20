@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { obtenirAnalisi, eliminarAnalisi, obtenirConfig } from '../api/analisis'
 import AnalisisDetail from '../components/AnalisisDetail'
+import QRCode from '../components/QRCode'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import logoApp from '../logos/logoApp.png'
@@ -85,27 +86,26 @@ export default function DetallPage() {
   return (
     <>
       <div className="print-header">
-        <div className="print-header-top">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4pt' }}>
-            <img src={logoApp} alt="Lab FC" style={{ height: '20pt', width: 'auto' }} />
-            <h1>{config.nom}</h1>
+        <div className="print-header-brand">
+          <img src={logoApp} alt="Lab FC" className="print-logo" />
+          <div>
+            <h1 className="print-title">{config.nom}</h1>
+            <p className="print-subtitle">Informe d'anàlisi</p>
           </div>
-          {metaFields.some((n) => fieldMap[n]?.type === 'date') && (
-            <span className="print-header-date">
-              {formatSummaryValue(
-                fieldMap[metaFields.find((n) => fieldMap[n]?.type === 'date')],
-                analisi[metaFields.find((n) => fieldMap[n]?.type === 'date')]
-              )}
-            </span>
-          )}
         </div>
-        <div className="print-header-meta">
+        <div className="print-meta-grid">
           {[titleField, ...metaFields].filter(Boolean).map((name) => (
-            <span key={name}>
-              <strong>{fieldMap[name]?.label || name}:</strong> {formatSummaryValue(fieldMap[name], analisi[name])}
-            </span>
+            <div key={name} className="print-meta-item">
+              <span className="print-meta-label">{fieldMap[name]?.label || name}</span>
+              <span className="print-meta-value">{formatSummaryValue(fieldMap[name], analisi[name])}</span>
+            </div>
           ))}
         </div>
+        {analisi.codi && (
+          <div className="print-qr">
+            <QRCode value={String(analisi.codi)} size={100} />
+          </div>
+        )}
       </div>
       <div className="detall-toolbar no-print">
         <div className="detall-toolbar-info">

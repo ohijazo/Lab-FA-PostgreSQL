@@ -582,7 +582,7 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
-/* Print header hidden on screen */
+/* Print-only elements hidden on screen */
 .print-header {
   display: none;
 }
@@ -591,18 +591,19 @@
 @media print {
   @page {
     size: A4 landscape;
-    margin: 5mm 7mm;
+    margin: 4mm 5mm;
   }
 
   *, *::before, *::after {
     box-shadow: none !important;
+    margin-block-end: 0 !important;
   }
 
   body {
-    font-size: 6.5pt !important;
-    line-height: 1.1 !important;
+    font-size: 8pt !important;
+    line-height: 1.15 !important;
     background: #fff !important;
-    color: #000 !important;
+    color: #1a1a1a !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -620,138 +621,255 @@
     display: none !important;
   }
 
-  /* Print header — minimal */
+  /* ---- Print header — single compact row ---- */
   .print-header {
-    display: block;
-    margin-bottom: 3pt;
-  }
-
-  .print-header-top {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    border-bottom: 1.5pt solid #000;
-    padding-bottom: 1pt;
-    margin-bottom: 1pt;
+    align-items: center;
+    gap: 10pt;
+    border-bottom: 1.5pt solid #1a1a1a;
+    padding-bottom: 3pt;
+    margin-bottom: 3pt !important;
   }
 
-  .print-header-top h1 {
-    font-size: 10pt;
-    margin: 0;
-  }
-
-  .print-header-date {
-    font-size: 7.5pt;
-    color: #333;
-  }
-
-  .print-header-meta {
+  .print-header-brand {
     display: flex;
-    gap: 2rem;
-    font-size: 6.5pt;
-    padding-bottom: 1pt;
-    border-bottom: 0.5pt solid #999;
+    align-items: center;
+    gap: 5pt;
+    flex-shrink: 0;
   }
 
-  .print-header-meta span {
-    margin: 0;
+  .print-logo {
+    height: 22pt;
+    width: auto;
   }
 
-  /* Sections — 3 columns, NO section spans full width */
+  .print-title {
+    font-size: 12pt;
+    font-weight: 700;
+    margin: 0 !important;
+    line-height: 1;
+  }
+
+  .print-subtitle {
+    font-size: 5.5pt;
+    color: #666;
+    margin: 0.5pt 0 0 0 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ---- Meta fields ---- */
+  .print-meta-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1pt 12pt;
+    flex: 1;
+  }
+
+  .print-meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .print-meta-label {
+    font-size: 5pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #999;
+  }
+
+  .print-meta-value {
+    font-size: 8pt;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  /* ---- QR ---- */
+  .print-qr {
+    flex-shrink: 0;
+  }
+
+  .print-qr svg {
+    width: 42pt !important;
+    height: 42pt !important;
+  }
+
+  /* ---- Sections — 3 columns masonry ---- */
   .analisis-seccions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2pt;
-    align-items: start;
+    columns: 3;
+    column-gap: 4pt;
   }
 
   .analisis-seccio {
     break-inside: avoid;
-    border: 0.5pt solid #aaa;
-    border-radius: 1pt;
-    padding: 1.5pt 3pt;
+    border: 0.5pt solid #bbb;
+    border-radius: 2pt;
+    padding: 2pt 3pt 1pt;
+    margin-bottom: 3pt !important;
   }
 
-  /* Override: in print, wide sections do NOT span full width */
   .analisis-seccio.seccio-wide {
-    grid-column: auto;
+    column-span: none;
   }
 
   .seccio-titol {
-    font-size: 6pt;
-    margin: 0 0 1pt 0;
-    padding-bottom: 0.5pt;
+    font-size: 6.5pt;
+    font-weight: 700;
+    margin: 0 0 1pt 0 !important;
+    padding-bottom: 1pt;
     border-bottom: 0.75pt solid #444;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #000;
+    color: #1a1a1a;
   }
 
-  /* Camps grid — 2 columns base */
+  /* ---- Camps: stacked label/value, packed in columns ---- */
   .camps-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 4pt;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1pt 3pt;
   }
 
-  /* Narrow numeric sections: 3 columns */
+  .seccio-wide .camps-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
   .camps-grid-narrow {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .seccio-wide .camps-grid-narrow {
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .camp-item {
     display: flex;
-    align-items: baseline;
-    gap: 2pt;
-    padding: 0.2pt 0;
+    flex-direction: column;
+    padding: 1pt 0;
     border-bottom: 0.25pt solid #ddd;
     min-width: 0;
+    gap: 0;
   }
 
   .camp-item-wide {
     grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 3pt;
   }
 
   .camp-item-textarea {
-    flex-direction: column;
+    grid-column: 1 / -1;
   }
 
   .camp-item-textarea .camp-value {
     white-space: pre-wrap;
     word-break: break-word;
-    font-size: 6pt;
   }
 
   .camp-label {
     font-size: 5pt;
-    color: #444;
+    color: #888;
     text-transform: uppercase;
+    letter-spacing: 0.02em;
     white-space: nowrap;
-    flex-shrink: 0;
+    line-height: 1;
   }
 
   .camp-value {
-    font-size: 6.5pt;
+    font-size: 9pt;
     font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.1;
   }
 
-  /* Sub-groups in print — very compact */
+  /* ---- Sub-groups ---- */
   .detail-subgrup {
-    border: 0.5pt solid #ccc;
+    border: 0.5pt solid #ddd;
     border-radius: 1pt;
     padding: 1pt 2pt;
-    margin: 1pt 0;
+    margin: 1pt 0 !important;
     background: none;
   }
 
   .detail-subgrup-titol {
-    font-size: 5pt;
+    font-size: 5.5pt;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #555;
-    margin-bottom: 0.5pt;
+    color: #777;
+    margin: 0 0 0.5pt 0 !important;
     padding-bottom: 0.5pt;
-    border-bottom: 0.5pt solid #ccc;
+    border-bottom: 0.5pt solid #ddd;
   }
+}
+
+/* Scanner dialog */
+.scanner-dialog {
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0;
+  max-width: 480px;
+  width: 90vw;
+}
+
+.scanner-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.scanner-content {
+  margin: 0;
+}
+
+.scanner-content header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.scanner-video-container {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-status {
+  text-align: center;
+  color: #666;
+  margin-top: 0.75rem;
+}
+
+.scanner-error {
+  text-align: center;
+  color: var(--pico-del-color, #c62828);
+  font-weight: 500;
+  margin-top: 0.75rem;
+}
+
+.scanner-manual {
+  margin-top: 0.5rem;
+}
+
+.scanner-fallback-link {
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.scanner-content footer {
+  display: flex;
+  justify-content: flex-end;
 }

@@ -38,6 +38,22 @@ def _get_tipus_or_404(slug):
     return t
 
 
+# --------------- Cerca per codi (escàner) ---------------
+
+@bp.route("/api/analisis/find-by-codi", methods=["GET"])
+@login_required
+def find_by_codi():
+    codi = request.args.get("codi", "").strip()
+    if not codi:
+        return jsonify({"error": "codi es obligatori"}), 400
+    analisi = Analisi.query.filter(
+        Analisi.dades["codi"].as_string() == codi
+    ).first()
+    if not analisi:
+        return jsonify({"error": "No trobat"}), 404
+    return jsonify({"id": analisi.id, "tipus": analisi.tipus})
+
+
 # --------------- Config endpoints ---------------
 
 @bp.route("/api/tipus", methods=["GET"])

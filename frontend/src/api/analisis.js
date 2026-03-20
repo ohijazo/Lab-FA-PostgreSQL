@@ -91,6 +91,15 @@ export async function releaseLock(tipus, id) {
   }
 }
 
+export async function findByCodi(codi) {
+  const res = await fetch(`/api/analisis/find-by-codi?codi=${encodeURIComponent(codi)}`, { credentials: 'include' })
+  if (!res.ok) {
+    const err = await res.json().catch(() => null)
+    throw new Error(err?.error || 'No trobat')
+  }
+  return res.json()
+}
+
 export async function eliminarAnalisi(tipus, id) {
   const res = await fetch(`/api/analisis/${tipus}/${id}`, {
     method: 'DELETE',
