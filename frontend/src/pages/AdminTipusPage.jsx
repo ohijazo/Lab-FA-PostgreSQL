@@ -33,6 +33,7 @@ export default function AdminTipusPage() {
     setForm({ nom: t.nom, descripcio: t.descripcio || '' })
     setEditingId(t.id)
     setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   async function handleSubmit(e) {
@@ -48,6 +49,7 @@ export default function AdminTipusPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -58,6 +60,7 @@ export default function AdminTipusPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 

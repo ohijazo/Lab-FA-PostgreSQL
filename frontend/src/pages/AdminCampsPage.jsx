@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -22,12 +22,14 @@ function SortableRow({ id, children }) {
 
 export default function AdminCampsPage() {
   const { seccioId } = useParams()
+  const navigate = useNavigate()
   const [camps, setCamps] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [form, setForm] = useState({ name: '', label: '', type: 'text', required: false })
+  const [form, setForm] = useState({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e' })
+  const [novaOpcio, setNovaOpcio] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -48,7 +50,8 @@ export default function AdminCampsPage() {
   useEffect(() => { fetchData() }, [seccioId])
 
   function resetForm() {
-    setForm({ name: '', label: '', type: 'text', required: false })
+    setForm({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e' })
+    setNovaOpcio('')
     setEditingId(null)
     setShowForm(false)
   }
@@ -59,9 +62,17 @@ export default function AdminCampsPage() {
       label: c.label,
       type: c.type,
       required: c.required,
+      grup: c.grup || '',
+      opcions: c.opcions || [],
+      alerta_min: c.alerta_min != null ? c.alerta_min : '',
+      alerta_max: c.alerta_max != null ? c.alerta_max : '',
+      alerta_color_min: c.alerta_color_min || '#3b82f6',
+      alerta_color_max: c.alerta_color_max || '#e53e3e',
     })
+    setNovaOpcio('')
     setEditingId(c.id)
     setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   async function handleSubmit(e) {
@@ -72,6 +83,12 @@ export default function AdminCampsPage() {
       label: form.label,
       type: form.type,
       required: form.required,
+      grup: form.grup,
+      opcions: form.type === 'select' ? form.opcions : [],
+      alerta_min: form.type === 'number' && form.alerta_min !== '' ? parseFloat(form.alerta_min) : null,
+      alerta_max: form.type === 'number' && form.alerta_max !== '' ? parseFloat(form.alerta_max) : null,
+      alerta_color_min: form.type === 'number' ? form.alerta_color_min : null,
+      alerta_color_max: form.type === 'number' ? form.alerta_color_max : null,
     }
     try {
       if (editingId) {
@@ -83,6 +100,7 @@ export default function AdminCampsPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -93,6 +111,7 @@ export default function AdminCampsPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -120,7 +139,7 @@ export default function AdminCampsPage() {
       <nav aria-label="breadcrumb">
         <ul>
           <li><Link to="/admin">Tipus</Link></li>
-          <li><Link to="#" onClick={() => history.back()}>Seccions</Link></li>
+          <li><Link to="#" onClick={(e) => { e.preventDefault(); navigate(-1) }}>Seccions</Link></li>
           <li>Camps</li>
         </ul>
       </nav>
@@ -171,9 +190,118 @@ export default function AdminCampsPage() {
                   <option value="date">Data</option>
                   <option value="textarea">Text llarg</option>
                   <option value="checkbox">Checkbox</option>
+                  <option value="select">Llista (combobox)</option>
                 </select>
               </label>
+              <label>
+                Grup
+                <input
+                  type="text"
+                  value={form.grup}
+                  onChange={e => setForm({ ...form, grup: e.target.value })}
+                  placeholder="Opcional — agrupa camps visuals"
+                />
+              </label>
             </div>
+            {form.type === 'select' && (
+              <div style={{ marginBottom: '1rem' }}>
+                <strong>Opcions de la llista</strong>
+                {form.opcions.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', margin: '0.5rem 0' }}>
+                    {form.opcions.map((op, i) => (
+                      <span key={i} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                        background: 'var(--pico-muted-border-color)', borderRadius: '0.3rem',
+                        padding: '0.2rem 0.5rem', fontSize: '0.9rem',
+                      }}>
+                        {op}
+                        <button
+                          type="button"
+                          className="outline secondary"
+                          style={{ padding: '0 0.3rem', margin: 0, fontSize: '0.8rem', lineHeight: 1 }}
+                          onClick={() => setForm({ ...form, opcions: form.opcions.filter((_, j) => j !== i) })}
+                        >×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'end' }}>
+                  <input
+                    type="text"
+                    value={novaOpcio}
+                    onChange={e => setNovaOpcio(e.target.value)}
+                    placeholder="Nova opcio..."
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const val = novaOpcio.trim()
+                        if (val && !form.opcions.includes(val)) {
+                          setForm({ ...form, opcions: [...form.opcions, val] })
+                          setNovaOpcio('')
+                        }
+                      }
+                    }}
+                    style={{ marginBottom: 0 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = novaOpcio.trim()
+                      if (val && !form.opcions.includes(val)) {
+                        setForm({ ...form, opcions: [...form.opcions, val] })
+                        setNovaOpcio('')
+                      }
+                    }}
+                    style={{ whiteSpace: 'nowrap' }}
+                  >Afegir</button>
+                </div>
+              </div>
+            )}
+            {form.type === 'number' && (
+              <div style={{ marginBottom: '1rem' }}>
+                <strong>Alertes fora de rang</strong>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'end' }}>
+                  <label>
+                    Minim
+                    <input
+                      type="number"
+                      step="any"
+                      value={form.alerta_min}
+                      onChange={e => setForm({ ...form, alerta_min: e.target.value })}
+                      placeholder="Sense minim"
+                    />
+                  </label>
+                  <label>
+                    Color
+                    <input
+                      type="color"
+                      value={form.alerta_color_min}
+                      onChange={e => setForm({ ...form, alerta_color_min: e.target.value })}
+                      style={{ height: '2.5rem', width: '3rem', padding: '0.2rem', cursor: 'pointer' }}
+                    />
+                  </label>
+                  <label>
+                    Maxim
+                    <input
+                      type="number"
+                      step="any"
+                      value={form.alerta_max}
+                      onChange={e => setForm({ ...form, alerta_max: e.target.value })}
+                      placeholder="Sense maxim"
+                    />
+                  </label>
+                  <label>
+                    Color
+                    <input
+                      type="color"
+                      value={form.alerta_color_max}
+                      onChange={e => setForm({ ...form, alerta_color_max: e.target.value })}
+                      style={{ height: '2.5rem', width: '3rem', padding: '0.2rem', cursor: 'pointer' }}
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
             <label>
               <input
                 type="checkbox"
@@ -199,6 +327,7 @@ export default function AdminCampsPage() {
                 <th>Nom</th>
                 <th>Etiqueta</th>
                 <th>Tipus</th>
+                <th>Grup</th>
                 <th>Obligatori</th>
                 <th>Accions</th>
               </tr>
@@ -210,6 +339,7 @@ export default function AdminCampsPage() {
                     <td><code>{c.name}</code></td>
                     <td>{c.label}</td>
                     <td>{c.type}</td>
+                    <td>{c.grup || '—'}</td>
                     <td>{c.required ? 'Si' : 'No'}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>

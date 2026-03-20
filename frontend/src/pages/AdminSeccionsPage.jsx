@@ -73,6 +73,7 @@ export default function AdminSeccionsPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -86,6 +87,7 @@ export default function AdminSeccionsPage() {
     setForm({ titol: s.titol })
     setEditingId(s.id)
     setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   async function handleSubmit(e) {
@@ -102,6 +104,7 @@ export default function AdminSeccionsPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -112,6 +115,7 @@ export default function AdminSeccionsPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 

@@ -6,7 +6,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 from app import db
-from app.models import Analisi, TipusAnalisi
+from app.models import Analisi, EditLock, TipusAnalisi
 
 bp = Blueprint("analisis", __name__)
 
@@ -48,7 +48,7 @@ def config_tipus(slug):
 @bp.route("/api/analisis/<slug>", methods=["GET"])
 @login_required
 def llistar(slug):
-    _get_tipus_or_404(slug)
+    t = _get_tipus_or_404(slug)
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 25, type=int)
@@ -66,7 +66,21 @@ def llistar(slug):
     total = query.count()
 
     if sort:
-        sort_expr = Analisi.dades[sort].as_string()
+        # Determine field type to sort numerically when appropriate
+        camp_type = None
+        for seccio in t.seccions:
+            for camp in seccio.camps:
+                if camp.name == sort:
+                    camp_type = camp.type
+                    break
+            if camp_type:
+                break
+
+        if camp_type == "number":
+            sort_expr = Analisi.dades[sort].as_float()
+        else:
+            sort_expr = Analisi.dades[sort].as_string()
+
         if sort_dir == "desc":
             query = query.order_by(sort_expr.desc().nullslast())
         else:
@@ -274,10 +288,25 @@ def editar(slug, id):
         abort(404)
 
     data = request.get_json()
+
+    # Optimistic locking: check _expected_updated_at
+    expected = data.pop("_expected_updated_at", None)
+    if expected and a.updated_at:
+        actual = a.updated_at.isoformat()
+        if expected != actual:
+            return jsonify({
+                "error": "conflict",
+                "message": f"Registre modificat per {a.updated_by or 'un altre usuari'} des que l'has obert.",
+                "updated_by": a.updated_by,
+                "updated_at": actual,
+                "current": a.to_dict(),
+            }), 409
+
     for key in ("id", "created_at", "updated_at", "tipus", "created_by", "updated_by"):
         data.pop(key, None)
 
     a.set_dades(data)
+    a.updated_at = datetime.utcnow()
     a.updated_by = session.get("email")
     db.session.commit()
     return jsonify(a.to_dict())
@@ -289,6 +318,61 @@ def eliminar(slug, id):
     a = db.get_or_404(Analisi, id)
     if a.tipus != slug:
         abort(404)
+    # Clean up any locks for this analisi
+    EditLock.query.filter_by(analisi_id=id).delete()
     db.session.delete(a)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+# --------------- Edit lock (presence) ---------------
+
+@bp.route("/api/analisis/<slug>/<int:id>/lock", methods=["POST"])
+@login_required
+def acquire_lock(slug, id):
+    a = db.get_or_404(Analisi, id)
+    if a.tipus != slug:
+        abort(404)
+
+    email = session.get("email")
+
+    # Clean expired locks
+    all_locks = EditLock.query.filter_by(analisi_id=id).all()
+    for lock in all_locks:
+        if lock.is_expired():
+            db.session.delete(lock)
+
+    # Check for existing lock by another user
+    other_lock = EditLock.query.filter(
+        EditLock.analisi_id == id,
+        EditLock.user_email != email,
+    ).first()
+
+    # Upsert own lock
+    own_lock = EditLock.query.filter_by(analisi_id=id, user_email=email).first()
+    if own_lock:
+        own_lock.locked_at = datetime.utcnow()
+    else:
+        own_lock = EditLock(analisi_id=id, user_email=email)
+        db.session.add(own_lock)
+
+    db.session.commit()
+
+    result = {
+        "ok": True,
+        "lock": own_lock.to_dict(),
+        "updated_at": a.updated_at.isoformat() if a.updated_at else None,
+        "updated_by": a.updated_by,
+    }
+    if other_lock:
+        result["other_user"] = other_lock.to_dict()
+    return jsonify(result)
+
+
+@bp.route("/api/analisis/<slug>/<int:id>/lock", methods=["DELETE"])
+@login_required
+def release_lock(slug, id):
+    email = session.get("email")
+    EditLock.query.filter_by(analisi_id=id, user_email=email).delete()
     db.session.commit()
     return jsonify({"ok": True})

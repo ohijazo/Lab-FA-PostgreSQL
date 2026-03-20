@@ -1,27 +1,7 @@
+import { groupCamps } from '../utils/groupCamps'
+import { alertaStyle } from '../utils/alertes'
+
 const WIDE_THRESHOLD = 4
-
-function groupCamps(camps) {
-  const groups = []
-  let currentGrup = null
-  let currentCamps = []
-
-  for (const camp of camps) {
-    const grup = camp.grup || ''
-    if (grup !== currentGrup) {
-      if (currentCamps.length > 0) {
-        groups.push({ grup: currentGrup, camps: currentCamps })
-      }
-      currentGrup = grup
-      currentCamps = [camp]
-    } else {
-      currentCamps.push(camp)
-    }
-  }
-  if (currentCamps.length > 0) {
-    groups.push({ grup: currentGrup, camps: currentCamps })
-  }
-  return groups
-}
 
 export default function AnalisisDetail({ seccions, analisi }) {
   function formatValue(camp, val) {
@@ -31,6 +11,11 @@ export default function AnalisisDetail({ seccions, analisi }) {
       const [y, m, d] = val.split('-')
       return `${d}-${m}-${y}`
     }
+    const str = String(val).replace(',', '.')
+    const n = typeof val === 'number' ? val : parseFloat(str)
+    if (!isNaN(n) && str.match(/^\d+\.\d{5,}$/)) {
+      return parseFloat(n.toFixed(4))
+    }
     return val
   }
 
@@ -39,7 +24,9 @@ export default function AnalisisDetail({ seccions, analisi }) {
     return (
       <div key={camp.name} className={`camp-item${isWideItem ? ' camp-item-wide' : ''}${camp.type === 'textarea' ? ' camp-item-textarea' : ''}`}>
         <span className="camp-label">{camp.label}:</span>
-        <span className="camp-value">{formatValue(camp, analisi[camp.name])}</span>
+        <span className="camp-value" style={alertaStyle(camp, analisi[camp.name])}>
+          {formatValue(camp, analisi[camp.name])}
+        </span>
       </div>
     )
   }

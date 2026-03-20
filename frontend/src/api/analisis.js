@@ -41,15 +41,45 @@ export async function crearAnalisi(tipus, data) {
   return res.json()
 }
 
-export async function editarAnalisi(tipus, id, data) {
+export async function editarAnalisi(tipus, id, data, expectedUpdatedAt) {
+  const body = { ...data }
+  if (expectedUpdatedAt) {
+    body._expected_updated_at = expectedUpdatedAt
+  }
   const res = await fetch(`/api/analisis/${tipus}/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify(data),
+    body: JSON.stringify(body),
   })
+  if (res.status === 409) {
+    const info = await res.json()
+    const err = new Error(info.message || 'Conflicte de concurrència')
+    err.conflict = info
+    throw err
+  }
   if (!res.ok) throw new Error('Error editant anàlisi')
   return res.json()
+}
+
+export async function acquireLock(tipus, id) {
+  const res = await fetch(`/api/analisis/${tipus}/${id}/lock`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+  if (!res.ok) return null
+  return res.json()
+}
+
+export async function releaseLock(tipus, id) {
+  try {
+    await fetch(`/api/analisis/${tipus}/${id}/lock`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+  } catch {
+    // best-effort cleanup
+  }
 }
 
 export async function eliminarAnalisi(tipus, id) {

@@ -78,7 +78,12 @@ def editar_tipus(id):
     if "nom" in data:
         t.nom = data["nom"].strip()
     if "slug" in data:
-        t.slug = data["slug"].strip()
+        new_slug = data["slug"].strip()
+        if new_slug != t.slug:
+            existing = TipusAnalisi.query.filter_by(slug=new_slug).first()
+            if existing:
+                return jsonify({"error": f"El slug '{new_slug}' ja existeix"}), 409
+            t.slug = new_slug
     if "descripcio" in data:
         t.descripcio = data["descripcio"]
     if "columnes_llista" in data:
@@ -134,7 +139,7 @@ def reordenar_seccions(tipus_id):
     data = request.get_json()
     ordered_ids = data.get("order", [])
     for idx, sid in enumerate(ordered_ids):
-        s = Seccio.query.get(sid)
+        s = db.session.get(Seccio, sid)
         if s and s.tipus_id == tipus_id:
             s.ordre = idx
     db.session.commit()
@@ -195,6 +200,11 @@ def crear_camp(seccio_id):
         required=data.get("required", False),
         ordre=data.get("ordre", max_ordre + 1),
         grup=data.get("grup", ""),
+        opcions=data.get("opcions", []),
+        alerta_min=data.get("alerta_min"),
+        alerta_max=data.get("alerta_max"),
+        alerta_color_min=data.get("alerta_color_min"),
+        alerta_color_max=data.get("alerta_color_max"),
     )
     db.session.add(c)
     db.session.commit()
@@ -208,7 +218,7 @@ def reordenar_camps(seccio_id):
     data = request.get_json()
     ordered_ids = data.get("order", [])
     for idx, cid in enumerate(ordered_ids):
-        c = Camp.query.get(cid)
+        c = db.session.get(Camp, cid)
         if c and c.seccio_id == seccio_id:
             c.ordre = idx
     db.session.commit()
@@ -233,6 +243,16 @@ def editar_camp(id):
         c.ordre = data["ordre"]
     if "grup" in data:
         c.grup = data["grup"]
+    if "opcions" in data:
+        c.opcions = data["opcions"]
+    if "alerta_min" in data:
+        c.alerta_min = data["alerta_min"]
+    if "alerta_max" in data:
+        c.alerta_max = data["alerta_max"]
+    if "alerta_color_min" in data:
+        c.alerta_color_min = data["alerta_color_min"]
+    if "alerta_color_max" in data:
+        c.alerta_color_max = data["alerta_color_max"]
     db.session.commit()
     return jsonify(c.to_dict())
 

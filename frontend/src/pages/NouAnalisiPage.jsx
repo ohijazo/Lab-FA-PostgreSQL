@@ -26,6 +26,7 @@ export default function NouAnalisiPage() {
       navigate(`/${tipus}/${result.id}`)
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setSubmitting(false)
     }

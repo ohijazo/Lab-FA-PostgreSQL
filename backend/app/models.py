@@ -102,6 +102,11 @@ class Camp(db.Model):
     required = db.Column(db.Boolean, default=False)
     ordre = db.Column(db.Integer, default=0)
     grup = db.Column(db.String(100), default="")
+    opcions = db.Column(JSONB, default=list)
+    alerta_min = db.Column(db.Float, nullable=True)
+    alerta_max = db.Column(db.Float, nullable=True)
+    alerta_color_min = db.Column(db.String(20), nullable=True)
+    alerta_color_max = db.Column(db.String(20), nullable=True)
 
     def to_dict(self):
         return {
@@ -112,6 +117,11 @@ class Camp(db.Model):
             "required": self.required,
             "ordre": self.ordre,
             "grup": self.grup or "",
+            "opcions": self.opcions or [],
+            "alerta_min": self.alerta_min,
+            "alerta_max": self.alerta_max,
+            "alerta_color_min": self.alerta_color_min,
+            "alerta_color_max": self.alerta_color_max,
         }
 
 
@@ -143,3 +153,26 @@ class Analisi(db.Model):
         d["created_by"] = self.created_by
         d["updated_by"] = self.updated_by
         return d
+
+
+# --------------- Edit lock (presence) ---------------
+
+class EditLock(db.Model):
+    __tablename__ = "edit_lock"
+
+    id = db.Column(db.Integer, primary_key=True)
+    analisi_id = db.Column(db.Integer, db.ForeignKey("analisi.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_email = db.Column(db.String(120), nullable=False)
+    locked_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    EXPIRY_MINUTES = 5
+
+    def is_expired(self):
+        return (datetime.utcnow() - self.locked_at).total_seconds() > self.EXPIRY_MINUTES * 60
+
+    def to_dict(self):
+        return {
+            "analisi_id": self.analisi_id,
+            "user_email": self.user_email,
+            "locked_at": self.locked_at.isoformat() if self.locked_at else None,
+        }

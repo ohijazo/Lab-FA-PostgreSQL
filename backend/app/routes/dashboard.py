@@ -1,7 +1,8 @@
 from collections import defaultdict
 from datetime import datetime
+from functools import wraps
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from sqlalchemy import func
 
 from app import db
@@ -10,7 +11,17 @@ from app.models import Analisi, TipusAnalisi
 bp = Blueprint("dashboard", __name__)
 
 
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "email" not in session:
+            return jsonify({"error": "No autenticat"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+
 @bp.route("/api/dashboard/global")
+@login_required
 def dashboard_global():
     """Estadístiques agregades de tots els tipus."""
     # All types
@@ -168,6 +179,7 @@ def _get_config(slug):
     filter_field = group_fields[0] if group_fields else None
 
     return {
+        "nom": t.nom,
         "numeric_fields": numeric_fields,
         "text_fields": text_fields,
         "all_fields": all_fields,
@@ -194,6 +206,7 @@ def _load_filtered_analisis(slug, filter_field, data_inici, data_fi, filter_val)
 
 
 @bp.route("/api/dashboard/<slug>")
+@login_required
 def dashboard(slug):
     config = _get_config(slug)
     if not config:
@@ -228,6 +241,7 @@ def dashboard(slug):
     total = len(records)
 
     empty_response = {
+        "nom": config["nom"],
         "total_registres": 0,
         "rang_dates": {"min": None, "max": None},
         "kpis": {},
@@ -330,6 +344,7 @@ def dashboard(slug):
     metric_labels = {mk: all_labels.get(mk, mk) for mk in metric_keys}
 
     return jsonify({
+        "nom": config["nom"],
         "total_registres": total,
         "rang_dates": rang_dates,
         "kpis": kpis,

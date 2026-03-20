@@ -47,7 +47,7 @@ export default function DashboardPage() {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-        <h2 style={{ margin: 0 }}>Dashboard: {tipus}</h2>
+        <h2 style={{ margin: 0 }}>Dashboard: {data?.nom || tipus}</h2>
         <Link to={`/${tipus}`} role="button" className="outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85em' }}>
           ← Tornar a llista
         </Link>

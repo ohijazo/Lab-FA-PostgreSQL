@@ -1,29 +1,8 @@
 import { useState } from 'react'
+import { groupCamps } from '../utils/groupCamps'
+import { getAlertaColor } from '../utils/alertes'
 
 const WIDE_THRESHOLD = 4
-
-function groupCamps(camps) {
-  const groups = []
-  let currentGrup = null
-  let currentCamps = []
-
-  for (const camp of camps) {
-    const grup = camp.grup || ''
-    if (grup !== currentGrup) {
-      if (currentCamps.length > 0) {
-        groups.push({ grup: currentGrup, camps: currentCamps })
-      }
-      currentGrup = grup
-      currentCamps = [camp]
-    } else {
-      currentCamps.push(camp)
-    }
-  }
-  if (currentCamps.length > 0) {
-    groups.push({ grup: currentGrup, camps: currentCamps })
-  }
-  return groups
-}
 
 export default function AnalisisForm({ seccions, initialData = {}, onSubmit, submitting }) {
   const [form, setForm] = useState(() => {
@@ -71,6 +50,24 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, sub
         </label>
       )
     }
+    if (camp.type === 'select') {
+      return (
+        <label key={camp.name} className={`form-camp${camp.label.length > 30 ? ' form-camp-wide' : ''}`}>
+          <span className="form-camp-label">{camp.label}</span>
+          <select
+            name={camp.name}
+            value={form[camp.name] || ''}
+            onChange={handleChange}
+            required={camp.required}
+          >
+            <option value="">— Selecciona —</option>
+            {(camp.opcions || []).map((op) => (
+              <option key={op} value={op}>{op}</option>
+            ))}
+          </select>
+        </label>
+      )
+    }
     if (camp.type === 'textarea') {
       return (
         <label key={camp.name} className="form-camp form-camp-wide">
@@ -84,6 +81,7 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, sub
         </label>
       )
     }
+    const alertColor = getAlertaColor(camp, form[camp.name])
     return (
       <label key={camp.name} className={`form-camp${camp.label.length > 30 ? ' form-camp-wide' : ''}`}>
         <span className="form-camp-label">{camp.label}</span>
@@ -94,6 +92,7 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, sub
           onChange={handleChange}
           required={camp.required}
           step={camp.type === 'number' ? 'any' : undefined}
+          style={alertColor ? { color: alertColor, borderColor: alertColor, fontWeight: 700 } : undefined}
         />
       </label>
     )

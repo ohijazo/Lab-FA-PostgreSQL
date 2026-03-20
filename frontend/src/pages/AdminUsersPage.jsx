@@ -33,6 +33,7 @@ export default function AdminUsersPage() {
     setForm({ email: u.email, nom: u.nom, password: '', role: u.role })
     setEditingId(u.id)
     setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   async function handleSubmit(e) {
@@ -50,6 +51,7 @@ export default function AdminUsersPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -60,6 +62,7 @@ export default function AdminUsersPage() {
       await fetchData()
     } catch (err) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
