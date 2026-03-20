@@ -2,12 +2,14 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { obtenirAnalisi, editarAnalisi, obtenirConfig, acquireLock, releaseLock } from '../api/analisis'
 import AnalisisForm from '../components/AnalisisForm'
+import { useToast } from '../context/ToastContext'
 
 const HEARTBEAT_INTERVAL = 15 * 1000 // 15 seg
 
 export default function EditarAnalisiPage() {
   const { tipus, id } = useParams()
   const navigate = useNavigate()
+  const { addToast } = useToast()
   const [config, setConfig] = useState(null)
   const [analisi, setAnalisi] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -73,15 +75,15 @@ export default function EditarAnalisiPage() {
     try {
       await editarAnalisi(tipus, id, data, updatedAtRef.current)
       cleanup()
+      addToast('Canvis desats correctament')
       navigate(`/${tipus}/${id}`)
     } catch (err) {
       if (err.conflict) {
         setConflict(err.conflict)
         setError(err.message)
       } else {
-        setError(err.message)
+        addToast(err.message, 'error')
       }
-      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setSubmitting(false)
     }
@@ -106,7 +108,11 @@ export default function EditarAnalisiPage() {
 
   return (
     <>
-      <h2 style={{ marginBottom: '0.5rem' }}>Editar anàlisi {analisi.codi}</h2>
+      <h2 style={{ marginBottom: '0.5rem' }}>
+        Editar — {config.nom} {config.columnes_llista?.[0] && analisi[config.columnes_llista[0]]
+          ? `(${analisi[config.columnes_llista[0]]})`
+          : `#${analisi.id}`}
+      </h2>
 
       {otherUser && (
         <article style={{ background: 'var(--pico-mark-background-color, #fff3cd)', padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '4px' }}>
@@ -135,6 +141,7 @@ export default function EditarAnalisiPage() {
         seccions={config.seccions}
         initialData={analisi}
         onSubmit={handleSubmit}
+        onCancel={() => { cleanup(); navigate(`/${tipus}/${id}`) }}
         submitting={submitting}
       />
     </>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { llistarTipusAdmin, crearTipus, editarTipus, eliminarTipus } from '../api/admin'
+import { useToast } from '../context/ToastContext'
 
 export default function AdminTipusPage() {
+  const { addToast } = useToast()
   const [tipus, setTipus] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -42,8 +44,10 @@ export default function AdminTipusPage() {
     try {
       if (editingId) {
         await editarTipus(editingId, form)
+        addToast('Tipus actualitzat')
       } else {
         await crearTipus(form)
+        addToast('Tipus creat')
       }
       resetForm()
       await fetchData()
@@ -57,6 +61,7 @@ export default function AdminTipusPage() {
     if (!confirm(`Segur que vols eliminar "${nom}"? S'eliminaran totes les seccions i camps associats.`)) return
     try {
       await eliminarTipus(id)
+      addToast('Tipus eliminat')
       await fetchData()
     } catch (err) {
       setError(err.message)
@@ -72,8 +77,6 @@ export default function AdminTipusPage() {
         <h1>Configuracio - Tipus d'analisi</h1>
         <p>Gestiona els tipus d'analisi, les seves seccions i camps</p>
       </hgroup>
-
-      <p><Link to="/admin/users" role="button" className="outline">Gestionar usuaris</Link></p>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
 

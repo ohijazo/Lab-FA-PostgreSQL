@@ -4,7 +4,7 @@ import { getAlertaColor } from '../utils/alertes'
 
 const WIDE_THRESHOLD = 4
 
-export default function AnalisisForm({ seccions, initialData = {}, onSubmit, submitting }) {
+export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onCancel, submitting }) {
   const [form, setForm] = useState(() => {
     const today = new Date().toISOString().slice(0, 10)
     const defaults = {}
@@ -136,9 +136,16 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, sub
           </fieldset>
         )
       })}
-      <button type="submit" aria-busy={submitting}>
-        {submitting ? 'Desant...' : 'Desar'}
-      </button>
+      <div style={{ display: 'flex', gap: '0.5rem', gridColumn: '1 / -1' }}>
+        <button type="submit" aria-busy={submitting}>
+          {submitting ? 'Desant...' : 'Desar'}
+        </button>
+        {onCancel && (
+          <button type="button" className="outline secondary" onClick={onCancel}>
+            Cancel·lar
+          </button>
+        )}
+      </div>
     </form>
   )
 }

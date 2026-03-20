@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import logoApp from '../logos/logoApp.png'
 
 export default function LoginPage() {
   const { login } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -14,6 +17,11 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(email, password)
+      const redirect = sessionStorage.getItem('redirectAfterLogin')
+      if (redirect) {
+        sessionStorage.removeItem('redirectAfterLogin')
+        navigate(redirect)
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -22,10 +30,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="container" style={{ maxWidth: 400, marginTop: '10vh' }}>
+    <main className="container" style={{ maxWidth: 400, marginTop: '8vh' }}>
       <article>
-        <header>
-          <h2>Lab FC - Iniciar sessió</h2>
+        <header style={{ textAlign: 'center' }}>
+          <img src={logoApp} alt="Lab FC" style={{ width: 140, height: 'auto', marginBottom: '0.75rem' }} />
+          <h2 style={{ margin: 0 }}>Iniciar sessió</h2>
         </header>
         <form onSubmit={handleSubmit}>
           <label>

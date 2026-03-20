@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { fetchDashboardGlobal } from '../api/dashboard'
+import { useAuth } from '../context/AuthContext'
 
 export default function HomePage() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const isViewer = user?.role === 'viewer'
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [cerca, setCerca] = useState('')
@@ -16,6 +20,18 @@ export default function HomePage() {
       .then(setData)
       .catch(() => {})
       .finally(() => setLoading(false))
+  }, [])
+
+  // Listen for navbar export button
+  useEffect(() => {
+    function handleOpenExport() {
+      setExportSlugs([])
+      setExportFrom('')
+      setExportTo('')
+      dialogRef.current?.showModal()
+    }
+    window.addEventListener('open-export-dialog', handleOpenExport)
+    return () => window.removeEventListener('open-export-dialog', handleOpenExport)
   }, [])
 
   if (loading) return <p aria-busy="true">Carregant...</p>
@@ -40,23 +56,8 @@ export default function HomePage() {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <div>
-          <h1 style={{ marginBottom: 0 }}>Lab FC</h1>
-          <p>Gestió d'anàlisis de laboratori</p>
-        </div>
-        <button className="outline" onClick={() => {
-          setExportSlugs([])
-          setExportFrom('')
-          setExportTo('')
-          dialogRef.current?.showModal()
-        }}>
-          Exportar Excel
-        </button>
-      </div>
-
       {/* KPIs globals */}
-      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginTop: '1rem' }}>
         <div className="kpi-card">
           <div className="kpi-label">Total anàlisis</div>
           <div className="kpi-avg">{data.total_analisis}</div>
@@ -75,18 +76,17 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Filtre */}
-      <input
-        type="search"
-        placeholder="Cercar tipus d'anàlisi..."
-        value={cerca}
-        onChange={(e) => setCerca(e.target.value)}
-        style={{ marginBottom: '0.75rem' }}
-      />
-
-      {/* Taula de tipus */}
-      <h3 style={{ marginBottom: '0.5rem' }}>Tipus d'anàlisi</h3>
-      <div className="overflow-auto" style={{ marginBottom: '2rem' }}>
+      {/* Toolbar: cerca */}
+      <div className="home-toolbar">
+        <input
+          type="search"
+          placeholder="Cercar tipus..."
+          value={cerca}
+          onChange={(e) => setCerca(e.target.value)}
+          style={{ marginBottom: 0, maxWidth: 220 }}
+        />
+      </div>
+      <div className="overflow-auto tipus-table-wrapper" style={{ marginBottom: '2rem' }}>
         <table className="tipus-table">
           <thead>
             <tr>
@@ -109,7 +109,7 @@ export default function HomePage() {
                 <td style={{ color: '#64748b', fontSize: '0.85rem' }}>{formatDate(t.ultima)}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end' }}>
-                    <Link to={`/${t.slug}/nou`} role="button" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8em', margin: 0 }}>Nou</Link>
+                    {!isViewer && <Link to={`/${t.slug}/nou`} role="button" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8em', margin: 0 }}>Nou</Link>}
                     <Link to={`/${t.slug}`} role="button" className="outline" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8em', margin: 0 }}>Llista</Link>
                     <Link to={`/dashboard/${t.slug}`} role="button" className="secondary outline" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8em', margin: 0 }}>Dashboard</Link>
                   </div>
@@ -127,30 +127,34 @@ export default function HomePage() {
       {data.activitat_recent.length > 0 && (
         <details open style={{ marginBottom: '1rem' }}>
           <summary style={{ fontSize: '0.9rem', fontWeight: 600, color: '#64748b', cursor: 'pointer' }}>Activitat recent</summary>
-          <table style={{ fontSize: '0.85rem' }}>
-            <thead>
-              <tr>
-                <th>Tipus</th>
-                <th>Resum</th>
-                <th>Data</th>
-                <th>Usuari</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.activitat_recent.map((a) => (
-                <tr key={a.id}>
-                  <td>{a.tipus_nom}</td>
-                  <td>{a.resum || '—'}</td>
-                  <td>{formatDateTime(a.created_at)}</td>
-                  <td>{a.created_by || '—'}</td>
-                  <td>
-                    <Link to={`/${a.tipus_slug}/${a.id}`} style={{ fontSize: '0.85em' }}>Veure</Link>
-                  </td>
+          <div className="overflow-auto">
+            <table style={{ fontSize: '0.85rem' }}>
+              <thead>
+                <tr>
+                  <th>Tipus</th>
+                  <th>Codi</th>
+                  <th>Analista</th>
+                  <th>Modificat</th>
+                  <th>Per</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.activitat_recent.map((a) => (
+                  <tr
+                    key={a.id}
+                    onClick={() => navigate(`/${a.tipus_slug}/${a.id}`)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td>{a.tipus_nom}</td>
+                    <td>{a.codi || '—'}</td>
+                    <td>{a.analista || '—'}</td>
+                    <td>{formatDateTime(a.updated_at)}</td>
+                    <td>{a.updated_by || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </details>
       )}
 

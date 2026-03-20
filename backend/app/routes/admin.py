@@ -292,8 +292,8 @@ def crear_user():
         abort(400, description="email i password son obligatoris")
     if not nom:
         abort(400, description="El nom es obligatori")
-    if role not in ("admin", "user"):
-        abort(400, description="role ha de ser 'admin' o 'user'")
+    if role not in ("admin", "user", "viewer"):
+        abort(400, description="role ha de ser 'admin', 'user' o 'viewer'")
     if User.query.filter_by(email=email).first():
         abort(409, description=f"Ja existeix un usuari amb email '{email}'")
 
@@ -320,7 +320,7 @@ def editar_user(id):
         u.nom = data["nom"].strip()
     if "role" in data:
         if data["role"] not in ("admin", "user"):
-            abort(400, description="role ha de ser 'admin' o 'user'")
+            abort(400, description="role ha de ser 'admin', 'user' o 'viewer'")
         u.role = data["role"]
     if "password" in data and data["password"].strip():
         u.set_password(data["password"].strip())

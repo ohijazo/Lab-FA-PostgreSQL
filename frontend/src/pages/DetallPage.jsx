@@ -2,6 +2,9 @@ import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { obtenirAnalisi, eliminarAnalisi, obtenirConfig } from '../api/analisis'
 import AnalisisDetail from '../components/AnalisisDetail'
+import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
+import logoApp from '../logos/logoApp.png'
 
 function formatDate(val) {
   if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) {
@@ -30,6 +33,9 @@ function formatSummaryValue(camp, val) {
 export default function DetallPage() {
   const { tipus, id } = useParams()
   const navigate = useNavigate()
+  const { addToast } = useToast()
+  const { user } = useAuth()
+  const isViewer = user?.role === 'viewer'
   const [config, setConfig] = useState(null)
   const [analisi, setAnalisi] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -60,6 +66,7 @@ export default function DetallPage() {
     if (!confirm('Segur que vols eliminar aquesta anàlisi?')) return
     try {
       await eliminarAnalisi(tipus, id)
+      addToast('Anàlisi eliminada')
       navigate(`/${tipus}`)
     } catch (err) {
       setError(err.message)
@@ -79,7 +86,10 @@ export default function DetallPage() {
     <>
       <div className="print-header">
         <div className="print-header-top">
-          <h1>{config.nom}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4pt' }}>
+            <img src={logoApp} alt="Lab FC" style={{ height: '20pt', width: 'auto' }} />
+            <h1>{config.nom}</h1>
+          </div>
           {metaFields.some((n) => fieldMap[n]?.type === 'date') && (
             <span className="print-header-date">
               {formatSummaryValue(
@@ -114,8 +124,17 @@ export default function DetallPage() {
           )}
         </div>
         <div className="detall-toolbar-actions">
-          <Link to={`/${tipus}/${id}/editar`} role="button" className="outline">Editar</Link>
-          <button className="outline secondary" onClick={handleDelete}>Eliminar</button>
+          <button className="outline contrast" onClick={() => navigate(`/${tipus}`)}>Tornar a llista</button>
+          {!isViewer && (
+            <>
+              <Link to={`/${tipus}/${id}/editar`} role="button" className="outline">Editar</Link>
+              <button className="outline" onClick={() => {
+                const { id: _id, created_at, updated_at, created_by, updated_by, tipus: _t, ...dades } = analisi
+                navigate(`/${tipus}/nou`, { state: { duplicatDe: dades } })
+              }}>Duplicar</button>
+              <button className="outline secondary" onClick={handleDelete}>Eliminar</button>
+            </>
+          )}
           <button className="outline contrast" onClick={() => window.print()}>Imprimir</button>
         </div>
       </div>

@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request, session
 from sqlalchemy import func
 
 from app import db
-from app.models import Analisi, TipusAnalisi
+from app.models import Analisi, TipusAnalisi, User
 
 bp = Blueprint("dashboard", __name__)
 
@@ -31,7 +31,8 @@ def dashboard_global():
     # Load all analyses with their data field for date-based stats
     all_analisis = Analisi.query.with_entities(
         Analisi.id, Analisi.tipus, Analisi.created_at,
-        Analisi.dades, Analisi.created_by,
+        Analisi.dades, Analisi.created_by, Analisi.updated_at,
+        Analisi.updated_by,
     ).order_by(Analisi.created_at.desc()).all()
 
     # Current month/year prefixes
@@ -86,27 +87,40 @@ def dashboard_global():
             "ultima": ultima,
         })
 
-    # Recent activity: last 10 analyses
+    # Recent activity: last 10 analyses — include full row data
     activitat = []
-    for row in all_analisis[:10]:
+    # Collect columnes_llista + labels per type for the frontend
+    columnes_per_tipus = {}
+    for t in all_tipus:
+        cols = t.get_columnes_llista()
+        # Build label map from seccions/camps
+        label_map = {}
+        for s in t.seccions:
+            for c in s.camps:
+                label_map[c.name] = c.label
+        columnes_per_tipus[t.slug] = {"columnes": cols, "labels": label_map}
+
+    # Map email -> nom for display
+    email_to_nom = {u.email: u.nom for u in User.query.all()}
+
+    # Sort by updated_at for recent activity (most recently modified first)
+    recent = sorted(
+        [r for r in all_analisis if r.tipus in valid_slugs],
+        key=lambda r: r.updated_at or r.created_at or datetime.min,
+        reverse=True,
+    )[:10]
+
+    for row in recent:
         t = tipus_map.get(row.tipus)
         dades = row.dades or {}
-        # Build summary from columnes_llista
-        resum_parts = []
-        if t:
-            cols = t.get_columnes_llista()[:3]
-            for col in cols:
-                val = dades.get(col)
-                if val:
-                    resum_parts.append(f"{col}: {val}")
-        activitat.append({
-            "id": row.id,
-            "tipus_slug": row.tipus,
-            "tipus_nom": t.nom if t else row.tipus,
-            "created_at": row.created_at.isoformat() if row.created_at else None,
-            "created_by": row.created_by,
-            "resum": ", ".join(resum_parts) if resum_parts else None,
-        })
+        entry = dict(dades)
+        entry["id"] = row.id
+        entry["tipus_slug"] = row.tipus
+        entry["tipus_nom"] = t.nom if t else row.tipus
+        entry["updated_at"] = row.updated_at.isoformat() if row.updated_at else None
+        email = row.updated_by or row.created_by
+        entry["updated_by"] = email_to_nom.get(email, email)
+        activitat.append(entry)
 
     return jsonify({
         "total_analisis": total_analisis,
@@ -115,6 +129,7 @@ def dashboard_global():
         "ultima_analisi": ultima_global,
         "per_tipus": per_tipus,
         "activitat_recent": activitat,
+        "columnes_per_tipus": columnes_per_tipus,
     })
 
 

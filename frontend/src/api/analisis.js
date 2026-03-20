@@ -14,11 +14,14 @@ export async function obtenirConfig(tipus) {
 
 // --- CRUD ---
 
-export async function llistarAnalisis(tipus, { page = 1, per_page = 25, q = '', sort = '', sort_dir = '' } = {}) {
+export async function llistarAnalisis(tipus, { page = 1, per_page = 25, q = '', sort = '', sort_dir = '', filters = {} } = {}) {
   const params = new URLSearchParams({ page, per_page })
   if (q) params.set('q', q)
   if (sort) params.set('sort', sort)
   if (sort_dir) params.set('sort_dir', sort_dir)
+  for (const [key, val] of Object.entries(filters)) {
+    if (val) params.set(key, val)
+  }
   const res = await fetch(`/api/analisis/${tipus}?${params}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Error carregant anàlisis')
   return res.json()
@@ -37,7 +40,10 @@ export async function crearAnalisi(tipus, data) {
     credentials: 'include',
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Error creant anàlisi')
+  if (!res.ok) {
+    const info = await res.json().catch(() => null)
+    throw new Error(info?.error || 'Error creant anàlisi')
+  }
   return res.json()
 }
 
@@ -58,7 +64,10 @@ export async function editarAnalisi(tipus, id, data, expectedUpdatedAt) {
     err.conflict = info
     throw err
   }
-  if (!res.ok) throw new Error('Error editant anàlisi')
+  if (!res.ok) {
+    const info = await res.json().catch(() => null)
+    throw new Error(info?.error || 'Error editant anàlisi')
+  }
   return res.json()
 }
 

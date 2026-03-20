@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import LlistaPage from './pages/LlistaPage'
@@ -19,6 +20,12 @@ function AdminRoute({ children }) {
   return children
 }
 
+function WriteRoute({ children }) {
+  const { user } = useAuth()
+  if (user?.role === 'viewer') return <Navigate to="/" replace />
+  return children
+}
+
 function AppRoutes() {
   const { user } = useAuth()
 
@@ -34,9 +41,9 @@ function AppRoutes() {
         <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
         <Route path="/dashboard/:tipus" element={<DashboardPage />} />
         <Route path="/:tipus" element={<LlistaPage />} />
-        <Route path="/:tipus/nou" element={<NouAnalisiPage />} />
+        <Route path="/:tipus/nou" element={<WriteRoute><NouAnalisiPage /></WriteRoute>} />
         <Route path="/:tipus/:id" element={<DetallPage />} />
-        <Route path="/:tipus/:id/editar" element={<EditarAnalisiPage />} />
+        <Route path="/:tipus/:id/editar" element={<WriteRoute><EditarAnalisiPage /></WriteRoute>} />
       </Routes>
     </Layout>
   )
@@ -45,7 +52,9 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <ToastProvider>
+        <AppRoutes />
+      </ToastProvider>
     </AuthProvider>
   )
 }

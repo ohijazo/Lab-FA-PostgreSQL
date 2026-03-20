@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { crearAnalisi, obtenirConfig } from '../api/analisis'
 import AnalisisForm from '../components/AnalisisForm'
+import { useToast } from '../context/ToastContext'
 
 export default function NouAnalisiPage() {
   const { tipus } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { addToast } = useToast()
+  const duplicatDe = location.state?.duplicatDe || null
   const [config, setConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -23,10 +27,10 @@ export default function NouAnalisiPage() {
     setError(null)
     try {
       const result = await crearAnalisi(tipus, data)
+      addToast('Anàlisi creada correctament')
       navigate(`/${tipus}/${result.id}`)
     } catch (err) {
-      setError(err.message)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      addToast(err.message, 'error')
     } finally {
       setSubmitting(false)
     }
@@ -37,9 +41,15 @@ export default function NouAnalisiPage() {
 
   return (
     <>
-      <h2 style={{ marginBottom: '0.5rem' }}>Nova anàlisi — {config.nom}</h2>
-      {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
-      <AnalisisForm seccions={config.seccions} onSubmit={handleSubmit} submitting={submitting} />
+      <h2 style={{ marginBottom: '0.5rem' }}>
+        {duplicatDe ? 'Duplicar Anàlisi' : 'Nou Anàlisi'} — {config.nom}
+      </h2>
+      {duplicatDe && (
+        <p style={{ color: 'var(--pico-muted-color)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+          S'han copiat les dades de l'anàlisi original. Modifica el que calgui i desa.
+        </p>
+      )}
+      <AnalisisForm seccions={config.seccions} initialData={duplicatDe} onSubmit={handleSubmit} onCancel={() => navigate(`/${tipus}`)} submitting={submitting} />
     </>
   )
 }

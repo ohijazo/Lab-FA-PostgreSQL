@@ -4,6 +4,7 @@ import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, us
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { llistarCamps, crearCamp, editarCamp, eliminarCamp, reordenarCamps } from '../api/admin'
+import { useToast } from '../context/ToastContext'
 
 function SortableRow({ id, children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
@@ -23,6 +24,7 @@ function SortableRow({ id, children }) {
 export default function AdminCampsPage() {
   const { seccioId } = useParams()
   const navigate = useNavigate()
+  const { addToast } = useToast()
   const [camps, setCamps] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -93,8 +95,10 @@ export default function AdminCampsPage() {
     try {
       if (editingId) {
         await editarCamp(editingId, data)
+        addToast('Camp actualitzat')
       } else {
         await crearCamp(seccioId, data)
+        addToast('Camp creat')
       }
       resetForm()
       await fetchData()
@@ -108,6 +112,7 @@ export default function AdminCampsPage() {
     if (!confirm(`Eliminar camp "${label}"?`)) return
     try {
       await eliminarCamp(id)
+      addToast('Camp eliminat')
       await fetchData()
     } catch (err) {
       setError(err.message)

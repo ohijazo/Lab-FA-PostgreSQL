@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { alertaStyle } from '../utils/alertes'
 
 function formatCell(col, value, type) {
@@ -16,6 +16,8 @@ function formatCell(col, value, type) {
 }
 
 export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort }) {
+  const navigate = useNavigate()
+
   if (analisis.length === 0) {
     return <p>No hi ha anàlisis registrades.</p>
   }
@@ -50,12 +52,15 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
                 {labelMap[col] || col}{sortIndicator(col)}
               </th>
             ))}
-            <th></th>
           </tr>
         </thead>
         <tbody>
           {analisis.map((a) => (
-            <tr key={a.id}>
+            <tr
+              key={a.id}
+              onClick={() => navigate(`/${tipus}/${a.id}`)}
+              style={{ cursor: 'pointer' }}
+            >
               {columnes.map((col) => {
                 const camp = campMap[col]
                 return (
@@ -64,7 +69,6 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
                   </td>
                 )
               })}
-              <td><Link to={`/${tipus}/${a.id}`}>Veure</Link></td>
             </tr>
           ))}
         </tbody>

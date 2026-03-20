@@ -20,6 +20,17 @@ def login_required(f):
     return decorated
 
 
+def write_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "email" not in session:
+            return jsonify({"error": "No autenticat"}), 401
+        if session.get("role") == "viewer":
+            return jsonify({"error": "Accés de només lectura"}), 403
+        return f(*args, **kwargs)
+    return decorated
+
+
 def _get_tipus_or_404(slug):
     t = TipusAnalisi.query.filter_by(slug=slug).first()
     if not t:
@@ -62,6 +73,21 @@ def llistar(slug):
         query = query.filter(
             Analisi.dades.cast(db.Text).ilike(f"%{q}%")
         )
+
+    # Advanced filters: f_{name}=val, f_{name}_from=val, f_{name}_to=val
+    for key, val in request.args.items():
+        if not key.startswith("f_") or not val.strip():
+            continue
+        val = val.strip()
+        if key.endswith("_from"):
+            field = key[2:-5]  # strip f_ and _from
+            query = query.filter(Analisi.dades[field].as_string() >= val)
+        elif key.endswith("_to"):
+            field = key[2:-3]  # strip f_ and _to
+            query = query.filter(Analisi.dades[field].as_string() <= val)
+        else:
+            field = key[2:]  # strip f_
+            query = query.filter(Analisi.dades[field].as_string() == val)
 
     total = query.count()
 
@@ -265,13 +291,22 @@ def detall(slug, id):
 
 
 @bp.route("/api/analisis/<slug>", methods=["POST"])
-@login_required
+@write_required
 def crear(slug):
     _get_tipus_or_404(slug)
 
     data = request.get_json()
     for key in ("id", "created_at", "updated_at", "tipus", "created_by", "updated_by"):
         data.pop(key, None)
+
+    # Validate unique codi within this tipus
+    codi = data.get("codi", "").strip()
+    if codi:
+        existing = Analisi.query.filter_by(tipus=slug).filter(
+            Analisi.dades["codi"].as_string() == codi
+        ).first()
+        if existing:
+            return jsonify({"error": f"Ja existeix una anàlisi amb codi '{codi}' en aquest tipus"}), 409
 
     a = Analisi(tipus=slug, created_by=session.get("email"), updated_by=session.get("email"))
     a.set_dades(data)
@@ -281,7 +316,7 @@ def crear(slug):
 
 
 @bp.route("/api/analisis/<slug>/<int:id>", methods=["PUT"])
-@login_required
+@write_required
 def editar(slug, id):
     a = db.get_or_404(Analisi, id)
     if a.tipus != slug:
@@ -305,6 +340,16 @@ def editar(slug, id):
     for key in ("id", "created_at", "updated_at", "tipus", "created_by", "updated_by"):
         data.pop(key, None)
 
+    # Validate unique codi within this tipus (excluding current record)
+    codi = data.get("codi", "").strip()
+    if codi:
+        existing = Analisi.query.filter_by(tipus=slug).filter(
+            Analisi.dades["codi"].as_string() == codi,
+            Analisi.id != id,
+        ).first()
+        if existing:
+            return jsonify({"error": f"Ja existeix una anàlisi amb codi '{codi}' en aquest tipus"}), 409
+
     a.set_dades(data)
     a.updated_at = datetime.utcnow()
     a.updated_by = session.get("email")
@@ -313,7 +358,7 @@ def editar(slug, id):
 
 
 @bp.route("/api/analisis/<slug>/<int:id>", methods=["DELETE"])
-@login_required
+@write_required
 def eliminar(slug, id):
     a = db.get_or_404(Analisi, id)
     if a.tipus != slug:
@@ -328,7 +373,7 @@ def eliminar(slug, id):
 # --------------- Edit lock (presence) ---------------
 
 @bp.route("/api/analisis/<slug>/<int:id>/lock", methods=["POST"])
-@login_required
+@write_required
 def acquire_lock(slug, id):
     a = db.get_or_404(Analisi, id)
     if a.tipus != slug:
@@ -370,7 +415,7 @@ def acquire_lock(slug, id):
 
 
 @bp.route("/api/analisis/<slug>/<int:id>/lock", methods=["DELETE"])
-@login_required
+@write_required
 def release_lock(slug, id):
     email = session.get("email")
     EditLock.query.filter_by(analisi_id=id, user_email=email).delete()

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { llistarUsers, crearUser, editarUser, eliminarUser } from '../api/admin'
+import { useToast } from '../context/ToastContext'
 
 export default function AdminUsersPage() {
+  const { addToast } = useToast()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -44,8 +46,10 @@ export default function AdminUsersPage() {
         const data = { email: form.email, nom: form.nom, role: form.role }
         if (form.password) data.password = form.password
         await editarUser(editingId, data)
+        addToast('Usuari actualitzat')
       } else {
         await crearUser(form)
+        addToast('Usuari creat')
       }
       resetForm()
       await fetchData()
@@ -59,6 +63,7 @@ export default function AdminUsersPage() {
     if (!confirm(`Segur que vols eliminar l'usuari "${email}"?`)) return
     try {
       await eliminarUser(id)
+      addToast('Usuari eliminat')
       await fetchData()
     } catch (err) {
       setError(err.message)
@@ -123,8 +128,9 @@ export default function AdminUsersPage() {
             <label>
               Rol
               <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-                <option value="user">Usuari</option>
+                <option value="user">Editor</option>
                 <option value="admin">Administrador</option>
+                <option value="viewer">Lectura</option>
               </select>
             </label>
             <button type="submit">{editingId ? 'Desar canvis' : 'Crear'}</button>
@@ -149,7 +155,7 @@ export default function AdminUsersPage() {
               <tr key={u.id}>
                 <td>{u.email}</td>
                 <td><strong>{u.nom}</strong></td>
-                <td>{u.role === 'admin' ? 'Administrador' : 'Usuari'}</td>
+                <td>{u.role === 'admin' ? 'Administrador' : u.role === 'viewer' ? 'Lectura' : 'Editor'}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button className="outline" onClick={() => startEdit(u)}>Editar</button>

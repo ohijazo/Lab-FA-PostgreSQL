@@ -4,6 +4,7 @@ import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, us
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { obtenirTipusAdmin, llistarSeccions, crearSeccio, editarSeccio, eliminarSeccio, editarTipus, reordenarSeccions } from '../api/admin'
+import { useToast } from '../context/ToastContext'
 
 function SortableRow({ id, children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
@@ -22,6 +23,7 @@ function SortableRow({ id, children }) {
 
 export default function AdminSeccionsPage() {
   const { tipusId } = useParams()
+  const { addToast } = useToast()
   const [tipus, setTipus] = useState(null)
   const [seccions, setSeccions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -70,6 +72,7 @@ export default function AdminSeccionsPage() {
     setError(null)
     try {
       await editarTipus(tipusId, { columnes_llista: columnesLlista })
+      addToast('Columnes desades')
       await fetchData()
     } catch (err) {
       setError(err.message)
@@ -97,8 +100,10 @@ export default function AdminSeccionsPage() {
     try {
       if (editingId) {
         await editarSeccio(editingId, data)
+        addToast('Secció actualitzada')
       } else {
         await crearSeccio(tipusId, data)
+        addToast('Secció creada')
       }
       resetForm()
       await fetchData()
@@ -112,6 +117,7 @@ export default function AdminSeccionsPage() {
     if (!confirm(`Eliminar seccio "${titol}" i tots els seus camps?`)) return
     try {
       await eliminarSeccio(id)
+      addToast('Secció eliminada')
       await fetchData()
     } catch (err) {
       setError(err.message)
