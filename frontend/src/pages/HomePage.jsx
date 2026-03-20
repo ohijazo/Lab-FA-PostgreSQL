@@ -42,7 +42,7 @@ export default function HomePage() {
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div>
-          <h1 style={{ marginBottom: 0 }}>Lab FA</h1>
+          <h1 style={{ marginBottom: 0 }}>Lab FC</h1>
           <p>Gestió d'anàlisis de laboratori</p>
         </div>
         <button className="outline" onClick={() => {

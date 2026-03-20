@@ -13,7 +13,7 @@ def seed_admin():
     """Crea l'usuari admin si no existeix."""
     from app.models import User
 
-    email = os.environ.get("ADMIN_EMAIL", "admin@lab-fa.local")
+    email = os.environ.get("ADMIN_EMAIL", "admin@lab-fc.local")
     password = os.environ.get("ADMIN_PASSWORD", "changeme")
 
     if User.query.filter_by(email=email).first():
@@ -28,4 +28,5 @@ def seed_admin():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    debug = os.environ.get("FLASK_DEBUG", "1") == "1"
+    app.run(debug=debug, port=5000)

@@ -25,7 +25,7 @@ export default function LoginPage() {
     <main className="container" style={{ maxWidth: 400, marginTop: '10vh' }}>
       <article>
         <header>
-          <h2>Lab FA - Iniciar sessió</h2>
+          <h2>Lab FC - Iniciar sessió</h2>
         </header>
         <form onSubmit={handleSubmit}>
           <label>

@@ -2,7 +2,7 @@ import re
 from functools import wraps
 from flask import Blueprint, jsonify, request, abort, session
 from app import db
-from app.models import TipusAnalisi, Seccio, Camp, User
+from app.models import TipusAnalisi, Seccio, Camp, User, Analisi
 
 bp = Blueprint("admin", __name__)
 
@@ -80,6 +80,10 @@ def editar_tipus(id):
     if "slug" in data:
         new_slug = data["slug"].strip()
         if new_slug != t.slug:
+            # Prohibir canvi de slug si hi ha analisis vinculades
+            n_analisis = Analisi.query.filter_by(tipus=t.slug).count()
+            if n_analisis > 0:
+                return jsonify({"error": f"No es pot canviar el slug perque hi ha {n_analisis} analisis vinculades"}), 400
             existing = TipusAnalisi.query.filter_by(slug=new_slug).first()
             if existing:
                 return jsonify({"error": f"El slug '{new_slug}' ja existeix"}), 409

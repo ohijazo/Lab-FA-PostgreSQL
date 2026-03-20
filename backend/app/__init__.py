@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -13,7 +14,11 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    CORS(app, supports_credentials=True)
+
+    allowed_origins = os.environ.get(
+        "CORS_ORIGINS", "http://localhost:5173"
+    ).split(",")
+    CORS(app, supports_credentials=True, origins=allowed_origins)
 
     from app.routes.analisis import bp as analisis_bp
     from app.routes.admin import bp as admin_bp

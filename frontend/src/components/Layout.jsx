@@ -8,7 +8,7 @@ export default function Layout({ children }) {
     <>
       <nav className="container nav-sticky">
         <ul>
-          <li><strong><Link to="/">Lab FA</Link></strong></li>
+          <li><strong><Link to="/">Lab FC</Link></strong></li>
         </ul>
         <ul>
           {user?.role === 'admin' && (

@@ -93,6 +93,9 @@ class Seccio(db.Model):
 
 class Camp(db.Model):
     __tablename__ = "camp"
+    __table_args__ = (
+        db.UniqueConstraint("seccio_id", "name", name="uq_camp_seccio_name"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     seccio_id = db.Column(db.Integer, db.ForeignKey("seccio.id"), nullable=False)
@@ -145,7 +148,7 @@ class Analisi(db.Model):
         self.dades = data
 
     def to_dict(self):
-        d = self.get_dades()
+        d = dict(self.get_dades())
         d["id"] = self.id
         d["tipus"] = self.tipus
         d["created_at"] = self.created_at.isoformat() if self.created_at else None
