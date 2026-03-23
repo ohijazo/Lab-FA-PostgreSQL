@@ -33,7 +33,7 @@ export default function LoginPage() {
     <main className="container" style={{ maxWidth: 400, marginTop: '8vh' }}>
       <article>
         <header style={{ textAlign: 'center' }}>
-          <img src={logoApp} alt="Lab FC" style={{ width: 140, height: 'auto', marginBottom: '0.75rem' }} />
+          <img src={logoApp} alt="Lab FC" style={{ width: 220, height: 'auto', marginBottom: '0.75rem' }} />
           <h2 style={{ margin: 0 }}>Iniciar sessió</h2>
         </header>
         <form onSubmit={handleSubmit}>
