@@ -324,7 +324,7 @@ def crear(slug):
         if existing:
             return jsonify({"error": f"Ja existeix una anàlisi amb codi '{codi}' en aquest tipus"}), 409
 
-    a = Analisi(tipus=slug, created_by=session.get("email"), updated_by=session.get("email"))
+    a = Analisi(tipus=slug, created_by=session.get("nom"), updated_by=session.get("nom"))
     a.set_dades(data)
     db.session.add(a)
     db.session.commit()
@@ -368,7 +368,7 @@ def editar(slug, id):
 
     a.set_dades(data)
     a.updated_at = datetime.utcnow()
-    a.updated_by = session.get("email")
+    a.updated_by = session.get("nom")
     db.session.commit()
     return jsonify(a.to_dict())
 
