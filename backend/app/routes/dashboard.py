@@ -178,7 +178,7 @@ def _get_config(slug):
 
     # Detect group fields
     group_fields = []
-    priority = ["farina", "nom_farina", "fabrica", "nom_fabrica", "tipus_blat", "proveidor"]
+    priority = ["proveidor", "farina", "nom_farina", "fabrica", "nom_fabrica", "tipus_blat"]
     for p in priority:
         if any(name == p for name, _ in text_fields):
             group_fields.append(p)
@@ -191,7 +191,7 @@ def _get_config(slug):
             if len(group_fields) >= 2:
                 break
 
-    filter_field = group_fields[0] if group_fields else None
+    filter_fields = group_fields[:] if group_fields else []
 
     return {
         "nom": t.nom,
@@ -201,20 +201,23 @@ def _get_config(slug):
         "metric_keys": metric_keys[:4],
         "group_fields": group_fields,
         "field_seccio": field_seccio,
-        "filter_field": filter_field,
+        "filter_fields": filter_fields,
     }
 
 
-def _load_filtered_analisis(slug, filter_field, data_inici, data_fi, filter_val):
-    """Load filtered analisis as list of (id, dades dict)."""
+def _load_filtered_analisis(slug, filter_fields, data_inici, data_fi, filter_vals):
+    """Load filtered analisis as list of (id, dades dict).
+    filter_vals is a dict {field_name: value}."""
     query = Analisi.query.filter_by(tipus=slug)
 
     if data_inici:
         query = query.filter(Analisi.dades["data"].as_string() >= data_inici)
     if data_fi:
         query = query.filter(Analisi.dades["data"].as_string() <= data_fi)
-    if filter_val and filter_field:
-        query = query.filter(Analisi.dades[filter_field].as_string() == filter_val)
+    for ff in filter_fields:
+        val = filter_vals.get(ff, "")
+        if val:
+            query = query.filter(Analisi.dades[ff].as_string() == val)
 
     rows = query.with_entities(Analisi.id, Analisi.dades).all()
     return [(r[0], r[1] or {}) for r in rows]
@@ -229,30 +232,55 @@ def dashboard(slug):
 
     data_inici = request.args.get("data_inici")
     data_fi = request.args.get("data_fi")
-    filter_val = request.args.get("filtre", "").strip()
 
-    filter_field = config["filter_field"]
+    filter_fields = config["filter_fields"]
     numeric_fields = config["numeric_fields"]
     metric_keys = config["metric_keys"]
     group_fields = config["group_fields"]
     all_labels = config["all_fields"]
     field_seccio = config["field_seccio"]
 
-    # Filter options (all unique values, unfiltered by filter_val)
-    filter_options = []
-    if filter_field:
+    # Collect filter values from query params (filtre_<fieldname>=value)
+    filter_vals = {}
+    for ff in filter_fields:
+        val = request.args.get(f"filtre_{ff}", "").strip()
+        if val:
+            filter_vals[ff] = val
+
+    # Filter options per field — each field's options are filtered by the
+    # OTHER active filters (+ date range), so selections cascade dynamically.
+    filters_info = []
+    for ff in filter_fields:
         opts_query = db.session.query(
-            Analisi.dades[filter_field].as_string()
+            Analisi.dades[ff].as_string()
         ).filter(
             Analisi.tipus == slug,
-            Analisi.dades[filter_field].as_string().isnot(None),
-            Analisi.dades[filter_field].as_string() != "",
-            Analisi.dades[filter_field].as_string() != "-",
-        ).distinct().all()
-        filter_options = sorted(r[0] for r in opts_query if r[0])
+            Analisi.dades[ff].as_string().isnot(None),
+            Analisi.dades[ff].as_string() != "",
+            Analisi.dades[ff].as_string() != "-",
+        )
+        # Apply OTHER filters (not the current one)
+        for other_ff in filter_fields:
+            if other_ff != ff:
+                other_val = filter_vals.get(other_ff, "")
+                if other_val:
+                    opts_query = opts_query.filter(
+                        Analisi.dades[other_ff].as_string() == other_val
+                    )
+        # Apply date range
+        if data_inici:
+            opts_query = opts_query.filter(Analisi.dades["data"].as_string() >= data_inici)
+        if data_fi:
+            opts_query = opts_query.filter(Analisi.dades["data"].as_string() <= data_fi)
+        options = sorted(r[0] for r in opts_query.distinct().all() if r[0])
+        filters_info.append({
+            "field": ff,
+            "label": all_labels.get(ff, ff),
+            "options": options,
+        })
 
     # Load filtered data
-    records = _load_filtered_analisis(slug, filter_field, data_inici, data_fi, filter_val)
+    records = _load_filtered_analisis(slug, filter_fields, data_inici, data_fi, filter_vals)
     total = len(records)
 
     empty_response = {
@@ -266,9 +294,7 @@ def dashboard(slug):
         "metric_keys": metric_keys,
         "metric_labels": {mk: all_labels.get(mk, mk) for mk in metric_keys},
         "field_seccio": field_seccio,
-        "filter_field": filter_field,
-        "filter_label": all_labels.get(filter_field, filter_field) if filter_field else None,
-        "filter_options": filter_options,
+        "filters": filters_info,
     }
 
     if not records:
@@ -369,9 +395,7 @@ def dashboard(slug):
         "metric_keys": metric_keys,
         "metric_labels": metric_labels,
         "field_seccio": field_seccio,
-        "filter_field": filter_field,
-        "filter_label": all_labels.get(filter_field, filter_field) if filter_field else None,
-        "filter_options": filter_options,
+        "filters": filters_info,
     })
 
 

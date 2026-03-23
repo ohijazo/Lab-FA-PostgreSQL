@@ -14,32 +14,42 @@ export default function DashboardPage() {
   const [error, setError] = useState(null)
   const [dataInici, setDataInici] = useState('')
   const [dataFi, setDataFi] = useState('')
-  const [filtre, setFiltre] = useState('')
-  const [filterOptions, setFilterOptions] = useState([])
-  const [filterLabel, setFilterLabel] = useState('')
+  const [filtres, setFiltres] = useState({})  // { fieldName: value }
+  const [filtersInfo, setFiltersInfo] = useState([])  // [{ field, label, options }]
 
-  const carrega = (inici, fi, flt) => {
+  const carrega = (inici, fi, flts) => {
     setLoading(true)
     setError(null)
-    fetchDashboard(tipus, { data_inici: inici, data_fi: fi, filtre: flt })
+    fetchDashboard(tipus, { data_inici: inici, data_fi: fi, filtres: flts })
       .then((d) => {
         setData(d)
-        if (d.filter_options) setFilterOptions(d.filter_options)
-        if (d.filter_label) setFilterLabel(d.filter_label)
+        if (d.filters) setFiltersInfo(d.filters)
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    setFiltre('')
-    setFilterOptions([])
-    carrega('', '', '')
+    setFiltres({})
+    setFiltersInfo([])
+    carrega('', '', {})
   }, [tipus])
 
-  const handleFiltrar = (e) => {
-    e.preventDefault()
-    carrega(dataInici, dataFi, filtre)
+  // Reload automatically when any filter or date changes
+  const handleFilterChange = (field, value) => {
+    const newFiltres = { ...filtres, [field]: value }
+    setFiltres(newFiltres)
+    carrega(dataInici, dataFi, newFiltres)
+  }
+
+  const handleDataIniciChange = (value) => {
+    setDataInici(value)
+    carrega(value, dataFi, filtres)
+  }
+
+  const handleDataFiChange = (value) => {
+    setDataFi(value)
+    carrega(dataInici, value, filtres)
   }
 
   const groupEntries = data?.groups ? Object.entries(data.groups) : []
@@ -53,28 +63,31 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <form onSubmit={handleFiltrar} style={{ display: 'flex', gap: '0.75rem', alignItems: 'end', flexWrap: 'wrap', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'end', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <label style={{ margin: 0 }}>
           <small>Data inici</small>
-          <input type="date" value={dataInici} onChange={(e) => setDataInici(e.target.value)} style={{ marginBottom: 0 }} />
+          <input type="date" value={dataInici} onChange={(e) => handleDataIniciChange(e.target.value)} style={{ marginBottom: 0 }} />
         </label>
         <label style={{ margin: 0 }}>
           <small>Data fi</small>
-          <input type="date" value={dataFi} onChange={(e) => setDataFi(e.target.value)} style={{ marginBottom: 0 }} />
+          <input type="date" value={dataFi} onChange={(e) => handleDataFiChange(e.target.value)} style={{ marginBottom: 0 }} />
         </label>
-        {filterLabel && filterOptions.length > 0 && (
-          <label style={{ margin: 0 }}>
-            <small>{filterLabel}</small>
-            <select value={filtre} onChange={(e) => setFiltre(e.target.value)} style={{ marginBottom: 0 }}>
+        {filtersInfo.filter(f => f.options.length > 0).map((fi) => (
+          <label key={fi.field} style={{ margin: 0 }}>
+            <small>{fi.label}</small>
+            <select
+              value={filtres[fi.field] || ''}
+              onChange={(e) => handleFilterChange(fi.field, e.target.value)}
+              style={{ marginBottom: 0 }}
+            >
               <option value="">Totes</option>
-              {filterOptions.map((f) => (
-                <option key={f} value={f}>{f}</option>
+              {fi.options.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
           </label>
-        )}
-        <button type="submit" style={{ marginBottom: 0, padding: '0.4rem 1rem' }}>Filtrar</button>
-      </form>
+        ))}
+      </div>
 
       {loading && <p aria-busy="true">Carregant dashboard...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
