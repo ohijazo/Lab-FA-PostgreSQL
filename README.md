@@ -1,6 +1,6 @@
 # Lab FA - LIMS Harinera
 
-Sistema LIMS (Laboratory Information Management System) per registrar anàlisis de laboratori d'una harinera.
+Sistema LIMS (Laboratory Information Management System) per registrar anàlisis de laboratori d'una Farinera.
 
 ## Stack
 
