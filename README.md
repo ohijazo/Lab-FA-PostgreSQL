@@ -1,4 +1,4 @@
-# Lab FA - LIMS Harinera
+# Lab FA - LIMS Farinera
 
 Sistema LIMS (Laboratory Information Management System) per registrar anàlisis de laboratori d'una Farinera.
 
