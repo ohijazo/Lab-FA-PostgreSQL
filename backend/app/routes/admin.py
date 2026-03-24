@@ -100,6 +100,9 @@ def editar_tipus(id):
 @admin_required
 def eliminar_tipus(id):
     t = db.get_or_404(TipusAnalisi, id)
+    n = Analisi.query.filter_by(tipus=t.slug).count()
+    if n > 0:
+        return jsonify({"error": f"No es pot eliminar: hi ha {n} analisi(s) vinculades a aquest tipus"}), 400
     db.session.delete(t)
     db.session.commit()
     return jsonify({"ok": True})
@@ -168,6 +171,10 @@ def editar_seccio(id):
 @admin_required
 def eliminar_seccio(id):
     s = db.get_or_404(Seccio, id)
+    t = db.get_or_404(TipusAnalisi, s.tipus_id)
+    n = Analisi.query.filter_by(tipus=t.slug).count()
+    if n > 0:
+        return jsonify({"error": f"No es pot eliminar: hi ha {n} analisi(s) vinculades al tipus '{t.nom}'"}), 400
     db.session.delete(s)
     db.session.commit()
     return jsonify({"ok": True})
@@ -265,6 +272,11 @@ def editar_camp(id):
 @admin_required
 def eliminar_camp(id):
     c = db.get_or_404(Camp, id)
+    s = db.get_or_404(Seccio, c.seccio_id)
+    t = db.get_or_404(TipusAnalisi, s.tipus_id)
+    n = Analisi.query.filter_by(tipus=t.slug).count()
+    if n > 0:
+        return jsonify({"error": f"No es pot eliminar: hi ha {n} analisi(s) vinculades al tipus '{t.nom}'"}), 400
     db.session.delete(c)
     db.session.commit()
     return jsonify({"ok": True})
