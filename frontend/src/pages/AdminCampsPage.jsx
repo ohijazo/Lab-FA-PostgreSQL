@@ -143,7 +143,7 @@ export default function AdminCampsPage() {
     <>
       <nav aria-label="breadcrumb">
         <ul>
-          <li><Link to="/admin">Tipus</Link></li>
+          <li><Link to="/admin/tipus">Tipus</Link></li>
           <li><Link to="#" onClick={(e) => { e.preventDefault(); navigate(-1) }}>Seccions</Link></li>
           <li>Camps</li>
         </ul>

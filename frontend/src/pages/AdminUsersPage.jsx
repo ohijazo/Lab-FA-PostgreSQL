@@ -77,7 +77,7 @@ export default function AdminUsersPage() {
     <>
       <nav aria-label="breadcrumb">
         <ul>
-          <li><Link to="/admin">Configuracio</Link></li>
+          <li><Link to="/admin/tipus">Configuracio</Link></li>
           <li>Usuaris</li>
         </ul>
       </nav>

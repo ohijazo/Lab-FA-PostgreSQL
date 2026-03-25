@@ -63,7 +63,7 @@ export default function Layout({ children }) {
                 </a>
                 {configOpen && (
                   <div className="nav-dropdown-menu">
-                    <Link to="/admin" className="nav-dropdown-item" onClick={() => setConfigOpen(false)}>
+                    <Link to="/admin/tipus" className="nav-dropdown-item" onClick={() => setConfigOpen(false)}>
                       Tipus d'Anàlisi
                     </Link>
                     <Link to="/admin/users" className="nav-dropdown-item" onClick={() => setConfigOpen(false)}>

@@ -149,7 +149,7 @@ export default function AdminSeccionsPage() {
     <>
       <nav aria-label="breadcrumb">
         <ul>
-          <li><Link to="/admin">Tipus</Link></li>
+          <li><Link to="/admin/tipus">Tipus</Link></li>
           <li>{tipus.nom}</li>
         </ul>
       </nav>
