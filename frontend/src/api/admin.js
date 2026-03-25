@@ -145,6 +145,21 @@ export async function eliminarCamp(id) {
   return res.json()
 }
 
+// ---- Importacio Excel ----
+
+export async function importarAnalisis(tipusId, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await fetch(`${BASE}/tipus/${tipusId}/import`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || "Error importat fitxer")
+  return data
+}
+
 // ---- Usuaris ----
 
 export async function llistarUsers() {

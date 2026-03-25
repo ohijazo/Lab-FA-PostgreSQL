@@ -12,6 +12,7 @@ import AdminTipusPage from './pages/AdminTipusPage'
 import AdminSeccionsPage from './pages/AdminSeccionsPage'
 import AdminCampsPage from './pages/AdminCampsPage'
 import AdminUsersPage from './pages/AdminUsersPage'
+import AdminImportPage from './pages/AdminImportPage'
 import LoginPage from './pages/LoginPage'
 
 function AdminRoute({ children }) {
@@ -38,6 +39,7 @@ function AppRoutes() {
         <Route path="/admin" element={<AdminRoute><AdminTipusPage /></AdminRoute>} />
         <Route path="/admin/tipus/:tipusId/seccions" element={<AdminRoute><AdminSeccionsPage /></AdminRoute>} />
         <Route path="/admin/seccions/:seccioId/camps" element={<AdminRoute><AdminCampsPage /></AdminRoute>} />
+        <Route path="/admin/tipus/:tipusId/import" element={<AdminRoute><AdminImportPage /></AdminRoute>} />
         <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
         <Route path="/dashboard/:tipus" element={<DashboardPage />} />
         <Route path="/:tipus" element={<LlistaPage />} />

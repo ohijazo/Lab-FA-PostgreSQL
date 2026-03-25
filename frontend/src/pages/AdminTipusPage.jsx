@@ -137,6 +137,10 @@ export default function AdminTipusPage() {
                     <button className="outline secondary" onClick={() => handleDelete(t.id, t.nom)}>
                       Eliminar
                     </button>
+                    <span style={{ flex: 1 }}></span>
+                    <Link to={`/admin/tipus/${t.id}/import`} role="button" className="outline">
+                      Importar Dades
+                    </Link>
                   </div>
                 </td>
               </tr>

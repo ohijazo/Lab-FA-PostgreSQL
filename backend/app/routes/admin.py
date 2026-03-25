@@ -1,6 +1,9 @@
 import re
+import json
+from datetime import datetime
 from functools import wraps
 from flask import Blueprint, jsonify, request, abort, session
+from openpyxl import load_workbook
 from app import db
 from app.models import TipusAnalisi, Seccio, Camp, User, Analisi
 
@@ -280,6 +283,151 @@ def eliminar_camp(id):
     db.session.delete(c)
     db.session.commit()
     return jsonify({"ok": True})
+
+
+# ===================== IMPORTACIO EXCEL =====================
+
+@bp.route("/api/admin/tipus/<int:id>/import", methods=["POST"])
+@admin_required
+def importar_excel(id):
+    t = db.get_or_404(TipusAnalisi, id)
+
+    if "file" not in request.files:
+        return jsonify({"error": "No s'ha enviat cap fitxer"}), 400
+
+    file = request.files["file"]
+    if not file.filename.endswith((".xlsx", ".xls")):
+        return jsonify({"error": "El fitxer ha de ser .xlsx o .xls"}), 400
+
+    # Load camp config
+    all_camps = []
+    for seccio in t.seccions:
+        for camp in seccio.camps:
+            all_camps.append(camp)
+
+    # Build lookup: lowercase label -> camp, lowercase name -> camp
+    label_map = {}
+    name_map = {}
+    for c in all_camps:
+        label_map[c.label.strip().lower()] = c
+        name_map[c.name.strip().lower()] = c
+
+    try:
+        wb = load_workbook(file, read_only=True, data_only=True)
+        ws = wb.active
+    except Exception:
+        return jsonify({"error": "No s'ha pogut llegir el fitxer Excel"}), 400
+
+    rows = list(ws.iter_rows(values_only=True))
+    if len(rows) < 2:
+        return jsonify({"error": "El fitxer no te dades (nomes capçalera o buit)"}), 400
+
+    headers = [str(h).strip() if h is not None else "" for h in rows[0]]
+
+    # Match columns to camps
+    col_mapping = {}  # col_index -> Camp object
+    unrecognized = []
+    for idx, header in enumerate(headers):
+        h_lower = header.lower()
+        if h_lower in label_map:
+            col_mapping[idx] = label_map[h_lower]
+        elif h_lower in name_map:
+            col_mapping[idx] = name_map[h_lower]
+        elif header:
+            unrecognized.append(header)
+
+    if not col_mapping:
+        return jsonify({"error": "Cap columna de l'Excel coincideix amb els camps del tipus", "columnes_no_reconegudes": unrecognized}), 400
+
+    # Find required camps
+    required_camps = {c.name for c in all_camps if c.required}
+
+    # Get existing codis for dedup
+    existing_codis = set()
+    existing_analisis = Analisi.query.filter_by(tipus=t.slug).all()
+    for a in existing_analisis:
+        d = a.get_dades()
+        if "codi" in d and d["codi"]:
+            existing_codis.add(str(d["codi"]).strip().lower())
+
+    importats = 0
+    saltats = 0
+    errors = []
+    user_nom = session.get("nom", session.get("email", "import"))
+
+    for row_num, row in enumerate(rows[1:], start=2):
+        # Skip completely empty rows
+        if all(cell is None or str(cell).strip() == "" for cell in row):
+            continue
+
+        dades = {}
+        row_errors = []
+
+        for col_idx, camp in col_mapping.items():
+            val = row[col_idx] if col_idx < len(row) else None
+
+            if val is None or str(val).strip() == "":
+                if camp.name in required_camps:
+                    row_errors.append(f"Camp obligatori '{camp.label}' buit")
+                continue
+
+            # Type conversion
+            if camp.type == "number":
+                try:
+                    val = float(val)
+                    if val == int(val):
+                        val = int(val)
+                except (ValueError, TypeError):
+                    row_errors.append(f"Camp '{camp.label}': valor '{val}' no es numeric")
+                    continue
+            elif camp.type == "checkbox":
+                if isinstance(val, bool):
+                    val = val
+                elif isinstance(val, str):
+                    val = val.strip().lower() in ("true", "si", "sí", "1", "yes", "x")
+                else:
+                    val = bool(val)
+            elif camp.type == "date":
+                if isinstance(val, datetime):
+                    val = val.strftime("%Y-%m-%d")
+                else:
+                    val = str(val).strip()
+            else:
+                val = str(val).strip()
+
+            dades[camp.name] = val
+
+        if row_errors:
+            errors.append({"fila": row_num, "motiu": "; ".join(row_errors)})
+            continue
+
+        # Check duplicate codi
+        if "codi" in dades and dades["codi"]:
+            codi_lower = str(dades["codi"]).strip().lower()
+            if codi_lower in existing_codis:
+                saltats += 1
+                continue
+            existing_codis.add(codi_lower)
+
+        analisi = Analisi(
+            tipus=t.slug,
+            dades=dades,
+            created_by=user_nom,
+            updated_by=user_nom,
+        )
+        db.session.add(analisi)
+        importats += 1
+
+    db.session.commit()
+    wb.close()
+
+    return jsonify({
+        "importats": importats,
+        "saltats": saltats,
+        "errors": errors,
+        "columnes_reconegudes": [col_mapping[i].label for i in sorted(col_mapping.keys())],
+        "columnes_no_reconegudes": unrecognized,
+    })
 
 
 # ===================== USUARIS =====================
