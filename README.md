@@ -4,7 +4,7 @@ Sistema LIMS (Laboratory Information Management System) per registrar anàlisis 
 
 ## Stack
 
-- **Backend**: Python + Flask + SQLAlchemy + SQLite
+- **Backend**: Python + Flask + SQLAlchemy + PostgesSQL
 - **Frontend**: React + Vite + React Router + PicoCSS
 
 ## Com executar
