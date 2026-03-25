@@ -3,7 +3,9 @@ import json
 from datetime import datetime
 from functools import wraps
 from flask import Blueprint, jsonify, request, abort, session
-from openpyxl import load_workbook
+from io import BytesIO
+from flask import send_file
+from openpyxl import Workbook, load_workbook
 from app import db
 from app.models import TipusAnalisi, Seccio, Camp, User, Analisi
 
@@ -283,6 +285,111 @@ def eliminar_camp(id):
     db.session.delete(c)
     db.session.commit()
     return jsonify({"ok": True})
+
+
+# ===================== PLANTILLA EXCEL =====================
+
+@bp.route("/api/admin/tipus/<int:id>/plantilla", methods=["GET"])
+@admin_required
+def descarregar_plantilla(id):
+    t = db.get_or_404(TipusAnalisi, id)
+
+    all_labels = []
+    for seccio in t.seccions:
+        for camp in seccio.camps:
+            all_labels.append(camp.label)
+
+    if not all_labels:
+        return jsonify({"error": "Aquest tipus no te camps configurats"}), 400
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = t.nom
+    ws.append(all_labels)
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename = f"plantilla_{t.slug}.xlsx"
+    return send_file(output, download_name=filename, as_attachment=True,
+                     mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+
+# ===================== DUPLICAR TIPUS =====================
+
+@bp.route("/api/admin/tipus/<int:id>/duplicar", methods=["POST"])
+@admin_required
+def duplicar_tipus(id):
+    original = db.get_or_404(TipusAnalisi, id)
+
+    base_nom = f"{original.nom} (copia)"
+    base_slug = _slugify(base_nom)
+
+    # Assegurar slug unic
+    slug = base_slug
+    counter = 2
+    while TipusAnalisi.query.filter_by(slug=slug).first():
+        slug = f"{base_slug}_{counter}"
+        counter += 1
+
+    nou = TipusAnalisi(
+        nom=base_nom,
+        slug=slug,
+        descripcio=original.descripcio,
+        columnes_llista=original.get_columnes_llista(),
+    )
+    db.session.add(nou)
+    db.session.flush()
+
+    for seccio in original.seccions:
+        nova_seccio = Seccio(
+            tipus_id=nou.id,
+            titol=seccio.titol,
+            ordre=seccio.ordre,
+        )
+        db.session.add(nova_seccio)
+        db.session.flush()
+
+        for camp in seccio.camps:
+            nou_camp = Camp(
+                seccio_id=nova_seccio.id,
+                name=camp.name,
+                label=camp.label,
+                type=camp.type,
+                required=camp.required,
+                ordre=camp.ordre,
+                grup=camp.grup,
+                opcions=camp.opcions,
+                alerta_min=camp.alerta_min,
+                alerta_max=camp.alerta_max,
+                alerta_color_min=camp.alerta_color_min,
+                alerta_color_max=camp.alerta_color_max,
+            )
+            db.session.add(nou_camp)
+
+    db.session.commit()
+    return jsonify(nou.to_dict()), 201
+
+
+# ===================== ESTADISTIQUES =====================
+
+@bp.route("/api/admin/estadistiques", methods=["GET"])
+@admin_required
+def estadistiques():
+    tots_tipus = TipusAnalisi.query.order_by(TipusAnalisi.nom).all()
+    result = []
+    for t in tots_tipus:
+        count = Analisi.query.filter_by(tipus=t.slug).count()
+        ultima = db.session.query(db.func.max(Analisi.created_at)).filter_by(tipus=t.slug).scalar()
+        result.append({
+            "id": t.id,
+            "nom": t.nom,
+            "slug": t.slug,
+            "total_analisis": count,
+            "ultima_analisi": ultima.isoformat() if ultima else None,
+        })
+    return jsonify(result)
 
 
 # ===================== IMPORTACIO EXCEL =====================

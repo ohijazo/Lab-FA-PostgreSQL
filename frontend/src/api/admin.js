@@ -145,6 +145,45 @@ export async function eliminarCamp(id) {
   return res.json()
 }
 
+// ---- Plantilla Excel ----
+
+export async function descarregarPlantilla(tipusId) {
+  const res = await fetch(`${BASE}/tipus/${tipusId}/plantilla`, { credentials: 'include' })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.error || 'Error descarregant plantilla')
+  }
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = res.headers.get('content-disposition')?.match(/filename=(.+)/)?.[1] || 'plantilla.xlsx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// ---- Duplicar tipus ----
+
+export async function duplicarTipus(id) {
+  const res = await fetch(`${BASE}/tipus/${id}/duplicar`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.error || 'Error duplicant tipus')
+  }
+  return res.json()
+}
+
+// ---- Estadistiques ----
+
+export async function obtenirEstadistiques() {
+  const res = await fetch(`${BASE}/estadistiques`, { credentials: 'include' })
+  if (!res.ok) throw new Error('Error carregant estadistiques')
+  return res.json()
+}
+
 // ---- Importacio Excel ----
 
 export async function importarAnalisis(tipusId, file) {

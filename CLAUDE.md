@@ -1,229 +1,539 @@
-# Lab FA - LIMS Harinera
+# Lab FA - LIMS Farinera
 
 ## Objectiu
 
-Sistema LIMS (Laboratory Information Management System) per al laboratori d'una harinera. Permet registrar, consultar, editar i eliminar analisis de qualitat de diferents tipus de productes (blats, farines, bases, etc.).
+Sistema LIMS (Laboratory Information Management System) per al laboratori d'una farinera.
 
-El sistema es **totalment dinamic**: els tipus d'analisi, les seves seccions i els camps de cada seccio es gestionen des de la propia aplicacio (CRUD complet), sense tocar codi per afegir nous tipus.
+Permet registrar, consultar, editar i eliminar anàlisis de qualitat de diferents tipus de productes (blats, farines, bases, etc.).
+
+El sistema és **totalment dinàmic**: els tipus d'anàlisi, les seves seccions i els camps de cada secció es gestionen des de la pròpia aplicació (CRUD complet), sense tocar codi per afegir nous tipus.
+
+L'objectiu actual del projecte és deixar-lo preparat per funcionar en un **servidor Ubuntu** perquè hi pugui treballar **tota l'empresa** via xarxa o entorn corporatiu.
+
+---
+
+## Context actual del projecte
+
+El projecte va començar com una aplicació local senzilla, però ara està en procés d'evolució cap a una aplicació multiusuari desplegada en servidor.
+
+Això implica que qualsevol canvi ha de tenir en compte:
+
+* entorn de producció Linux / Ubuntu
+* ús concurrent per diversos usuaris
+* persistència robusta de dades
+* configuració de desplegament
+* estabilitat i mantenibilitat
+
+⚠️ Hi ha autenticació implementada (login obligatori per accedir a l'aplicació).
+
+Actualment:
+- existeix sistema de login
+- no hi ha rols avançats (admin vs operador complet)
+- la gestió d'usuaris és bàsica
+
+👉 Qualsevol canvi ha de respectar el sistema d'autenticació existent i no eliminar-lo ni simplificar-lo.
+
+---
 
 ## Stack
 
-| Capa | Tecnologia | Versio |
-|------|-----------|--------|
-| Backend | Python + Flask + Flask-SQLAlchemy | Python 3.13, Flask 3.1 |
-| Base de dades | SQLite | lab.db |
-| Frontend | React + React Router + Vite | React 19, Router 7, Vite 8 |
-| CSS | PicoCSS (CDN) + lab-fa.css custom | Pico v2 |
-| CORS | Flask-CORS | 5.0.1 |
+| Capa          | Tecnologia                        | Versió                     |
+| ------------- | --------------------------------- | -------------------------- |
+| Backend       | Python + Flask + Flask-SQLAlchemy | Python 3.13, Flask 3.1     |
+| Base de dades | PostgreSQL                        | entorn servidor            |
+| Frontend      | React + React Router + Vite       | React 19, Router 7, Vite 8 |
+| CSS           | PicoCSS (CDN) + lab-fa.css custom | Pico v2                    |
+| CORS          | Flask-CORS                        | 5.0.1                      |
 
-No hi ha autenticacio implementada.
+---
 
 ## Arquitectura
 
+### Desenvolupament actual
+
 ```
-frontend (localhost:5173)  -->  Vite proxy /api/*  -->  backend (localhost:5000)
-     React SPA                                           Flask + SQLite
+frontend (localhost:5173)
+    ↓ (Vite proxy /api/*)
+backend (localhost:5000)
+    ↓
+PostgreSQL
 ```
+
+### Objectiu de desplegament
+
+```
+Usuaris empresa
+    ↓
+Servidor Ubuntu
+    ↓
+Frontend React compilat / servit en producció
+    ↓
+Backend Flask
+    ↓
+PostgreSQL
+```
+
+El projecte ja no s'ha de pensar com una app purament local, sinó com una aplicació interna corporativa desplegada en servidor.
+
+---
+
+## Principi clau del sistema
+
+👉 **Tot és dinàmic i definit a base de dades**
+
+* NO existeixen formularis hardcodejats per cada tipus
+* NO s'han de crear nous tipus tocant codi
+* TOT passa per:
+
+  * tipus
+  * seccions
+  * camps
+
+Qualsevol canvi ha de respectar aquest model.
+
+---
 
 ## Estructura de fitxers
 
 ```
 lab-fa/
   backend/
-    run.py                          # Punt d'entrada: python run.py
-    seed.py                         # Script per poblar BD amb dades inicials
-    migrate_to_multi.py             # Migracio de l'antic esquema (ja executat)
-    requirements.txt                # Flask, Flask-SQLAlchemy, Flask-CORS
+    run.py
+    seed.py
+    migrate_to_multi.py
+    requirements.txt
     app/
-      __init__.py                   # App factory, registra blueprints
-      config.py                     # Config SQLite path
-      models.py                     # 4 models: TipusAnalisi, Seccio, Camp, Analisi
+      __init__.py
+      config.py
+      models.py
       routes/
-        analisis.py                 # API publica: /api/tipus, /api/analisis/:slug
-        admin.py                    # API admin: /api/admin/tipus, seccions, camps
+        analisis.py
+        admin.py
+
   frontend/
-    index.html                      # HTML shell amb PicoCSS CDN
-    vite.config.js                  # Proxy /api -> localhost:5000
+    index.html
+    vite.config.js
     package.json
     src/
-      main.jsx                      # Entry point, importa lab-fa.css
-      App.jsx                       # Routes: /, /admin/*, /:tipus/*
+      main.jsx
+      App.jsx
       api/
-        analisis.js                 # Fetch per tipus/config/CRUD analisis
-        admin.js                    # Fetch per CRUD tipus/seccions/camps
+        analisis.js
+        admin.js
       assets/
-        lab-fa.css                  # CSS custom sobre PicoCSS
+        lab-fa.css
       components/
-        Layout.jsx                  # Nav sticky amb dropdowns per tipus + link Configuracio
-        AnalisisForm.jsx            # Formulari generic conduit per seccions[].camps[]
-        AnalisisList.jsx            # Taula amb columnes dinamiques
-        AnalisisDetail.jsx          # Vista detall read-only
+        Layout.jsx
+        AnalisisForm.jsx
+        AnalisisList.jsx
+        AnalisisDetail.jsx
       pages/
-        HomePage.jsx                # Dashboard amb targetes per cada tipus
-        LlistaPage.jsx              # Llista paginada amb cerca
-        NouAnalisiPage.jsx          # Crear nova analisi
-        DetallPage.jsx              # Veure/eliminar analisi
-        EditarAnalisiPage.jsx       # Editar analisi
-        AdminTipusPage.jsx          # CRUD de tipus d'analisi
-        AdminSeccionsPage.jsx       # CRUD de seccions d'un tipus
-        AdminCampsPage.jsx          # CRUD de camps d'una seccio
+        HomePage.jsx
+        LlistaPage.jsx
+        NouAnalisiPage.jsx
+        DetallPage.jsx
+        EditarAnalisiPage.jsx
+        AdminTipusPage.jsx
+        AdminSeccionsPage.jsx
+        AdminCampsPage.jsx
 ```
+
+---
 
 ## Model de dades
 
-### Taules de configuracio (CRUD dinamic)
+### Taules de configuració dinàmica
 
 ```sql
 tipus_analisi
-  id              INTEGER PK
-  nom             VARCHAR(100) NOT NULL      -- "Blats T1", "Bases", etc.
-  slug            VARCHAR(50) UNIQUE INDEX   -- "blats_t1", "bases"
-  descripcio      VARCHAR(255)
-  columnes_llista TEXT                       -- JSON array: ["data","codi","analista"]
+  id                SERIAL / INTEGER PK
+  nom               VARCHAR(100) NOT NULL
+  slug              VARCHAR(50) UNIQUE INDEX
+  descripcio        VARCHAR(255)
+  columnes_llista   TEXT o JSON
+```
 
+```sql
 seccio
-  id              INTEGER PK
-  tipus_id        FK -> tipus_analisi.id     -- CASCADE DELETE
-  titol           VARCHAR(100) NOT NULL
-  ordre           INTEGER
+  id                SERIAL / INTEGER PK
+  tipus_id          FK -> tipus_analisi.id
+  titol             VARCHAR(100) NOT NULL
+  ordre             INTEGER
+```
 
+```sql
 camp
-  id              INTEGER PK
-  seccio_id       FK -> seccio.id            -- CASCADE DELETE
-  name            VARCHAR(100) NOT NULL      -- Nom intern: "min28_w"
-  label           VARCHAR(100) NOT NULL      -- Etiqueta UI: "28 min W"
-  type            VARCHAR(20) DEFAULT 'text' -- text, number, date, textarea, checkbox
-  required        BOOLEAN DEFAULT FALSE
-  ordre           INTEGER
+  id                SERIAL / INTEGER PK
+  seccio_id         FK -> seccio.id
+  name              VARCHAR(100) NOT NULL
+  label             VARCHAR(100) NOT NULL
+  type              VARCHAR(20) DEFAULT 'text'
+  required          BOOLEAN DEFAULT FALSE
+  ordre             INTEGER
 ```
 
 ### Taula de dades
 
 ```sql
 analisi
-  id              INTEGER PK
-  tipus           VARCHAR(50) INDEX          -- Slug del tipus: "blats_t1"
-  created_at      DATETIME
-  updated_at      DATETIME
-  dades           TEXT NOT NULL              -- JSON blob amb tots els valors
+  id                SERIAL / INTEGER PK
+  tipus             VARCHAR(50) INDEX
+  created_at        TIMESTAMP
+  updated_at        TIMESTAMP
+  dades             TEXT o JSON
 ```
 
-Les dades d'analisi es guarden com a JSON generic. Afegir un nou tipus no requereix canvi d'esquema.
+Les dades d'anàlisi es guarden de forma genèrica. Afegir un nou tipus no hauria de requerir canvi d'esquema.
+
+⚠️ Encara que es faci servir PostgreSQL, s'ha de preservar la flexibilitat del model dinàmic.
+
+---
 
 ## API
 
-### Publica
+### Pública
 
-| Metode | Ruta | Descripcio |
-|--------|------|------------|
-| GET | `/api/tipus` | Llistar tipus disponibles |
-| GET | `/api/tipus/:slug/config` | Config completa (seccions + camps) |
-| GET | `/api/analisis/:slug?page=&per_page=&q=` | Llistar paginat amb cerca |
-| GET | `/api/analisis/:slug/:id` | Detall |
-| POST | `/api/analisis/:slug` | Crear |
-| PUT | `/api/analisis/:slug/:id` | Editar |
-| DELETE | `/api/analisis/:slug/:id` | Eliminar |
+| Mètode | Ruta                                     | Descripció                |
+| ------ | ---------------------------------------- | ------------------------- |
+| GET    | `/api/tipus`                             | Llistar tipus disponibles |
+| GET    | `/api/tipus/:slug/config`                | Config completa del tipus |
+| GET    | `/api/analisis/:slug?page=&per_page=&q=` | Llistar paginat amb cerca |
+| GET    | `/api/analisis/:slug/:id`                | Detall                    |
+| POST   | `/api/analisis/:slug`                    | Crear                     |
+| PUT    | `/api/analisis/:slug/:id`                | Editar                    |
+| DELETE | `/api/analisis/:slug/:id`                | Eliminar                  |
 
 ### Admin
 
-| Metode | Ruta | Descripcio |
-|--------|------|------------|
-| GET/POST | `/api/admin/tipus` | Llistar / Crear tipus |
-| GET/PUT/DELETE | `/api/admin/tipus/:id` | Detall / Editar / Eliminar tipus |
-| GET/POST | `/api/admin/tipus/:tipusId/seccions` | Llistar / Crear seccions |
-| PUT/DELETE | `/api/admin/seccions/:id` | Editar / Eliminar seccio |
-| GET/POST | `/api/admin/seccions/:seccioId/camps` | Llistar / Crear camps |
-| PUT/DELETE | `/api/admin/camps/:id` | Editar / Eliminar camp |
+| Mètode         | Ruta                                  | Descripció                       |
+| -------------- | ------------------------------------- | -------------------------------- |
+| GET/POST       | `/api/admin/tipus`                    | Llistar / Crear tipus            |
+| GET/PUT/DELETE | `/api/admin/tipus/:id`                | Detall / Editar / Eliminar tipus |
+| GET/POST       | `/api/admin/tipus/:tipusId/seccions`  | Llistar / Crear seccions         |
+| PUT/DELETE     | `/api/admin/seccions/:id`             | Editar / Eliminar secció         |
+| GET/POST       | `/api/admin/seccions/:seccioId/camps` | Llistar / Crear camps            |
+| PUT/DELETE     | `/api/admin/camps/:id`                | Editar / Eliminar camp           |
+
+---
 
 ## Rutes frontend
 
-| Ruta | Pagina |
-|------|--------|
-| `/` | HomePage - dashboard amb targetes |
-| `/admin` | AdminTipusPage - gestio tipus |
-| `/admin/tipus/:tipusId/seccions` | AdminSeccionsPage |
-| `/admin/seccions/:seccioId/camps` | AdminCampsPage |
-| `/:tipus` | LlistaPage - llista paginada amb cerca |
-| `/:tipus/nou` | NouAnalisiPage |
-| `/:tipus/:id` | DetallPage |
-| `/:tipus/:id/editar` | EditarAnalisiPage |
+| Ruta                              | Pàgina            |
+| --------------------------------- | ----------------- |
+| `/`                               | HomePage          |
+| `/admin`                          | AdminTipusPage    |
+| `/admin/tipus/:tipusId/seccions`  | AdminSeccionsPage |
+| `/admin/seccions/:seccioId/camps` | AdminCampsPage    |
+| `/:tipus`                         | LlistaPage        |
+| `/:tipus/nou`                     | NouAnalisiPage    |
+| `/:tipus/:id`                     | DetallPage        |
+| `/:tipus/:id/editar`              | EditarAnalisiPage |
 
-## Decisions tecniques
+---
 
-1. **Config dinamica a BD**: Tipus/seccions/camps a la BD, CRUD via admin. No fitxers de config.
-2. **JSON blob**: `analisi.dades` es TEXT amb JSON. Flexibilitat total.
-3. **Components generics**: Form, Detail, List reben config via props. Zero camps hardcodejats.
-4. **Slug**: Identificador a URLs i a `analisi.tipus`. Auto-generat amb slugify.
-5. **Cascade delete**: Eliminar tipus -> elimina seccions i camps. Analisis NO (lligades per slug, no FK).
-6. **Cerca**: LIKE sobre JSON `dades`. Funcional, no optim per grans volums.
+## Decisions tècniques clau
 
-## Tipus d'analisi previstos
+1. Configuració dinàmica a BD
+2. Model flexible de dades
+3. Components genèrics
+4. Slug com a identificador
+5. Preparació per entorn multiusuari
+6. Compatibilitat backend/frontend
 
-| Tipus | Estat |
-|-------|-------|
-| Blats T1 | Creat (10 seccions, 30 camps) |
-| Blats | Pendent - crear des de /admin |
-| Bases | Pendent |
-| Dades fabrica | Pendent |
-| Finals | Pendent |
-| Farines MC | Pendent |
-| Queixes | Pendent |
-| Alienes | Pendent |
-| Estudis | Pendent |
-| Bipea | Pendent |
-| Segonet fi | Pendent |
+---
 
-## Dades actuals BD
+## Estat actual
 
-- 1 tipus: "Blats T1" (slug: `blats_t1`) amb 10 seccions i 30 camps
-- 1 registre analisi actiu (id=3, tipus=`blats_t1`)
-- 1 registre orfe (id=1, tipus=`blat_t1` - migracio antiga, no accessible)
-- Taula backup: `analisi_blat_t1_backup`
+* Migració a PostgreSQL en curs / completada
+* Preparació per desplegament en Ubuntu
+* Sistema funcional en desenvolupament
+* Sense autenticació encara
 
-## Proxims passos
+---
 
-### Funcionalitat
-- [ ] Crear tipus restants des de /admin
-- [ ] Ordenacio drag-and-drop per seccions/camps
-- [ ] Exportacio Excel/CSV
-- [ ] Importacio massiva des d'Excel
-- [ ] Validacions avancades per camp (min/max, regex)
+## Prioritats actuals
 
 ### Infraestructura
-- [ ] Autenticacio i rols (admin vs operador)
-- [ ] Neteja registre orfe i taula backup
-- [ ] Deploy produccio
 
-### UI/UX
-- [ ] Selector de camps per columnes_llista (ara es text lliure)
-- [ ] Breadcrumbs complets a admin
-- [ ] Toast/notificacio despres de crear/editar
-- [ ] Dashboard amb estadistiques
+* [ ] Stabilitzar PostgreSQL
+* [ ] Preparar deploy Ubuntu
+* [ ] Config producció
+* [ ] Servei backend
+* [ ] Build frontend
+* [ ] Variables d'entorn
 
-## Com executar
+### Funcionalitat
 
-Backend (terminal 1):
+* [ ] Crear tipus restants
+* [ ] Exportació Excel/CSV
+* [ ] Importació massiva
+* [ ] Validacions avançades
+* [ ] Drag & drop
+
+### Seguretat
+
+* [ ] Autenticació
+* [ ] Rols
+* [ ] Control accés
+
+---
+
+## Execució en desenvolupament
+
+### Backend
+
 ```powershell
-cd C:\Users\ohijazo.AGRIENERGIA\Projects\lab-fa\backend
+cd backend
 venv\Scripts\activate
 python run.py
 ```
 
-Frontend (terminal 2):
+### Frontend
+
 ```powershell
-cd C:\Users\ohijazo.AGRIENERGIA\Projects\lab-fa\frontend
+cd frontend
 npm run dev
 ```
 
-Seed (nomes si BD buida):
-```powershell
-cd C:\Users\ohijazo.AGRIENERGIA\Projects\lab-fa\backend
-venv\Scripts\activate
-python seed.py
-```
+---
 
-## Preferencies de l'usuari
+## Entorns
 
-- Idioma de la UI i comunicacio: **catala**
-- Entorn: **Windows 11, PowerShell** (no usar && per encadenar comandes)
-- L'usuari gestiona els tipus d'analisi des de l'app, no vol fitxers de config
+### Local
+
+* Windows 11
+* PowerShell
+* PostgreSQL
+
+### Producció
+
+* Ubuntu Server
+* Flask
+* PostgreSQL
+* Accés empresa
+
+---
+
+## Preferències
+
+* Idioma: català
+* Windows + PowerShell
+* Deploy Ubuntu
+
+⚠️ No usar `&&`
+
+---
+
+# NORMES PER CLAUDE CODE
+
+## Abans de fer canvis
+
+* Analitza codi existent
+* Explica pla si és complex
+* Fes canvis mínims
+* No refactoritzar innecessàriament
+
+---
+
+## Regla principal
+
+👉 NO TRENCAR EL MODEL DINÀMIC
+
+---
+
+## Backend
+
+* Respectar Flask actual
+* No dependències noves
+* Evitar migracions
+
+---
+
+## Base de dades
+
+* PostgreSQL obligatori
+* No assumir SQLite
+* Pensar en producció
+
+---
+
+## Frontend
+
+* Components genèrics
+* No hardcodejar
+* UI català
+
+---
+
+## API
+
+* No trencar contractes
+* Compatibilitat frontend
+
+---
+
+## Producció
+
+* Pensar en Ubuntu
+* Multiusuari
+* Variables entorn
+
+---
+
+## Estil de treball
+
+Sempre indicar:
+
+1. Fitxers
+2. Canvis
+3. Impacte
+4. Riscos
+
+---
+
+## Flux obligatori de treball
+
+Quan es demani qualsevol canvi:
+
+1. NO escriure codi directament
+2. Primer fer:
+   - resum del problema
+   - pla curt (passos)
+   - fitxers afectats
+   - riscos
+
+3. Esperar confirmació si el canvi és gran. Es considera canvi gran si afecta:
+   - models
+   - base de dades
+   - API
+   - autenticació
+   - desplegament
+   - més de 3 fitxers
+
+4. Implementar només després
+
+5. Després d'implementar:
+   - resum dels canvis
+   - impacte
+   - possibles problemes
+
+   També ha de confirmar:
+   - si manté compatibilitat amb PostgreSQL
+   - si manté el model dinàmic
+   - si requereix migració
+   - si afecta el desplegament a Ubuntu
+
+⚠️ Si no es segueix aquest flux, la resposta no és vàlida
+
+---
+
+## Anti-errors crítics
+
+Claude ha d'evitar explícitament:
+
+- Introduir lògica específica per un tipus (ex: if tipus == "blats")
+- Convertir el sistema dinàmic en estructures fixes
+- Afegir dependències innecessàries
+- Escriure codi pensat per SQLite
+- Fer queries incompatibles amb PostgreSQL
+- Canviar noms de camps o estructures JSON existents
+
+---
+
+## Mode revisió
+
+Claude ha d'actuar també com a revisor de codi:
+
+Per qualsevol canvi ha de validar:
+
+- arquitectura dinàmica intacta
+- compatibilitat PostgreSQL
+- compatibilitat frontend
+- impacte en producció (Ubuntu)
+- simplicitat de la solució
+
+Si detecta problemes, ha de dir-ho encara que no s'hagi demanat explícitament.
+
+---
+
+## Regla de mínima intervenció
+
+Sempre prioritzar:
+
+1. reutilitzar codi existent
+2. modificar el mínim possible
+3. evitar crear nous patrons si ja existeixen
+
+❌ No crear noves estructures si ja hi ha una forma establerta
+
+---
+
+## Quan hi ha dubtes
+
+Si falta informació:
+
+- no inventar
+- fer la mínima assumpció possible
+- indicar què falta
+
+---
+
+## Dependències
+
+- No afegir noves llibreries sense justificació clara
+- Si es proposa una nova dependència:
+  - explicar per què és necessària
+  - indicar alternatives sense dependència
+  - indicar impacte en producció
+
+---
+
+## Anti-sobreenginyeria
+
+Evitar:
+
+- solucions excessivament complexes
+- abstractions innecessàries
+- introduir patrons nous sense necessitat clara
+- optimitzacions prematures
+
+👉 Preferir sempre la solució més simple que funcioni
+
+---
+
+## Canvis a base de dades
+
+Qualsevol canvi que impliqui:
+
+- noves columnes
+- modificació de camps
+- migracions
+
+ha de:
+
+1. explicar impacte en dades existents
+2. indicar si és retrocompatible
+3. evitar pèrdua de dades
+
+⚠️ No aplicar canvis destructius sense avisar explícitament
+
+---
+
+## Validació final obligatòria
+
+Abans de donar un canvi per vàlid, Claude ha de verificar mentalment:
+
+- que el codi compilaria / funcionaria
+- que no introdueix errors evidents
+- que segueix l'estructura existent del projecte
+- que no ha oblidat imports, dependències o connexions
+
+Si hi ha dubtes, indicar-ho explícitament.
+
+---
+
+## Filosofia
+
+Sistema dinàmic, simple i controlat per BD
+
+👉 Prioritzar simplicitat i consistència
