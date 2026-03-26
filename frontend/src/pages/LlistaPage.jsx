@@ -3,8 +3,10 @@ import { useParams, Link } from 'react-router-dom'
 import { llistarAnalisis, obtenirConfig } from '../api/analisis'
 import AnalisisList from '../components/AnalisisList'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 
 export default function LlistaPage() {
+  const { t } = useTranslation()
   const { tipus } = useParams()
   const { user } = useAuth()
   const isViewer = user?.role === 'viewer'
@@ -119,22 +121,22 @@ export default function LlistaPage() {
     setFilters({})
   }
 
-  if (loading && !config) return <p aria-busy="true">Carregant...</p>
+  if (loading && !config) return <p aria-busy="true">{t('common.carregant')}</p>
   if (error) return <p>Error: {error}</p>
-  if (!config) return <p>Tipus no trobat.</p>
+  if (!config) return <p>{t('common.tipus_no_trobat')}</p>
 
   return (
     <>
       <hgroup>
         <h1>{config.nom}</h1>
-        <p>{data.total} anàlisis</p>
+        <p>{t('llista.analisis_count', { count: data.total })}</p>
       </hgroup>
 
       <div className="grid" style={{ alignItems: 'center' }}>
         <form onSubmit={handleSearch} role="search" style={{ marginBottom: 0 }}>
           <input
             type="search"
-            placeholder="Cercar..."
+            placeholder={t('llista.cercar')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
@@ -145,12 +147,12 @@ export default function LlistaPage() {
               className={activeFilterCount > 0 ? '' : 'outline'}
               onClick={() => setShowFilters((v) => !v)}
             >
-              Filtres{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+              {activeFilterCount > 0 ? t('llista.filtres_count', { count: activeFilterCount }) : t('llista.filtres')}
             </button>
           )}
-          {!isViewer && <Link to={`/${tipus}/nou`} role="button">Nou Anàlisi</Link>}
+          {!isViewer && <Link to={`/${tipus}/nou`} role="button">{t('llista.nou_analisi')}</Link>}
           <button className="outline" onClick={openExportDialog}>
-            Exportar Excel
+            {t('llista.exportar_excel')}
           </button>
         </div>
       </div>
@@ -158,10 +160,10 @@ export default function LlistaPage() {
       {showFilters && filterableCamps.length > 0 && (
         <div style={{ border: '1px solid var(--lab-border)', borderRadius: '0.375rem', padding: '0.75rem', marginBottom: '0.75rem', background: 'var(--lab-bg-subtle)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <strong style={{ fontSize: '0.85rem' }}>Filtres avançats</strong>
+            <strong style={{ fontSize: '0.85rem' }}>{t('llista.filtres_avancats')}</strong>
             {activeFilterCount > 0 && (
               <button className="outline secondary" style={{ padding: '0.2rem 0.6rem', fontSize: '0.8rem', margin: 0 }} onClick={clearFilters}>
-                Netejar filtres
+                {t('llista.netejar_filtres')}
               </button>
             )}
           </div>
@@ -198,7 +200,7 @@ export default function LlistaPage() {
                       onChange={(e) => updateFilter(`f_${c.name}`, e.target.value)}
                       style={{ marginBottom: 0, padding: '0.25rem 0.4rem', fontSize: '0.85rem' }}
                     >
-                      <option value="">Tots</option>
+                      <option value="">{t('common.tots')}</option>
                       {(c.opcions || []).map((op) => (
                         <option key={op} value={op}>{op}</option>
                       ))}
@@ -215,12 +217,12 @@ export default function LlistaPage() {
       <dialog ref={dialogRef}>
         <article>
           <header>
-            <button aria-label="Tancar" rel="prev" onClick={closeExportDialog}></button>
-            <h3>Exportar Excel — {config.nom}</h3>
+            <button aria-label={t('common.tancar')} rel="prev" onClick={closeExportDialog}></button>
+            <h3>{t('llista.exportar_excel_titol', { nom: config.nom })}</h3>
           </header>
 
           <label>
-            De
+            {t('common.de')}
             <input
               type="date"
               value={exportDateFrom}
@@ -228,7 +230,7 @@ export default function LlistaPage() {
             />
           </label>
           <label>
-            A
+            {t('common.a')}
             <input
               type="date"
               value={exportDateTo}
@@ -237,18 +239,18 @@ export default function LlistaPage() {
           </label>
 
           {q && (
-            <p><small>Filtre de cerca actiu: <strong>{q}</strong></small></p>
+            <p><small>{t('llista.filtre_cerca_actiu', { q })}</small></p>
           )}
 
           <footer>
-            <button className="secondary" onClick={closeExportDialog}>Cancel·lar</button>
-            <button onClick={handleExport}>Exportar</button>
+            <button className="secondary" onClick={closeExportDialog}>{t('common.cancellar')}</button>
+            <button onClick={handleExport}>{t('common.exportar')}</button>
           </footer>
         </article>
       </dialog>
 
       {loading ? (
-        <p aria-busy="true">Carregant...</p>
+        <p aria-busy="true">{t('common.carregant')}</p>
       ) : (
         <>
           <AnalisisList
@@ -267,15 +269,15 @@ export default function LlistaPage() {
                 disabled={page <= 1}
                 onClick={() => setPage((p) => p - 1)}
               >
-                Anterior
+                {t('llista.anterior')}
               </button>
-              <span>Pàgina {data.page} de {data.pages}</span>
+              <span>{t('llista.pagina_de', { page: data.page, pages: data.pages })}</span>
               <button
                 className="outline"
                 disabled={page >= data.pages}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Següent
+                {t('llista.seguent')}
               </button>
             </nav>
           )}

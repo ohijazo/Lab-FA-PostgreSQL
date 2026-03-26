@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { llistarTipusAdmin, crearTipus, editarTipus, eliminarTipus, descarregarPlantilla, duplicarTipus, obtenirEstadistiques } from '../api/admin'
 import { useToast } from '../context/ToastContext'
 
 export default function AdminTipusPage() {
+  const { t, i18n } = useTranslation()
   const { addToast } = useToast()
   const [tipus, setTipus] = useState([])
   const [stats, setStats] = useState([])
@@ -47,10 +49,10 @@ export default function AdminTipusPage() {
     try {
       if (editingId) {
         await editarTipus(editingId, form)
-        addToast('Tipus actualitzat')
+        addToast(t('admin_tipus.tipus_actualitzat'))
       } else {
         await crearTipus(form)
-        addToast('Tipus creat')
+        addToast(t('admin_tipus.tipus_creat'))
       }
       resetForm()
       await fetchData()
@@ -61,10 +63,10 @@ export default function AdminTipusPage() {
   }
 
   async function handleDuplicar(id, nom) {
-    if (!confirm(`Duplicar "${nom}" amb totes les seves seccions i camps?`)) return
+    if (!confirm(t('admin_tipus.confirm_duplicar', { nom }))) return
     try {
       await duplicarTipus(id)
-      addToast('Tipus duplicat')
+      addToast(t('admin_tipus.tipus_duplicat'))
       await fetchData()
     } catch (err) {
       setError(err.message)
@@ -86,10 +88,10 @@ export default function AdminTipusPage() {
   }
 
   async function handleDelete(id, nom) {
-    if (!confirm(`Segur que vols eliminar "${nom}"? S'eliminaran totes les seccions i camps associats.`)) return
+    if (!confirm(t('admin_tipus.confirm_eliminar', { nom }))) return
     try {
       await eliminarTipus(id)
-      addToast('Tipus eliminat')
+      addToast(t('admin_tipus.tipus_eliminat'))
       await fetchData()
     } catch (err) {
       setError(err.message)
@@ -97,27 +99,27 @@ export default function AdminTipusPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">Carregant...</p>
+  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
 
   return (
     <>
       <hgroup>
-        <h1>Configuracio - Tipus d'analisi</h1>
-        <p>Gestiona els tipus d'analisi, les seves seccions i camps</p>
+        <h1>{t('admin_tipus.titol')}</h1>
+        <p>{t('admin_tipus.subtitol')}</p>
       </hgroup>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
 
       <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
-        {showForm ? 'Cancel·lar' : 'Nou tipus'}
+        {showForm ? t('common.cancellar') : t('admin_tipus.nou_tipus')}
       </button>
 
       {showForm && (
         <form onSubmit={handleSubmit}>
           <fieldset>
-            <legend><strong>{editingId ? 'Editar tipus' : 'Nou tipus'}</strong></legend>
+            <legend><strong>{editingId ? t('admin_tipus.editar_tipus') : t('admin_tipus.nou_tipus')}</strong></legend>
             <label>
-              Nom
+              {t('common.nom')}
               <input
                 type="text"
                 value={form.nom}
@@ -126,66 +128,66 @@ export default function AdminTipusPage() {
               />
             </label>
             <label>
-              Descripcio
+              {t('admin_tipus.descripcio')}
               <input
                 type="text"
                 value={form.descripcio}
                 onChange={e => setForm({ ...form, descripcio: e.target.value })}
               />
             </label>
-            <button type="submit">{editingId ? 'Desar canvis' : 'Crear'}</button>
+            <button type="submit">{editingId ? t('common.desar_canvis') : t('common.crear')}</button>
           </fieldset>
         </form>
       )}
 
       {tipus.length === 0 ? (
-        <p>No hi ha tipus d'analisi. Crea'n un per comencar.</p>
+        <p>{t('admin_tipus.no_tipus')}</p>
       ) : (
         <table>
           <thead>
             <tr>
-              <th>Nom</th>
-              <th>Slug</th>
-              <th>Descripcio</th>
-              <th>Analisis</th>
-              <th>Ultima</th>
-              <th>Accions</th>
-              <th>Dades</th>
+              <th>{t('common.nom')}</th>
+              <th>{t('admin_tipus.slug')}</th>
+              <th>{t('admin_tipus.descripcio')}</th>
+              <th>{t('admin_tipus.analisis')}</th>
+              <th>{t('admin_tipus.ultima')}</th>
+              <th>{t('common.accions')}</th>
+              <th>{t('admin_tipus.dades')}</th>
             </tr>
           </thead>
           <tbody>
-            {tipus.map(t => {
-              const st = getStats(t.id)
+            {tipus.map(tp => {
+              const st = getStats(tp.id)
               return (
-                <tr key={t.id}>
-                  <td><strong>{t.nom}</strong></td>
-                  <td><code>{t.slug}</code></td>
-                  <td>{t.descripcio}</td>
+                <tr key={tp.id}>
+                  <td><strong>{tp.nom}</strong></td>
+                  <td><code>{tp.slug}</code></td>
+                  <td>{tp.descripcio}</td>
                   <td>{st.total_analisis}</td>
-                  <td>{st.ultima_analisi ? new Date(st.ultima_analisi).toLocaleDateString('ca-ES') : '—'}</td>
+                  <td>{st.ultima_analisi ? new Date(st.ultima_analisi).toLocaleDateString(i18n.language === 'es' ? 'es-ES' : 'ca-ES') : '—'}</td>
                   <td>
                     <div className="admin-actions-row">
-                      <Link to={`/admin/tipus/${t.id}/seccions`} role="button" className="outline btn-sm" title="Gestionar les seccions i camps d'aquest tipus">
-                        Seccions
+                      <Link to={`/admin/tipus/${tp.id}/seccions`} role="button" className="outline btn-sm" title={t('admin_tipus.title_seccions')}>
+                        {t('admin_tipus.seccions')}
                       </Link>
-                      <button className="outline btn-sm" onClick={() => startEdit(t)} title="Editar el nom i la descripció del tipus">
-                        Editar
+                      <button className="outline btn-sm" onClick={() => startEdit(tp)} title={t('admin_tipus.title_editar')}>
+                        {t('common.editar')}
                       </button>
-                      <button className="outline btn-sm" onClick={() => handleDuplicar(t.id, t.nom)} title="Crear una còpia d'aquest tipus amb totes les seccions i camps">
-                        Duplicar
+                      <button className="outline btn-sm" onClick={() => handleDuplicar(tp.id, tp.nom)} title={t('admin_tipus.title_duplicar')}>
+                        {t('common.duplicar')}
                       </button>
-                      <button className="outline secondary btn-sm" onClick={() => handleDelete(t.id, t.nom)} title="Eliminar el tipus i totes les seves seccions i camps">
-                        Eliminar
+                      <button className="outline secondary btn-sm" onClick={() => handleDelete(tp.id, tp.nom)} title={t('admin_tipus.title_eliminar')}>
+                        {t('common.eliminar')}
                       </button>
                     </div>
                   </td>
                   <td>
                     <div className="admin-actions-row">
-                      <button className="outline contrast btn-xs" onClick={() => handlePlantilla(t.id)} title="Descarrega un Excel buit amb les capçaleres correctes per omplir i després importar les dades">
-                        Descarregar Plantilla
+                      <button className="outline contrast btn-xs" onClick={() => handlePlantilla(tp.id)} title={t('admin_tipus.title_plantilla')}>
+                        {t('admin_tipus.descarregar_plantilla')}
                       </button>
-                      <Link to={`/admin/tipus/${t.id}/import`} role="button" className="contrast btn-xs" title="Importa dades des d'un Excel. Utilitza la plantilla per assegurar el format correcte">
-                        Importar Dades
+                      <Link to={`/admin/tipus/${tp.id}/import`} role="button" className="contrast btn-xs" title={t('admin_tipus.title_importar')}>
+                        {t('admin_tipus.importar_dades')}
                       </Link>
                     </div>
                   </td>

@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import i18n from '../i18n/index.js'
 import { obtenirAnalisi, eliminarAnalisi, obtenirConfig } from '../api/analisis'
 import AnalisisDetail from '../components/AnalisisDetail'
 import QRCode from '../components/QRCode'
@@ -32,6 +34,7 @@ function formatSummaryValue(camp, val) {
 }
 
 export default function DetallPage() {
+  const { t } = useTranslation()
   const { tipus, id } = useParams()
   const navigate = useNavigate()
   const { addToast } = useToast()
@@ -64,24 +67,26 @@ export default function DetallPage() {
   }, [config])
 
   async function handleDelete() {
-    if (!confirm('Segur que vols eliminar aquesta anàlisi?')) return
+    if (!confirm(t('detall.confirm_eliminar'))) return
     try {
       await eliminarAnalisi(tipus, id)
-      addToast('Anàlisi eliminada')
+      addToast(t('detall.analisi_eliminada'))
       navigate(`/${tipus}`)
     } catch (err) {
       setError(err.message)
     }
   }
 
-  if (loading) return <p aria-busy="true">Carregant...</p>
+  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
   if (error) return <p>Error: {error}</p>
-  if (!analisi) return <p>No trobat.</p>
+  if (!analisi) return <p>{t('common.no_trobat')}</p>
 
   const titleValue = titleField ? (analisi[titleField] || `#${analisi.id}`) : `#${analisi.id}`
   const metaItems = metaFields
     .map((name) => formatSummaryValue(fieldMap[name], analisi[name]))
     .filter((v) => v !== '—')
+
+  const dateLocale = i18n.language === 'es' ? 'es-ES' : 'ca-ES'
 
   return (
     <>
@@ -90,7 +95,7 @@ export default function DetallPage() {
           <img src={logoApp} alt="Lab FC" className="print-logo" />
           <div>
             <h1 className="print-title">{config.nom}</h1>
-            <p className="print-subtitle">Informe d'anàlisi</p>
+            <p className="print-subtitle">{t('detall.informe_analisi')}</p>
           </div>
         </div>
         <div className="print-meta-grid">
@@ -115,27 +120,27 @@ export default function DetallPage() {
           )}
           {(analisi.created_by || analisi.updated_by) && (
             <div style={{ fontSize: '0.85em', marginTop: '0.25rem', color: 'var(--pico-muted-color)' }}>
-              {analisi.created_by && <span>Creat per: {analisi.created_by}</span>}
+              {analisi.created_by && <span>{t('detall.creat_per', { nom: analisi.created_by })}</span>}
               {analisi.created_by && analisi.updated_by && analisi.updated_by !== analisi.created_by && ' | '}
               {analisi.updated_by && analisi.updated_by !== analisi.created_by && (
-                <span>Modificat per: {analisi.updated_by}</span>
+                <span>{t('detall.modificat_per', { nom: analisi.updated_by })}</span>
               )}
             </div>
           )}
         </div>
         <div className="detall-toolbar-actions">
-          <button className="outline contrast" onClick={() => navigate(`/${tipus}`)}>Tornar a llista</button>
+          <button className="outline contrast" onClick={() => navigate(`/${tipus}`)}>{t('detall.tornar_llista')}</button>
           {!isViewer && (
             <>
-              <Link to={`/${tipus}/${id}/editar`} role="button" className="outline">Editar</Link>
+              <Link to={`/${tipus}/${id}/editar`} role="button" className="outline">{t('common.editar')}</Link>
               <button className="outline" onClick={() => {
                 const { id: _id, created_at, updated_at, created_by, updated_by, tipus: _t, ...dades } = analisi
                 navigate(`/${tipus}/nou`, { state: { duplicatDe: dades } })
-              }}>Duplicar</button>
-              <button className="outline secondary" onClick={handleDelete}>Eliminar</button>
+              }}>{t('common.duplicar')}</button>
+              <button className="outline secondary" onClick={handleDelete}>{t('common.eliminar')}</button>
             </>
           )}
-          <button className="outline contrast" onClick={() => window.print()}>Imprimir</button>
+          <button className="outline contrast" onClick={() => window.print()}>{t('detall.imprimir')}</button>
         </div>
       </div>
       <AnalisisDetail seccions={config.seccions} analisi={analisi} />

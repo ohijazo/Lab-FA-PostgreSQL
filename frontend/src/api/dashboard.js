@@ -1,6 +1,12 @@
+import i18n from '../i18n/index.js'
+
+function langHeaders() {
+  return { 'Accept-Language': i18n.language || 'ca' }
+}
+
 export async function fetchDashboardGlobal() {
-  const res = await fetch('/api/dashboard/global', { credentials: 'include' })
-  if (!res.ok) throw new Error('Error carregant dashboard global')
+  const res = await fetch('/api/dashboard/global', { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) throw new Error(i18n.t('errors.carregant_dashboard'))
   return res.json()
 }
 
@@ -15,7 +21,7 @@ export async function fetchDashboard(slug, params = {}) {
     }
   }
   const url = `/api/dashboard/${slug}` + (qs.toString() ? `?${qs}` : '')
-  const res = await fetch(url, { credentials: 'include' })
-  if (!res.ok) throw new Error('Error carregant dashboard')
+  const res = await fetch(url, { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) throw new Error(i18n.t('errors.carregant_dashboard'))
   return res.json()
 }

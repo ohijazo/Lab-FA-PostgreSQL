@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { findByCodi } from '../api/analisis'
 
 // Load BarcodeDetector: native if available, otherwise polyfill from CDN
@@ -20,6 +21,7 @@ async function getBarcodeDetector() {
 
 export default function BarcodeScanner({ open, onClose }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const dialogRef = useRef(null)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
@@ -58,17 +60,17 @@ export default function BarcodeScanner({ open, onClose }) {
   const goToAnalisi = useCallback(async (codi) => {
     setSearching(true)
     setError('')
-    setStatus(`Cercant "${codi}"...`)
+    setStatus(t('escaner.cercant', { codi }))
     try {
       const { id, tipus } = await findByCodi(codi)
       handleClose()
       navigate(`/${tipus}/${id}`)
     } catch (err) {
-      setError(err.message || 'No trobat')
+      setError(err.message || t('escaner.no_trobat'))
       setStatus('')
       setSearching(false)
     }
-  }, [navigate, handleClose])
+  }, [navigate, handleClose, t])
 
   // Open/close dialog
   useEffect(() => {
@@ -88,7 +90,7 @@ export default function BarcodeScanner({ open, onClose }) {
     let cancelled = false
 
     async function startCamera() {
-      setStatus('Carregant detector de codis...')
+      setStatus(t('escaner.carregant_detector'))
       setUseManual(false)
       setError('')
 
@@ -98,11 +100,11 @@ export default function BarcodeScanner({ open, onClose }) {
       if (!DetectorClass) {
         setUseManual(true)
         setStatus('')
-        setError('El navegador no suporta detecció de codis de barres. Introdueix el codi manualment.')
+        setError(t('escaner.no_suportat'))
         return
       }
 
-      setStatus('Iniciant càmera...')
+      setStatus(t('escaner.iniciant_camera'))
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'environment' }
@@ -115,7 +117,7 @@ export default function BarcodeScanner({ open, onClose }) {
         if (videoRef.current) {
           videoRef.current.srcObject = stream
         }
-        setStatus('Apunta al codi de barres...')
+        setStatus(t('escaner.apunta_codi'))
 
         const detector = new DetectorClass({ formats: ['qr_code', 'code_128', 'ean_13', 'ean_8'] })
 
@@ -139,7 +141,7 @@ export default function BarcodeScanner({ open, onClose }) {
         if (!cancelled) {
           setUseManual(true)
           setStatus('')
-          setError('No s\'ha pogut accedir a la càmera. Introdueix el codi manualment.')
+          setError(t('escaner.no_camera'))
         }
       }
     }
@@ -150,7 +152,7 @@ export default function BarcodeScanner({ open, onClose }) {
       cancelled = true
       stopCamera()
     }
-  }, [open, goToAnalisi, stopCamera])
+  }, [open, goToAnalisi, stopCamera, t])
 
   const handleManualSubmit = (e) => {
     e.preventDefault()
@@ -167,11 +169,11 @@ export default function BarcodeScanner({ open, onClose }) {
       <article className="scanner-content">
         <header>
           <button
-            aria-label="Tancar"
+            aria-label={t('common.tancar')}
             className="close"
             onClick={handleClose}
           />
-          Escàner de codi de barres
+          {t('escaner.titol')}
         </header>
 
         {!useManual && (
@@ -185,18 +187,18 @@ export default function BarcodeScanner({ open, onClose }) {
 
         {useManual && (
           <form onSubmit={handleManualSubmit} className="scanner-manual">
-            <label htmlFor="manual-codi">Codi de l'anàlisi</label>
+            <label htmlFor="manual-codi">{t('escaner.codi_analisi')}</label>
             <input
               id="manual-codi"
               type="text"
               value={manualCodi}
               onChange={e => setManualCodi(e.target.value)}
-              placeholder="Introdueix el codi..."
+              placeholder={t('escaner.introdueix_codi')}
               autoFocus
               disabled={searching}
             />
             <button type="submit" disabled={!manualCodi.trim() || searching}>
-              {searching ? 'Cercant...' : 'Cercar'}
+              {searching ? t('escaner.cercant_btn') : t('escaner.cercar')}
             </button>
           </form>
         )}
@@ -204,13 +206,13 @@ export default function BarcodeScanner({ open, onClose }) {
         {!useManual && (
           <p className="scanner-fallback-link">
             <a href="#" onClick={(e) => { e.preventDefault(); stopCamera(); setUseManual(true); setStatus(''); }}>
-              Introduir codi manualment
+              {t('escaner.introduir_manualment')}
             </a>
           </p>
         )}
 
         <footer>
-          <button className="secondary" onClick={handleClose}>Tancar</button>
+          <button className="secondary" onClick={handleClose}>{t('common.tancar')}</button>
         </footer>
       </article>
     </dialog>

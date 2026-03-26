@@ -1,14 +1,20 @@
+import i18n from '../i18n/index.js'
+
+function langHeaders() {
+  return { 'Accept-Language': i18n.language || 'ca' }
+}
+
 // --- Tipus & config ---
 
 export async function llistarTipus() {
-  const res = await fetch('/api/tipus', { credentials: 'include' })
-  if (!res.ok) throw new Error('Error carregant tipus')
+  const res = await fetch('/api/tipus', { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) throw new Error(i18n.t('errors.carregant_tipus'))
   return res.json()
 }
 
 export async function obtenirConfig(tipus) {
-  const res = await fetch(`/api/tipus/${tipus}/config`, { credentials: 'include' })
-  if (!res.ok) throw new Error(`Error carregant config de ${tipus}`)
+  const res = await fetch(`/api/tipus/${tipus}/config`, { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) throw new Error(i18n.t('errors.carregant_config', { tipus }))
   return res.json()
 }
 
@@ -22,27 +28,27 @@ export async function llistarAnalisis(tipus, { page = 1, per_page = 25, q = '', 
   for (const [key, val] of Object.entries(filters)) {
     if (val) params.set(key, val)
   }
-  const res = await fetch(`/api/analisis/${tipus}?${params}`, { credentials: 'include' })
-  if (!res.ok) throw new Error('Error carregant anàlisis')
+  const res = await fetch(`/api/analisis/${tipus}?${params}`, { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) throw new Error(i18n.t('errors.carregant_analisis'))
   return res.json()
 }
 
 export async function obtenirAnalisi(tipus, id) {
-  const res = await fetch(`/api/analisis/${tipus}/${id}`, { credentials: 'include' })
-  if (!res.ok) throw new Error('Error carregant anàlisi')
+  const res = await fetch(`/api/analisis/${tipus}/${id}`, { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) throw new Error(i18n.t('errors.carregant_analisi'))
   return res.json()
 }
 
 export async function crearAnalisi(tipus, data) {
   const res = await fetch(`/api/analisis/${tipus}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...langHeaders() },
     credentials: 'include',
     body: JSON.stringify(data),
   })
   if (!res.ok) {
     const info = await res.json().catch(() => null)
-    throw new Error(info?.error || 'Error creant anàlisi')
+    throw new Error(info?.error || i18n.t('errors.creant_analisi'))
   }
   return res.json()
 }
@@ -54,19 +60,19 @@ export async function editarAnalisi(tipus, id, data, expectedUpdatedAt) {
   }
   const res = await fetch(`/api/analisis/${tipus}/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...langHeaders() },
     credentials: 'include',
     body: JSON.stringify(body),
   })
   if (res.status === 409) {
     const info = await res.json()
-    const err = new Error(info.message || 'Conflicte de concurrència')
+    const err = new Error(info.message || i18n.t('errors.conflicte_concurrencia'))
     err.conflict = info
     throw err
   }
   if (!res.ok) {
     const info = await res.json().catch(() => null)
-    throw new Error(info?.error || 'Error editant anàlisi')
+    throw new Error(info?.error || i18n.t('errors.editant_analisi'))
   }
   return res.json()
 }
@@ -75,6 +81,7 @@ export async function acquireLock(tipus, id) {
   const res = await fetch(`/api/analisis/${tipus}/${id}/lock`, {
     method: 'POST',
     credentials: 'include',
+    headers: langHeaders(),
   })
   if (!res.ok) return null
   return res.json()
@@ -85,6 +92,7 @@ export async function releaseLock(tipus, id) {
     await fetch(`/api/analisis/${tipus}/${id}/lock`, {
       method: 'DELETE',
       credentials: 'include',
+      headers: langHeaders(),
     })
   } catch {
     // best-effort cleanup
@@ -92,10 +100,10 @@ export async function releaseLock(tipus, id) {
 }
 
 export async function findByCodi(codi) {
-  const res = await fetch(`/api/analisis/find-by-codi?codi=${encodeURIComponent(codi)}`, { credentials: 'include' })
+  const res = await fetch(`/api/analisis/find-by-codi?codi=${encodeURIComponent(codi)}`, { credentials: 'include', headers: langHeaders() })
   if (!res.ok) {
     const err = await res.json().catch(() => null)
-    throw new Error(err?.error || 'No trobat')
+    throw new Error(err?.error || i18n.t('common.no_trobat'))
   }
   return res.json()
 }
@@ -104,7 +112,8 @@ export async function eliminarAnalisi(tipus, id) {
   const res = await fetch(`/api/analisis/${tipus}/${id}`, {
     method: 'DELETE',
     credentials: 'include',
+    headers: langHeaders(),
   })
-  if (!res.ok) throw new Error('Error eliminant anàlisi')
+  if (!res.ok) throw new Error(i18n.t('errors.eliminant_analisi'))
   return res.json()
 }

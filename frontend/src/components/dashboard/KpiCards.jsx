@@ -1,6 +1,9 @@
+import { useTranslation } from 'react-i18next'
+
 export default function KpiCards({ kpis, kpiOrder, fieldSeccio }) {
+  const { t } = useTranslation()
   if (!kpis || Object.keys(kpis).length === 0) {
-    return <p>No hi ha dades per mostrar KPIs.</p>
+    return <p>{t('dashboard.no_kpis')}</p>
   }
 
   const orderedKeys = kpiOrder || Object.keys(kpis)
@@ -31,10 +34,10 @@ export default function KpiCards({ kpis, kpiOrder, fieldSeccio }) {
                   <div className="kpi-label">{k.label || key}</div>
                   <div className="kpi-avg">{k.avg}</div>
                   <div className="kpi-range">
-                    <span>Min: {k.min}</span>
-                    <span>Max: {k.max}</span>
+                    <span>{t('dashboard.min', { val: k.min })}</span>
+                    <span>{t('dashboard.max', { val: k.max })}</span>
                   </div>
-                  <div className="kpi-count">{k.count} reg.</div>
+                  <div className="kpi-count">{k.count} {t('dashboard.reg')}</div>
                 </div>
               )
             })}

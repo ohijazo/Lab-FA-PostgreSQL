@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useTranslation } from 'react-i18next'
 import { llistarCamps, crearCamp, editarCamp, eliminarCamp, reordenarCamps } from '../api/admin'
 import { useToast } from '../context/ToastContext'
 
@@ -22,6 +23,7 @@ function SortableRow({ id, children }) {
 }
 
 export default function AdminCampsPage() {
+  const { t } = useTranslation()
   const { seccioId } = useParams()
   const navigate = useNavigate()
   const { addToast } = useToast()
@@ -95,10 +97,10 @@ export default function AdminCampsPage() {
     try {
       if (editingId) {
         await editarCamp(editingId, data)
-        addToast('Camp actualitzat')
+        addToast(t('admin_camps.camp_actualitzat'))
       } else {
         await crearCamp(seccioId, data)
-        addToast('Camp creat')
+        addToast(t('admin_camps.camp_creat'))
       }
       resetForm()
       await fetchData()
@@ -109,10 +111,10 @@ export default function AdminCampsPage() {
   }
 
   async function handleDelete(id, label) {
-    if (!confirm(`Eliminar camp "${label}"?`)) return
+    if (!confirm(t('admin_camps.confirm_eliminar', { label }))) return
     try {
       await eliminarCamp(id)
-      addToast('Camp eliminat')
+      addToast(t('admin_camps.camp_eliminat'))
       await fetchData()
     } catch (err) {
       setError(err.message)
@@ -137,80 +139,80 @@ export default function AdminCampsPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">Carregant...</p>
+  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
 
   return (
     <>
       <nav aria-label="breadcrumb">
         <ul>
-          <li><Link to="/admin/tipus">Tipus</Link></li>
-          <li><Link to="#" onClick={(e) => { e.preventDefault(); navigate(-1) }}>Seccions</Link></li>
-          <li>Camps</li>
+          <li><Link to="/admin/tipus">{t('admin_camps.breadcrumb_tipus')}</Link></li>
+          <li><Link to="#" onClick={(e) => { e.preventDefault(); navigate(-1) }}>{t('admin_camps.breadcrumb_seccions')}</Link></li>
+          <li>{t('admin_camps.breadcrumb_camps')}</li>
         </ul>
       </nav>
 
       <hgroup>
-        <h1>Camps</h1>
-        <p>Gestiona els camps d'aquesta seccio. Arrossega per reordenar.</p>
+        <h1>{t('admin_camps.titol')}</h1>
+        <p>{t('admin_camps.subtitol')}</p>
       </hgroup>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
 
       <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
-        {showForm ? 'Cancel·lar' : 'Nou camp'}
+        {showForm ? t('common.cancellar') : t('admin_camps.nou_camp')}
       </button>
 
       {showForm && (
         <form onSubmit={handleSubmit}>
           <fieldset>
-            <legend><strong>{editingId ? 'Editar camp' : 'Nou camp'}</strong></legend>
+            <legend><strong>{editingId ? t('admin_camps.editar_camp') : t('admin_camps.nou_camp')}</strong></legend>
             <div className="grid">
               <label>
-                Nom (intern)
+                {t('admin_camps.nom_intern')}
                 <input
                   type="text"
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   required
-                  placeholder="humitat_perc"
+                  placeholder={t('admin_camps.placeholder_nom')}
                 />
               </label>
               <label>
-                Etiqueta
+                {t('admin_camps.etiqueta')}
                 <input
                   type="text"
                   value={form.label}
                   onChange={e => setForm({ ...form, label: e.target.value })}
                   required
-                  placeholder="Humitat %"
+                  placeholder={t('admin_camps.placeholder_etiqueta')}
                 />
               </label>
             </div>
             <div className="grid">
               <label>
-                Tipus
+                {t('admin_camps.tipus')}
                 <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                  <option value="text">Text</option>
-                  <option value="number">Numero</option>
-                  <option value="date">Data</option>
-                  <option value="textarea">Text llarg</option>
-                  <option value="checkbox">Checkbox</option>
-                  <option value="select">Llista (combobox)</option>
+                  <option value="text">{t('admin_camps.tipus_text')}</option>
+                  <option value="number">{t('admin_camps.tipus_number')}</option>
+                  <option value="date">{t('admin_camps.tipus_date')}</option>
+                  <option value="textarea">{t('admin_camps.tipus_textarea')}</option>
+                  <option value="checkbox">{t('admin_camps.tipus_checkbox')}</option>
+                  <option value="select">{t('admin_camps.tipus_select')}</option>
                 </select>
               </label>
               <label>
-                Grup
+                {t('admin_camps.grup')}
                 <input
                   type="text"
                   value={form.grup}
                   onChange={e => setForm({ ...form, grup: e.target.value })}
-                  placeholder="Opcional — agrupa camps visuals"
+                  placeholder={t('admin_camps.placeholder_grup')}
                 />
               </label>
             </div>
             {form.type === 'select' && (
               <div style={{ marginBottom: '1rem' }}>
-                <strong>Opcions de la llista</strong>
+                <strong>{t('admin_camps.opcions_llista')}</strong>
                 {form.opcions.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', margin: '0.5rem 0' }}>
                     {form.opcions.map((op, i) => (
@@ -235,7 +237,7 @@ export default function AdminCampsPage() {
                     type="text"
                     value={novaOpcio}
                     onChange={e => setNovaOpcio(e.target.value)}
-                    placeholder="Nova opcio..."
+                    placeholder={t('admin_camps.nova_opcio')}
                     onKeyDown={e => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
@@ -258,26 +260,26 @@ export default function AdminCampsPage() {
                       }
                     }}
                     style={{ whiteSpace: 'nowrap' }}
-                  >Afegir</button>
+                  >{t('admin_camps.afegir')}</button>
                 </div>
               </div>
             )}
             {form.type === 'number' && (
               <div style={{ marginBottom: '1rem' }}>
-                <strong>Alertes fora de rang</strong>
+                <strong>{t('admin_camps.alertes_rang')}</strong>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'end' }}>
                   <label>
-                    Minim
+                    {t('admin_camps.minim')}
                     <input
                       type="number"
                       step="any"
                       value={form.alerta_min}
                       onChange={e => setForm({ ...form, alerta_min: e.target.value })}
-                      placeholder="Sense minim"
+                      placeholder={t('admin_camps.sense_minim')}
                     />
                   </label>
                   <label>
-                    Color
+                    {t('admin_camps.color')}
                     <input
                       type="color"
                       value={form.alerta_color_min}
@@ -286,17 +288,17 @@ export default function AdminCampsPage() {
                     />
                   </label>
                   <label>
-                    Maxim
+                    {t('admin_camps.maxim')}
                     <input
                       type="number"
                       step="any"
                       value={form.alerta_max}
                       onChange={e => setForm({ ...form, alerta_max: e.target.value })}
-                      placeholder="Sense maxim"
+                      placeholder={t('admin_camps.sense_maxim')}
                     />
                   </label>
                   <label>
-                    Color
+                    {t('admin_camps.color')}
                     <input
                       type="color"
                       value={form.alerta_color_max}
@@ -314,27 +316,27 @@ export default function AdminCampsPage() {
                 onChange={e => setForm({ ...form, required: e.target.checked })}
                 role="switch"
               />
-              Obligatori
+              {t('admin_camps.obligatori')}
             </label>
-            <button type="submit">{editingId ? 'Desar canvis' : 'Crear'}</button>
+            <button type="submit">{editingId ? t('common.desar_canvis') : t('common.crear')}</button>
           </fieldset>
         </form>
       )}
 
       {camps.length === 0 ? (
-        <p>No hi ha camps. Crea'n un per comencar.</p>
+        <p>{t('admin_camps.no_camps')}</p>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <table>
             <thead>
               <tr>
                 <th style={{ width: '3rem' }}></th>
-                <th>Nom</th>
-                <th>Etiqueta</th>
-                <th>Tipus</th>
-                <th>Grup</th>
-                <th>Obligatori</th>
-                <th>Accions</th>
+                <th>{t('common.nom')}</th>
+                <th>{t('admin_camps.etiqueta')}</th>
+                <th>{t('admin_camps.tipus')}</th>
+                <th>{t('admin_camps.grup')}</th>
+                <th>{t('admin_camps.obligatori')}</th>
+                <th>{t('common.accions')}</th>
               </tr>
             </thead>
             <SortableContext items={camps.map(c => c.id)} strategy={verticalListSortingStrategy}>
@@ -345,12 +347,12 @@ export default function AdminCampsPage() {
                     <td>{c.label}</td>
                     <td>{c.type}</td>
                     <td>{c.grup || '—'}</td>
-                    <td>{c.required ? 'Si' : 'No'}</td>
+                    <td>{c.required ? t('common.si') : t('common.no')}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button className="outline" onClick={() => startEdit(c)}>Editar</button>
+                        <button className="outline" onClick={() => startEdit(c)}>{t('common.editar')}</button>
                         <button className="outline secondary" onClick={() => handleDelete(c.id, c.label)}>
-                          Eliminar
+                          {t('common.eliminar')}
                         </button>
                       </div>
                     </td>

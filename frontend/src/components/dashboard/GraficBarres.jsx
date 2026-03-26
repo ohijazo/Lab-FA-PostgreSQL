@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -14,6 +15,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 const COLORS = ['#2563eb', '#dc2626', '#16a34a', '#d97706']
 
 export default function GraficBarres({ groupData, groupLabel, metricKeys, metricLabels }) {
+  const { t } = useTranslation()
   if (!groupData || Object.keys(groupData).length === 0) {
     return null
   }
@@ -40,7 +42,7 @@ export default function GraficBarres({ groupData, groupLabel, metricKeys, metric
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      title: { display: true, text: `Per ${groupLabel || 'grup'}`, font: { size: 13 } },
+      title: { display: true, text: t('dashboard.per_grup', { label: groupLabel || t('dashboard.grup') }), font: { size: 13 } },
       legend: { labels: { boxWidth: 10, font: { size: 10 } } },
     },
     scales: {

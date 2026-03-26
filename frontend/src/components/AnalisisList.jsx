@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { alertaStyle } from '../utils/alertes'
 
 function formatCell(col, value, type) {
@@ -17,9 +18,10 @@ function formatCell(col, value, type) {
 
 export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   if (analisis.length === 0) {
-    return <p>No hi ha anàlisis registrades.</p>
+    return <p>{t('llista.no_analisis')}</p>
   }
 
   const labelMap = {}

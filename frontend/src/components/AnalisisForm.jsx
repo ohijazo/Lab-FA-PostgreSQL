@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { groupCamps } from '../utils/groupCamps'
 import { getAlertaColor } from '../utils/alertes'
 
 const WIDE_THRESHOLD = 4
 
 export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onCancel, submitting }) {
+  const { t } = useTranslation()
   const [form, setForm] = useState(() => {
     const today = new Date().toISOString().slice(0, 10)
     const defaults = {}
@@ -60,7 +62,7 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
             onChange={handleChange}
             required={camp.required}
           >
-            <option value="">— Selecciona —</option>
+            <option value="">{t('common.selecciona')}</option>
             {(camp.opcions || []).map((op) => (
               <option key={op} value={op}>{op}</option>
             ))}
@@ -138,11 +140,11 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
       })}
       <div style={{ display: 'flex', gap: '0.5rem', gridColumn: '1 / -1' }}>
         <button type="submit" aria-busy={submitting}>
-          {submitting ? 'Desant...' : 'Desar'}
+          {submitting ? t('common.desant') : t('common.desar')}
         </button>
         {onCancel && (
           <button type="button" className="outline secondary" onClick={onCancel}>
-            Cancel·lar
+            {t('common.cancellar')}
           </button>
         )}
       </div>

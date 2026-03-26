@@ -1,12 +1,14 @@
+import { useTranslation } from 'react-i18next'
 import { groupCamps } from '../utils/groupCamps'
 import { alertaStyle } from '../utils/alertes'
 
 const WIDE_THRESHOLD = 4
 
 export default function AnalisisDetail({ seccions, analisi }) {
+  const { t } = useTranslation()
   function formatValue(camp, val) {
     if (val === null || val === undefined || val === '') return '—'
-    if (camp.type === 'checkbox') return val ? 'Sí' : 'No'
+    if (camp.type === 'checkbox') return val ? t('common.si') : t('common.no')
     if (camp.type === 'date' && typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) {
       const [y, m, d] = val.split('-')
       return `${d}-${m}-${y}`

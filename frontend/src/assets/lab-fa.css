@@ -102,6 +102,25 @@
   color: var(--lab-primary);
 }
 
+.lang-switcher {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--lab-border);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lang-switcher:hover {
+  background: var(--lab-primary);
+  color: #fff;
+  border-color: var(--lab-primary);
+}
+
 .nav-user {
   display: flex;
   align-items: center;
@@ -901,4 +920,404 @@
 .scanner-content footer {
   display: flex;
   justify-content: flex-end;
+}
+
+/* Help page */
+.ajuda-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.ajuda-hero {
+  text-align: center;
+  padding: 2rem 0 1.5rem;
+  border-bottom: 2px solid var(--lab-border);
+  margin-bottom: 2rem;
+}
+
+.ajuda-hero h1 {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+  color: #1e293b;
+}
+
+.ajuda-hero p {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Table of contents */
+.ajuda-toc {
+  background: var(--lab-bg-subtle);
+  border: 1px solid var(--lab-border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.ajuda-toc-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.ajuda-toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.35rem 1.5rem;
+}
+
+.ajuda-toc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  text-decoration: none;
+  color: #334155;
+  font-size: 0.9rem;
+  transition: color 0.15s;
+}
+
+.ajuda-toc-item:hover {
+  color: var(--lab-primary);
+}
+
+.ajuda-toc-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--lab-primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Sections */
+.ajuda-section {
+  margin-bottom: 3rem;
+  scroll-margin-top: 80px;
+}
+
+.ajuda-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--lab-primary);
+}
+
+.ajuda-section-header h2 {
+  font-size: 1.4rem;
+  margin: 0;
+  color: #1e293b;
+}
+
+.ajuda-section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--lab-primary);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ajuda-section h3 {
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #334155;
+}
+
+.ajuda-section p {
+  color: #475569;
+  line-height: 1.65;
+}
+
+.ajuda-section ul,
+.ajuda-section ol {
+  color: #475569;
+  line-height: 1.65;
+}
+
+/* Features grid */
+.ajuda-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.ajuda-feature {
+  background: #fff;
+  border: 1px solid var(--lab-border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.ajuda-feature-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.ajuda-feature strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #1e293b;
+}
+
+.ajuda-feature p {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Mockup figures */
+.ajuda-figure {
+  margin: 1.5rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--lab-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.ajuda-mock {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ajuda-figure figcaption {
+  background: #f1f5f9;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Reference tables */
+.ajuda-ref-table {
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+
+.ajuda-ref-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #334155;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+}
+
+.ajuda-ref-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #475569;
+}
+
+/* Info, tip, warning boxes */
+.ajuda-info,
+.ajuda-tip,
+.ajuda-warning {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  align-items: flex-start;
+}
+
+.ajuda-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+.ajuda-tip {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.ajuda-warning {
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.ajuda-info-icon,
+.ajuda-tip-icon,
+.ajuda-warning-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ajuda-info-icon {
+  background: #2563eb;
+  color: #fff;
+}
+
+.ajuda-tip-icon {
+  background: #16a34a;
+  color: #fff;
+}
+
+.ajuda-warning-icon {
+  background: #d97706;
+  color: #fff;
+}
+
+/* Step list */
+.ajuda-steps {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.ajuda-step {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.ajuda-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--lab-primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ajuda-step-text {
+  padding-top: 0.2rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+/* Two columns */
+.ajuda-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Role cards */
+.ajuda-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.ajuda-role-card {
+  border-radius: 10px;
+  padding: 1.25rem;
+  border: 1px solid var(--lab-border);
+}
+
+.ajuda-role-card ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.88rem;
+}
+
+.ajuda-role-card li {
+  margin-bottom: 0.25rem;
+}
+
+.ajuda-role-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid currentColor;
+}
+
+.ajuda-role-admin {
+  background: #fef2f2;
+}
+
+.ajuda-role-admin .ajuda-role-title {
+  color: #dc2626;
+}
+
+.ajuda-role-editor {
+  background: #eff6ff;
+}
+
+.ajuda-role-editor .ajuda-role-title {
+  color: var(--lab-primary);
+}
+
+.ajuda-role-viewer {
+  background: #f0fdf4;
+}
+
+.ajuda-role-viewer .ajuda-role-title {
+  color: #16a34a;
+}
+
+/* Footer */
+.ajuda-footer {
+  text-align: center;
+  padding: 2rem 0;
+  border-top: 1px solid var(--lab-border);
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.ajuda-footer a {
+  color: var(--lab-primary);
+  text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ajuda-two-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .ajuda-toc-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ajuda-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ajuda-roles-grid {
+    grid-template-columns: 1fr;
+  }
 }

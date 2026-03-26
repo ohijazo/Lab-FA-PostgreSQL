@@ -7,6 +7,7 @@ from sqlalchemy import func
 
 from app import db
 from app.models import Analisi, TipusAnalisi, User
+from app.i18n import t as tr
 
 bp = Blueprint("dashboard", __name__)
 
@@ -15,7 +16,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if "email" not in session:
-            return jsonify({"error": "No autenticat"}), 401
+            return jsonify({"error": tr('no_autenticat')}), 401
         return f(*args, **kwargs)
     return decorated
 
@@ -228,7 +229,7 @@ def _load_filtered_analisis(slug, filter_fields, data_inici, data_fi, filter_val
 def dashboard(slug):
     config = _get_config(slug)
     if not config:
-        return jsonify({"error": "Tipus no trobat"}), 404
+        return jsonify({"error": tr('tipus_no_trobat', slug=slug)}), 404
 
     data_inici = request.args.get("data_inici")
     data_fi = request.args.get("data_fi")

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { obtenirAnalisi, editarAnalisi, obtenirConfig, acquireLock, releaseLock } from '../api/analisis'
 import AnalisisForm from '../components/AnalisisForm'
 import { useToast } from '../context/ToastContext'
@@ -7,6 +8,7 @@ import { useToast } from '../context/ToastContext'
 const HEARTBEAT_INTERVAL = 15 * 1000 // 15 seg
 
 export default function EditarAnalisiPage() {
+  const { t } = useTranslation()
   const { tipus, id } = useParams()
   const navigate = useNavigate()
   const { addToast } = useToast()
@@ -54,7 +56,7 @@ export default function EditarAnalisiPage() {
           updated_by: res.updated_by,
           updated_at: res.updated_at,
         })
-        setError(`Registre modificat per ${res.updated_by || 'un altre usuari'} des que l'has obert.`)
+        setError(t('form.registre_modificat', { user: res.updated_by || 'un altre usuari' }))
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     }
@@ -75,7 +77,7 @@ export default function EditarAnalisiPage() {
     try {
       await editarAnalisi(tipus, id, data, updatedAtRef.current)
       cleanup()
-      addToast('Canvis desats correctament')
+      addToast(t('form.canvis_desats'))
       navigate(`/${tipus}/${id}`)
     } catch (err) {
       if (err.conflict) {
@@ -102,35 +104,38 @@ export default function EditarAnalisiPage() {
       .finally(() => setLoading(false))
   }
 
-  if (loading) return <p aria-busy="true">Carregant...</p>
+  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
   if (error && !config) return <p>Error: {error}</p>
-  if (!analisi) return <p>No trobat.</p>
+  if (!analisi) return <p>{t('common.no_trobat')}</p>
 
   return (
     <>
       <h2 style={{ marginBottom: '0.5rem' }}>
-        Editar — {config.nom} {config.columnes_llista?.[0] && analisi[config.columnes_llista[0]]
-          ? `(${analisi[config.columnes_llista[0]]})`
-          : `#${analisi.id}`}
+        {t('form.editar_titol', {
+          nom: config.nom,
+          ref: config.columnes_llista?.[0] && analisi[config.columnes_llista[0]]
+            ? `(${analisi[config.columnes_llista[0]]})`
+            : `#${analisi.id}`
+        })}
       </h2>
 
       {otherUser && (
         <article style={{ background: 'var(--pico-mark-background-color, #fff3cd)', padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '4px' }}>
-          <strong>Atenció:</strong> L'usuari <strong>{otherUser}</strong> també està editant aquest registre.
+          <strong>{t('form.conflicte')}:</strong> {t('form.atencio_altre_usuari', { user: otherUser })}
         </article>
       )}
 
       {conflict && (
         <article style={{ background: '#f8d7da', padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '4px' }}>
           <p style={{ margin: 0 }}>
-            <strong>Conflicte:</strong> {error}
+            <strong>{t('form.conflicte')}:</strong> {error}
           </p>
           <button
             onClick={handleReload}
             style={{ marginTop: '0.5rem' }}
             className="outline"
           >
-            Recarregar dades actuals
+            {t('form.recarregar_dades')}
           </button>
         </article>
       )}

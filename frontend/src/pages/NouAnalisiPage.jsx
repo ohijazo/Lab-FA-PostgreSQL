@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { crearAnalisi, obtenirConfig } from '../api/analisis'
 import AnalisisForm from '../components/AnalisisForm'
 import { useToast } from '../context/ToastContext'
 
 export default function NouAnalisiPage() {
+  const { t } = useTranslation()
   const { tipus } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
@@ -27,7 +29,7 @@ export default function NouAnalisiPage() {
     setError(null)
     try {
       const result = await crearAnalisi(tipus, data)
-      addToast('Anàlisi creada correctament')
+      addToast(t('form.analisi_creada'))
       navigate(`/${tipus}/${result.id}`)
     } catch (err) {
       addToast(err.message, 'error')
@@ -36,17 +38,17 @@ export default function NouAnalisiPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">Carregant...</p>
+  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
   if (error && !config) return <p>Error: {error}</p>
 
   return (
     <>
       <h2 style={{ marginBottom: '0.5rem' }}>
-        {duplicatDe ? 'Duplicar Anàlisi' : 'Nou Anàlisi'} — {config.nom}
+        {duplicatDe ? t('form.duplicar_analisi', { nom: config.nom }) : t('form.nou_analisi', { nom: config.nom })}
       </h2>
       {duplicatDe && (
         <p style={{ color: 'var(--pico-muted-color)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-          S'han copiat les dades de l'anàlisi original. Modifica el que calgui i desa.
+          {t('form.duplicar_msg')}
         </p>
       )}
       <AnalisisForm seccions={config.seccions} initialData={duplicatDe} onSubmit={handleSubmit} onCancel={() => navigate(`/${tipus}`)} submitting={submitting} />

@@ -8,6 +8,7 @@ from flask import send_file
 from openpyxl import Workbook, load_workbook
 from app import db
 from app.models import TipusAnalisi, Seccio, Camp, User, Analisi
+from app.i18n import t as tr
 
 bp = Blueprint("admin", __name__)
 
@@ -16,9 +17,9 @@ def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if "email" not in session:
-            return jsonify({"error": "No autenticat"}), 401
+            return jsonify({"error": tr('no_autenticat')}), 401
         if session.get("role") != "admin":
-            return jsonify({"error": "Acces denegat"}), 403
+            return jsonify({"error": tr('acces_denegat')}), 403
         return f(*args, **kwargs)
     return decorated
 
@@ -50,11 +51,11 @@ def crear_tipus():
     data = request.get_json()
     nom = data.get("nom", "").strip()
     if not nom:
-        abort(400, description="El nom es obligatori")
+        abort(400, description=tr('nom_obligatori'))
 
     slug = data.get("slug") or _slugify(nom)
     if TipusAnalisi.query.filter_by(slug=slug).first():
-        abort(409, description=f"Ja existeix un tipus amb slug '{slug}'")
+        abort(409, description=tr('ja_existeix_slug', slug=slug))
 
     t = TipusAnalisi(
         nom=nom,
@@ -88,10 +89,10 @@ def editar_tipus(id):
             # Prohibir canvi de slug si hi ha analisis vinculades
             n_analisis = Analisi.query.filter_by(tipus=t.slug).count()
             if n_analisis > 0:
-                return jsonify({"error": f"No es pot canviar el slug perque hi ha {n_analisis} analisis vinculades"}), 400
+                return jsonify({"error": tr('no_canviar_slug', n=n_analisis)}), 400
             existing = TipusAnalisi.query.filter_by(slug=new_slug).first()
             if existing:
-                return jsonify({"error": f"El slug '{new_slug}' ja existeix"}), 409
+                return jsonify({"error": tr('slug_ja_existeix', slug=new_slug)}), 409
             t.slug = new_slug
     if "descripcio" in data:
         t.descripcio = data["descripcio"]
@@ -107,7 +108,7 @@ def eliminar_tipus(id):
     t = db.get_or_404(TipusAnalisi, id)
     n = Analisi.query.filter_by(tipus=t.slug).count()
     if n > 0:
-        return jsonify({"error": f"No es pot eliminar: hi ha {n} analisi(s) vinculades a aquest tipus"}), 400
+        return jsonify({"error": tr('no_eliminar_analisis', n=n)}), 400
     db.session.delete(t)
     db.session.commit()
     return jsonify({"ok": True})
@@ -130,7 +131,7 @@ def crear_seccio(tipus_id):
     data = request.get_json()
     titol = data.get("titol", "").strip()
     if not titol:
-        abort(400, description="El titol es obligatori")
+        abort(400, description=tr('titol_obligatori'))
 
     max_ordre = db.session.query(db.func.max(Seccio.ordre)).filter_by(tipus_id=tipus_id).scalar() or 0
 
@@ -179,7 +180,7 @@ def eliminar_seccio(id):
     t = db.get_or_404(TipusAnalisi, s.tipus_id)
     n = Analisi.query.filter_by(tipus=t.slug).count()
     if n > 0:
-        return jsonify({"error": f"No es pot eliminar: hi ha {n} analisi(s) vinculades al tipus '{t.nom}'"}), 400
+        return jsonify({"error": tr('no_eliminar_seccio', n=n, nom=t.nom)}), 400
     db.session.delete(s)
     db.session.commit()
     return jsonify({"ok": True})
@@ -204,7 +205,7 @@ def crear_camp(seccio_id):
     name = data.get("name", "").strip()
     label = data.get("label", "").strip()
     if not name or not label:
-        abort(400, description="name i label son obligatoris")
+        abort(400, description=tr('name_label_obligatoris'))
 
     max_ordre = db.session.query(db.func.max(Camp.ordre)).filter_by(seccio_id=seccio_id).scalar() or 0
 
@@ -281,7 +282,7 @@ def eliminar_camp(id):
     t = db.get_or_404(TipusAnalisi, s.tipus_id)
     n = Analisi.query.filter_by(tipus=t.slug).count()
     if n > 0:
-        return jsonify({"error": f"No es pot eliminar: hi ha {n} analisi(s) vinculades al tipus '{t.nom}'"}), 400
+        return jsonify({"error": tr('no_eliminar_camp', n=n, nom=t.nom)}), 400
     db.session.delete(c)
     db.session.commit()
     return jsonify({"ok": True})
@@ -300,7 +301,7 @@ def descarregar_plantilla(id):
             all_labels.append(camp.label)
 
     if not all_labels:
-        return jsonify({"error": "Aquest tipus no te camps configurats"}), 400
+        return jsonify({"error": tr('tipus_sense_camps')}), 400
 
     wb = Workbook()
     ws = wb.active
@@ -400,11 +401,11 @@ def importar_excel(id):
     t = db.get_or_404(TipusAnalisi, id)
 
     if "file" not in request.files:
-        return jsonify({"error": "No s'ha enviat cap fitxer"}), 400
+        return jsonify({"error": tr('no_fitxer')}), 400
 
     file = request.files["file"]
     if not file.filename.endswith((".xlsx", ".xls")):
-        return jsonify({"error": "El fitxer ha de ser .xlsx o .xls"}), 400
+        return jsonify({"error": tr('fitxer_format')}), 400
 
     # Load camp config
     all_camps = []
@@ -423,11 +424,11 @@ def importar_excel(id):
         wb = load_workbook(file, read_only=True, data_only=True)
         ws = wb.active
     except Exception:
-        return jsonify({"error": "No s'ha pogut llegir el fitxer Excel"}), 400
+        return jsonify({"error": tr('no_llegir_excel')}), 400
 
     rows = list(ws.iter_rows(values_only=True))
     if len(rows) < 2:
-        return jsonify({"error": "El fitxer no te dades (nomes capçalera o buit)"}), 400
+        return jsonify({"error": tr('fitxer_sense_dades')}), 400
 
     headers = [str(h).strip() if h is not None else "" for h in rows[0]]
 
@@ -444,7 +445,7 @@ def importar_excel(id):
             unrecognized.append(header)
 
     if not col_mapping:
-        return jsonify({"error": "Cap columna de l'Excel coincideix amb els camps del tipus", "columnes_no_reconegudes": unrecognized}), 400
+        return jsonify({"error": tr('cap_columna_coincideix'), "columnes_no_reconegudes": unrecognized}), 400
 
     # Find required camps
     required_camps = {c.name for c in all_camps if c.required}
@@ -475,7 +476,7 @@ def importar_excel(id):
 
             if val is None or str(val).strip() == "":
                 if camp.name in required_camps:
-                    row_errors.append(f"Camp obligatori '{camp.label}' buit")
+                    row_errors.append(tr('camp_obligatori_buit', label=camp.label))
                 continue
 
             # Type conversion
@@ -485,7 +486,7 @@ def importar_excel(id):
                     if val == int(val):
                         val = int(val)
                 except (ValueError, TypeError):
-                    row_errors.append(f"Camp '{camp.label}': valor '{val}' no es numeric")
+                    row_errors.append(tr('valor_no_numeric', label=camp.label, val=val))
                     continue
             elif camp.type == "checkbox":
                 if isinstance(val, bool):
@@ -556,13 +557,13 @@ def crear_user():
     role = data.get("role", "user")
 
     if not email or not password:
-        abort(400, description="email i password son obligatoris")
+        abort(400, description=tr('email_password_obligatoris'))
     if not nom:
-        abort(400, description="El nom es obligatori")
+        abort(400, description=tr('nom_obligatori_user'))
     if role not in ("admin", "user", "viewer"):
-        abort(400, description="role ha de ser 'admin', 'user' o 'viewer'")
+        abort(400, description=tr('role_invalid'))
     if User.query.filter_by(email=email).first():
-        abort(409, description=f"Ja existeix un usuari amb email '{email}'")
+        abort(409, description=tr('ja_existeix_email', email=email))
 
     u = User(email=email, nom=nom, role=role)
     u.set_password(password)
@@ -581,13 +582,13 @@ def editar_user(id):
         new_email = data["email"].strip().lower()
         existing = User.query.filter_by(email=new_email).first()
         if existing and existing.id != u.id:
-            abort(409, description=f"Ja existeix un usuari amb email '{new_email}'")
+            abort(409, description=tr('ja_existeix_email', email=new_email))
         u.email = new_email
     if "nom" in data:
         u.nom = data["nom"].strip()
     if "role" in data:
         if data["role"] not in ("admin", "user"):
-            abort(400, description="role ha de ser 'admin', 'user' o 'viewer'")
+            abort(400, description=tr('role_invalid'))
         u.role = data["role"]
     if "password" in data and data["password"].strip():
         u.set_password(data["password"].strip())
@@ -609,7 +610,7 @@ def editar_user(id):
 def eliminar_user(id):
     u = db.get_or_404(User, id)
     if u.id == session.get("user_id"):
-        abort(400, description="No pots eliminar el teu propi usuari")
+        abort(400, description=tr('no_eliminar_propi'))
     db.session.delete(u)
     db.session.commit()
     return jsonify({"ok": True})

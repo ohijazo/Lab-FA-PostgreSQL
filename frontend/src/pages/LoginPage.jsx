@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import logoApp from '../logos/logoApp.png'
 
 export default function LoginPage() {
+  const { t } = useTranslation()
   const { login } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -34,22 +36,22 @@ export default function LoginPage() {
       <article>
         <header style={{ textAlign: 'center' }}>
           <img src={logoApp} alt="Lab FC" style={{ width: 220, height: 'auto', marginBottom: '0.75rem' }} />
-          <h2 style={{ margin: 0 }}>Iniciar sessió</h2>
+          <h2 style={{ margin: 0 }}>{t('login.iniciar_sessio')}</h2>
         </header>
         <form onSubmit={handleSubmit}>
           <label>
-            Email
+            {t('login.email')}
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemple.com"
+              placeholder={t('login.placeholder_email')}
               autoFocus
               required
             />
           </label>
           <label>
-            Contrasenya
+            {t('login.contrasenya')}
             <input
               type="password"
               value={password}
@@ -59,7 +61,7 @@ export default function LoginPage() {
           </label>
           {error && <p style={{ color: 'var(--pico-color-red-500, red)' }}>{error}</p>}
           <button type="submit" aria-busy={loading} disabled={loading}>
-            Entrar
+            {t('login.entrar')}
           </button>
         </form>
       </article>

@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next'
+
 export default function TaulaResum({ titol, dades, metricKeys, metricLabels }) {
   if (!dades || Object.keys(dades).length === 0) {
     return null
   }
 
+  const { t } = useTranslation()
   const entries = Object.entries(dades).sort((a, b) => b[1].count - a[1].count)
   const keys = metricKeys || []
 
@@ -13,8 +16,8 @@ export default function TaulaResum({ titol, dades, metricKeys, metricLabels }) {
         <table>
           <thead>
             <tr>
-              <th>Nom</th>
-              <th>Reg.</th>
+              <th>{t('common.nom')}</th>
+              <th>{t('common.reg')}</th>
               {keys.map((mk) => (
                 <th key={mk}>{metricLabels?.[mk] || mk}</th>
               ))}

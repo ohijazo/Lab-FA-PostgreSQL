@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useTranslation } from 'react-i18next'
 import { obtenirTipusAdmin, llistarSeccions, crearSeccio, editarSeccio, eliminarSeccio, editarTipus, reordenarSeccions } from '../api/admin'
 import { useToast } from '../context/ToastContext'
 
@@ -22,6 +23,7 @@ function SortableRow({ id, children }) {
 }
 
 export default function AdminSeccionsPage() {
+  const { t } = useTranslation()
   const { tipusId } = useParams()
   const { addToast } = useToast()
   const [tipus, setTipus] = useState(null)
@@ -72,7 +74,7 @@ export default function AdminSeccionsPage() {
     setError(null)
     try {
       await editarTipus(tipusId, { columnes_llista: columnesLlista })
-      addToast('Columnes desades')
+      addToast(t('admin_seccions.columnes_desades'))
       await fetchData()
     } catch (err) {
       setError(err.message)
@@ -100,10 +102,10 @@ export default function AdminSeccionsPage() {
     try {
       if (editingId) {
         await editarSeccio(editingId, data)
-        addToast('Secció actualitzada')
+        addToast(t('admin_seccions.seccio_actualitzada'))
       } else {
         await crearSeccio(tipusId, data)
-        addToast('Secció creada')
+        addToast(t('admin_seccions.seccio_creada'))
       }
       resetForm()
       await fetchData()
@@ -114,10 +116,10 @@ export default function AdminSeccionsPage() {
   }
 
   async function handleDelete(id, titol) {
-    if (!confirm(`Eliminar seccio "${titol}" i tots els seus camps?`)) return
+    if (!confirm(t('admin_seccions.confirm_eliminar', { titol }))) return
     try {
       await eliminarSeccio(id)
-      addToast('Secció eliminada')
+      addToast(t('admin_seccions.seccio_eliminada'))
       await fetchData()
     } catch (err) {
       setError(err.message)
@@ -142,35 +144,35 @@ export default function AdminSeccionsPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">Carregant...</p>
-  if (!tipus) return <p>Tipus no trobat.</p>
+  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (!tipus) return <p>{t('common.tipus_no_trobat')}</p>
 
   return (
     <>
       <nav aria-label="breadcrumb">
         <ul>
-          <li><Link to="/admin/tipus">Tipus</Link></li>
+          <li><Link to="/admin/tipus">{t('admin_seccions.breadcrumb_tipus')}</Link></li>
           <li>{tipus.nom}</li>
         </ul>
       </nav>
 
       <hgroup>
-        <h1>Seccions de {tipus.nom}</h1>
-        <p>Gestiona les seccions i els seus camps. Arrossega per reordenar.</p>
+        <h1>{t('admin_seccions.titol', { nom: tipus.nom })}</h1>
+        <p>{t('admin_seccions.subtitol')}</p>
       </hgroup>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
 
       <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
-        {showForm ? 'Cancel·lar' : 'Nova seccio'}
+        {showForm ? t('common.cancellar') : t('admin_seccions.nova_seccio')}
       </button>
 
       {showForm && (
         <form onSubmit={handleSubmit}>
           <fieldset>
-            <legend><strong>{editingId ? 'Editar seccio' : 'Nova seccio'}</strong></legend>
+            <legend><strong>{editingId ? t('admin_seccions.editar_seccio') : t('admin_seccions.nova_seccio')}</strong></legend>
             <label>
-              Titol
+              {t('admin_seccions.titol_label')}
               <input
                 type="text"
                 value={form.titol}
@@ -178,13 +180,13 @@ export default function AdminSeccionsPage() {
                 required
               />
             </label>
-            <button type="submit">{editingId ? 'Desar canvis' : 'Crear'}</button>
+            <button type="submit">{editingId ? t('common.desar_canvis') : t('common.crear')}</button>
           </fieldset>
         </form>
       )}
 
       {seccions.length === 0 ? (
-        <p>No hi ha seccions. Crea'n una per comencar.</p>
+        <p>{t('admin_seccions.no_seccions')}</p>
       ) : (
         <>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -192,9 +194,9 @@ export default function AdminSeccionsPage() {
               <thead>
                 <tr>
                   <th style={{ width: '3rem' }}></th>
-                  <th>Titol</th>
-                  <th>Camps</th>
-                  <th>Accions</th>
+                  <th>{t('admin_seccions.titol_label')}</th>
+                  <th>{t('admin_seccions.camps')}</th>
+                  <th>{t('common.accions')}</th>
                 </tr>
               </thead>
               <SortableContext items={seccions.map(s => s.id)} strategy={verticalListSortingStrategy}>
@@ -206,11 +208,11 @@ export default function AdminSeccionsPage() {
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <Link to={`/admin/seccions/${s.id}/camps`} role="button" className="outline">
-                            Camps
+                            {t('admin_seccions.camps')}
                           </Link>
-                          <button className="outline" onClick={() => startEdit(s)}>Editar</button>
+                          <button className="outline" onClick={() => startEdit(s)}>{t('common.editar')}</button>
                           <button className="outline secondary" onClick={() => handleDelete(s.id, s.titol)}>
-                            Eliminar
+                            {t('common.eliminar')}
                           </button>
                         </div>
                       </td>
@@ -223,8 +225,8 @@ export default function AdminSeccionsPage() {
 
           {totsCamps.length > 0 && (
             <article>
-              <header><strong>Columnes de la llista</strong></header>
-              <p>Selecciona quins camps es mostren a la taula de la llista d'analisis:</p>
+              <header><strong>{t('admin_seccions.columnes_llista')}</strong></header>
+              <p>{t('admin_seccions.columnes_desc')}</p>
               {seccions.filter(s => s.camps.length > 0).map(s => (
                 <fieldset key={s.id}>
                   <legend><strong>{s.titol}</strong></legend>
@@ -240,7 +242,7 @@ export default function AdminSeccionsPage() {
                   ))}
                 </fieldset>
               ))}
-              <button onClick={saveColumnes}>Desar columnes</button>
+              <button onClick={saveColumnes}>{t('admin_seccions.desar_columnes')}</button>
             </article>
           )}
         </>

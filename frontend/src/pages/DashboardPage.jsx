@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { fetchDashboard } from '../api/dashboard'
 import KpiCards from '../components/dashboard/KpiCards'
 import GraficLinia from '../components/dashboard/GraficLinia'
@@ -8,6 +9,7 @@ import GraficRendiment from '../components/dashboard/GraficRendiment'
 import TaulaResum from '../components/dashboard/TaulaResum'
 
 export default function DashboardPage() {
+  const { t } = useTranslation()
   const { tipus } = useParams()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -57,19 +59,19 @@ export default function DashboardPage() {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-        <h2 style={{ margin: 0 }}>Dashboard: {data?.nom || tipus}</h2>
+        <h2 style={{ margin: 0 }}>{t('dashboard_page.dashboard', { nom: data?.nom || tipus })}</h2>
         <Link to={`/${tipus}`} role="button" className="outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85em' }}>
-          ← Tornar a llista
+          {t('dashboard_page.tornar_llista')}
         </Link>
       </div>
 
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'end', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <label style={{ margin: 0 }}>
-          <small>Data inici</small>
+          <small>{t('dashboard_page.data_inici')}</small>
           <input type="date" value={dataInici} onChange={(e) => handleDataIniciChange(e.target.value)} style={{ marginBottom: 0 }} />
         </label>
         <label style={{ margin: 0 }}>
-          <small>Data fi</small>
+          <small>{t('dashboard_page.data_fi')}</small>
           <input type="date" value={dataFi} onChange={(e) => handleDataFiChange(e.target.value)} style={{ marginBottom: 0 }} />
         </label>
         {filtersInfo.filter(f => f.options.length > 0).map((fi) => (
@@ -80,7 +82,7 @@ export default function DashboardPage() {
               onChange={(e) => handleFilterChange(fi.field, e.target.value)}
               style={{ marginBottom: 0 }}
             >
-              <option value="">Totes</option>
+              <option value="">{t('common.totes')}</option>
               {fi.options.map((opt) => (
                 <option key={opt} value={opt}>{opt}</option>
               ))}
@@ -89,13 +91,13 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {loading && <p aria-busy="true">Carregant dashboard...</p>}
+      {loading && <p aria-busy="true">{t('dashboard_page.carregant')}</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {data && !loading && (
         <>
           <p>
-            <strong>{data.total_registres}</strong> registres
+            <strong>{data.total_registres}</strong> {t('dashboard_page.registres')}
             {data.rang_dates?.min && (
               <> — del {data.rang_dates.min} al {data.rang_dates.max}</>
             )}
@@ -131,7 +133,7 @@ export default function DashboardPage() {
           {groupEntries.map(([gf, gInfo]) => (
             <TaulaResum
               key={gf}
-              titol={`Resum per ${gInfo.label}`}
+              titol={t('dashboard_page.resum_per', { label: gInfo.label })}
               dades={gInfo.data}
               metricKeys={data.metric_keys}
               metricLabels={data.metric_labels}

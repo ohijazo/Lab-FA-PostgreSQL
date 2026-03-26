@@ -7,6 +7,7 @@ from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 from app import db
 from app.models import Analisi, EditLock, TipusAnalisi
+from app.i18n import t
 
 bp = Blueprint("analisis", __name__)
 
@@ -15,7 +16,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if "email" not in session:
-            return jsonify({"error": "No autenticat"}), 401
+            return jsonify({"error": t('no_autenticat')}), 401
         return f(*args, **kwargs)
     return decorated
 
@@ -24,18 +25,18 @@ def write_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if "email" not in session:
-            return jsonify({"error": "No autenticat"}), 401
+            return jsonify({"error": t('no_autenticat')}), 401
         if session.get("role") == "viewer":
-            return jsonify({"error": "Accés de només lectura"}), 403
+            return jsonify({"error": t('acces_lectura')}), 403
         return f(*args, **kwargs)
     return decorated
 
 
 def _get_tipus_or_404(slug):
-    t = TipusAnalisi.query.filter_by(slug=slug).first()
-    if not t:
-        abort(404, description=f"Tipus '{slug}' no trobat")
-    return t
+    tp = TipusAnalisi.query.filter_by(slug=slug).first()
+    if not tp:
+        abort(404, description=t('tipus_no_trobat', slug=slug))
+    return tp
 
 
 # --------------- Cerca per codi (escàner) ---------------
@@ -45,12 +46,12 @@ def _get_tipus_or_404(slug):
 def find_by_codi():
     codi = request.args.get("codi", "").strip()
     if not codi:
-        return jsonify({"error": "codi es obligatori"}), 400
+        return jsonify({"error": t('codi_obligatori')}), 400
     analisi = Analisi.query.filter(
         Analisi.dades["codi"].as_string() == codi
     ).first()
     if not analisi:
-        return jsonify({"error": "No trobat"}), 404
+        return jsonify({"error": t('no_trobat')}), 404
     return jsonify({"id": analisi.id, "tipus": analisi.tipus})
 
 
@@ -262,11 +263,11 @@ def exportar_multi():
     date_to = request.args.get("date_to", "").strip()
 
     if not slugs:
-        abort(400, description="Cal seleccionar almenys un tipus")
+        abort(400, description=t('cal_seleccionar_tipus'))
 
     tipus_list = TipusAnalisi.query.filter(TipusAnalisi.slug.in_(slugs)).all()
     if not tipus_list:
-        abort(404, description="Cap tipus trobat")
+        abort(404, description=t('cap_tipus_trobat'))
 
     wb = Workbook()
     wb.remove(wb.active)  # Remove default empty sheet
@@ -322,7 +323,7 @@ def crear(slug):
             Analisi.dades["codi"].as_string() == codi
         ).first()
         if existing:
-            return jsonify({"error": f"Ja existeix una anàlisi amb codi '{codi}' en aquest tipus"}), 409
+            return jsonify({"error": t('ja_existeix_codi', codi=codi)}), 409
 
     a = Analisi(tipus=slug, created_by=session.get("nom"), updated_by=session.get("nom"))
     a.set_dades(data)
@@ -347,7 +348,7 @@ def editar(slug, id):
         if expected != actual:
             return jsonify({
                 "error": "conflict",
-                "message": f"Registre modificat per {a.updated_by or 'un altre usuari'} des que l'has obert.",
+                "message": t('conflicte_concurrencia', user=a.updated_by or 'un altre usuari'),
                 "updated_by": a.updated_by,
                 "updated_at": actual,
                 "current": a.to_dict(),
@@ -364,7 +365,7 @@ def editar(slug, id):
             Analisi.id != id,
         ).first()
         if existing:
-            return jsonify({"error": f"Ja existeix una anàlisi amb codi '{codi}' en aquest tipus"}), 409
+            return jsonify({"error": t('ja_existeix_codi', codi=codi)}), 409
 
     a.set_dades(data)
     a.updated_at = datetime.utcnow()

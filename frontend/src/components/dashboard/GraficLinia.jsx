@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -15,8 +16,9 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const COLORS = ['#2563eb', '#dc2626', '#16a34a', '#d97706']
 
 export default function GraficLinia({ serieTemporal, metricKeys, metricLabels }) {
+  const { t } = useTranslation()
   if (!serieTemporal || Object.keys(serieTemporal).length === 0) {
-    return <p>No hi ha dades temporals.</p>
+    return <p>{t('dashboard.no_dades_temporals')}</p>
   }
 
   const mesos = Object.keys(serieTemporal).sort()
@@ -39,7 +41,7 @@ export default function GraficLinia({ serieTemporal, metricKeys, metricLabels })
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      title: { display: true, text: 'Evolució mensual', font: { size: 13 } },
+      title: { display: true, text: t('dashboard.evolucio_mensual'), font: { size: 13 } },
       legend: { labels: { boxWidth: 10, font: { size: 10 } } },
     },
     scales: {

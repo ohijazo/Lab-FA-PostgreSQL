@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { importarAnalisis, obtenirTipusAdmin } from '../api/admin'
-import { useEffect } from 'react'
 
 export default function AdminImportPage() {
+  const { t } = useTranslation()
   const { tipusId } = useParams()
   const [tipus, setTipus] = useState(null)
   const [file, setFile] = useState(null)
@@ -35,22 +36,22 @@ export default function AdminImportPage() {
     }
   }
 
-  if (loadingTipus) return <p aria-busy="true">Carregant...</p>
-  if (!tipus) return <p>Tipus no trobat.</p>
+  if (loadingTipus) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (!tipus) return <p>{t('common.tipus_no_trobat')}</p>
 
   return (
     <>
       <nav aria-label="breadcrumb">
         <ul>
-          <li><Link to="/admin/tipus">Tipus</Link></li>
+          <li><Link to="/admin/tipus">{t('admin_import.breadcrumb_tipus')}</Link></li>
           <li><Link to={`/admin/tipus/${tipusId}/seccions`}>{tipus.nom}</Link></li>
-          <li>Importar Excel</li>
+          <li>{t('admin_import.breadcrumb_importar')}</li>
         </ul>
       </nav>
 
       <hgroup>
-        <h1>Importar Excel - {tipus.nom}</h1>
-        <p>Puja un fitxer Excel (.xlsx) amb les dades a importar. Les capçaleres han de coincidir amb els noms o etiquetes dels camps.</p>
+        <h1>{t('admin_import.titol', { nom: tipus.nom })}</h1>
+        <p>{t('admin_import.subtitol')}</p>
       </hgroup>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
@@ -59,7 +60,7 @@ export default function AdminImportPage() {
         <form onSubmit={handleSubmit}>
           <fieldset>
             <label>
-              Fitxer Excel
+              {t('admin_import.fitxer_excel')}
               <input
                 type="file"
                 accept=".xlsx,.xls"
@@ -68,7 +69,7 @@ export default function AdminImportPage() {
               />
             </label>
             <button type="submit" disabled={!file || loading} aria-busy={loading}>
-              {loading ? 'Important...' : 'Importar'}
+              {loading ? t('admin_import.important') : t('admin_import.importar')}
             </button>
           </fieldset>
         </form>
@@ -76,45 +77,45 @@ export default function AdminImportPage() {
 
       {result && (
         <article>
-          <header><strong>Resultat de la importació</strong></header>
+          <header><strong>{t('admin_import.resultat')}</strong></header>
 
           <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem' }}>
             <div>
               <strong style={{ fontSize: '2rem', color: 'var(--pico-primary)' }}>{result.importats}</strong>
-              <br />registres importats
+              <br />{t('admin_import.registres_importats')}
             </div>
             <div>
               <strong style={{ fontSize: '2rem', color: 'var(--pico-secondary)' }}>{result.saltats}</strong>
-              <br />duplicats saltats
+              <br />{t('admin_import.duplicats_saltats')}
             </div>
             <div>
               <strong style={{ fontSize: '2rem', color: result.errors.length > 0 ? 'var(--pico-del-color)' : 'inherit' }}>{result.errors.length}</strong>
-              <br />errors
+              <br />{t('admin_import.errors')}
             </div>
           </div>
 
           {result.columnes_reconegudes?.length > 0 && (
             <details open>
-              <summary>Columnes reconegudes ({result.columnes_reconegudes.length})</summary>
+              <summary>{t('admin_import.columnes_reconegudes', { count: result.columnes_reconegudes.length })}</summary>
               <p>{result.columnes_reconegudes.join(', ')}</p>
             </details>
           )}
 
           {result.columnes_no_reconegudes?.length > 0 && (
             <details>
-              <summary>Columnes no reconegudes ({result.columnes_no_reconegudes.length})</summary>
+              <summary>{t('admin_import.columnes_no_reconegudes', { count: result.columnes_no_reconegudes.length })}</summary>
               <p>{result.columnes_no_reconegudes.join(', ')}</p>
             </details>
           )}
 
           {result.errors.length > 0 && (
             <details open>
-              <summary>Detall d'errors</summary>
+              <summary>{t('admin_import.detall_errors')}</summary>
               <table>
                 <thead>
                   <tr>
-                    <th>Fila</th>
-                    <th>Motiu</th>
+                    <th>{t('admin_import.fila')}</th>
+                    <th>{t('admin_import.motiu')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -131,10 +132,10 @@ export default function AdminImportPage() {
 
           <footer style={{ display: 'flex', gap: '1rem' }}>
             <Link to={`/${tipus.slug}`} role="button">
-              Anar a la llista
+              {t('admin_import.anar_llista')}
             </Link>
             <button className="outline" onClick={() => { setResult(null); setFile(null) }}>
-              Importar un altre fitxer
+              {t('admin_import.importar_altre')}
             </button>
           </footer>
         </article>
