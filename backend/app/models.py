@@ -14,6 +14,9 @@ class User(db.Model):
     nom = db.Column(db.String(100), nullable=False, default="")
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="user")
+    email_smtp_password = db.Column(db.String(256), nullable=True)
+    email_from_name = db.Column(db.String(100), nullable=True)
+    email_from_address = db.Column(db.String(120), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -27,6 +30,9 @@ class User(db.Model):
             "email": self.email,
             "nom": self.nom,
             "role": self.role,
+            "email_from_name": self.email_from_name or "",
+            "email_from_address": self.email_from_address or "",
+            "email_configurat": bool(self.email_smtp_password),
         }
 
 

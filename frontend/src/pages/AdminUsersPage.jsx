@@ -11,6 +11,8 @@ export default function AdminUsersPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ email: '', nom: '', password: '', role: 'user' })
+  const [emailUserId, setEmailUserId] = useState(null)
+  const [emailForm, setEmailForm] = useState({ email_from_name: '', email_from_address: '', email_smtp_password: '' })
 
   async function fetchData() {
     setLoading(true)
@@ -34,7 +36,20 @@ export default function AdminUsersPage() {
   function startEdit(u) {
     setForm({ email: u.email, nom: u.nom, password: '', role: u.role })
     setEditingId(u.id)
+    setEmailUserId(null)
     setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function startEmailConfig(u) {
+    setEmailForm({
+      email_from_name: u.email_from_name || '',
+      email_from_address: u.email_from_address || '',
+      email_smtp_password: u.email_configurat ? '••••••••' : '',
+    })
+    setEmailUserId(u.id)
+    setShowForm(false)
+    setEditingId(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -59,6 +74,20 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleEmailSubmit(e) {
+    e.preventDefault()
+    setError(null)
+    try {
+      await editarUser(emailUserId, emailForm)
+      addToast('Configuració de correu desada')
+      setEmailUserId(null)
+      await fetchData()
+    } catch (err) {
+      setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
   async function handleDelete(id, email) {
     if (!confirm(`Segur que vols eliminar l'usuari "${email}"?`)) return
     try {
@@ -72,6 +101,8 @@ export default function AdminUsersPage() {
   }
 
   if (loading) return <p aria-busy="true">Carregant...</p>
+
+  const emailUser = users.find(u => u.id === emailUserId)
 
   return (
     <>
@@ -89,7 +120,7 @@ export default function AdminUsersPage() {
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
 
-      <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
+      <button onClick={() => { resetForm(); setEmailUserId(null); setShowForm(!showForm) }}>
         {showForm ? 'Cancel·lar' : 'Nou usuari'}
       </button>
 
@@ -138,6 +169,52 @@ export default function AdminUsersPage() {
         </form>
       )}
 
+      {emailUserId && emailUser && (
+        <form onSubmit={handleEmailSubmit}>
+          <fieldset>
+            <legend><strong>Configuració de correu — {emailUser.nom}</strong></legend>
+            <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.75rem' }}>
+              Configura les dades per enviar anàlisis per correu electrònic via Microsoft 365.
+              El servidor SMTP (<code>smtp.office365.com:587</code>) és comú per a tots els usuaris.
+            </p>
+            <label>
+              Nom del remitent
+              <input
+                type="text"
+                value={emailForm.email_from_name}
+                onChange={e => setEmailForm({ ...emailForm, email_from_name: e.target.value })}
+                placeholder={emailUser.nom}
+              />
+              <small>El nom que apareixerà com a remitent del correu</small>
+            </label>
+            <label>
+              Email del remitent
+              <input
+                type="email"
+                value={emailForm.email_from_address}
+                onChange={e => setEmailForm({ ...emailForm, email_from_address: e.target.value })}
+                placeholder={emailUser.email}
+              />
+              <small>L'adreça que apareixerà com a remitent (pot ser un àlies)</small>
+            </label>
+            <label>
+              Contrasenya SMTP (App Password de M365)
+              <input
+                type="password"
+                value={emailForm.email_smtp_password}
+                onChange={e => setEmailForm({ ...emailForm, email_smtp_password: e.target.value })}
+                placeholder="Contrasenya d'aplicació de Microsoft 365"
+              />
+              <small>Necessària per autenticar-se al servidor de correu</small>
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button type="submit">Desar configuració</button>
+              <button type="button" className="outline secondary" onClick={() => setEmailUserId(null)}>Cancel·lar</button>
+            </div>
+          </fieldset>
+        </form>
+      )}
+
       {users.length === 0 ? (
         <p>No hi ha usuaris.</p>
       ) : (
@@ -147,6 +224,7 @@ export default function AdminUsersPage() {
               <th>Email</th>
               <th>Nom</th>
               <th>Rol</th>
+              <th>Correu</th>
               <th>Accions</th>
             </tr>
           </thead>
@@ -157,9 +235,16 @@ export default function AdminUsersPage() {
                 <td><strong>{u.nom}</strong></td>
                 <td>{u.role === 'admin' ? 'Administrador' : u.role === 'viewer' ? 'Lectura' : 'Editor'}</td>
                 <td>
+                  {u.email_configurat
+                    ? <span style={{ color: '#059669', fontSize: '0.8rem' }} title="Correu configurat">Configurat</span>
+                    : <span style={{ color: '#94a3b8', fontSize: '0.8rem' }} title="Correu no configurat">No configurat</span>
+                  }
+                </td>
+                <td>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="outline" onClick={() => startEdit(u)}>Editar</button>
-                    <button className="outline secondary" onClick={() => handleDelete(u.id, u.email)}>
+                    <button className="outline btn-sm" onClick={() => startEdit(u)} title="Editar les dades de l'usuari">Editar</button>
+                    <button className="outline btn-sm" onClick={() => startEmailConfig(u)} title="Configurar el correu electrònic d'aquest usuari">Correu</button>
+                    <button className="outline secondary btn-sm" onClick={() => handleDelete(u.id, u.email)} title="Eliminar aquest usuari">
                       Eliminar
                     </button>
                   </div>

@@ -591,6 +591,14 @@ def editar_user(id):
         u.role = data["role"]
     if "password" in data and data["password"].strip():
         u.set_password(data["password"].strip())
+    if "email_from_name" in data:
+        u.email_from_name = data["email_from_name"].strip()
+    if "email_from_address" in data:
+        u.email_from_address = data["email_from_address"].strip()
+    if "email_smtp_password" in data:
+        val = data["email_smtp_password"]
+        if val and val != "••••••••":
+            u.email_smtp_password = val.strip()
 
     db.session.commit()
     return jsonify(u.to_dict())
