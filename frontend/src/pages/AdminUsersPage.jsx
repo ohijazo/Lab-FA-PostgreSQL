@@ -15,6 +15,8 @@ export default function AdminUsersPage() {
   const [form, setForm] = useState({ email: '', nom: '', password: '', role: 'user' })
   const [emailUserId, setEmailUserId] = useState(null)
   const [emailForm, setEmailForm] = useState({ email_from_name: '', email_from_address: '', email_smtp_password: '' })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showSmtpPassword, setShowSmtpPassword] = useState(false)
 
   async function fetchData() {
     setLoading(true)
@@ -33,6 +35,7 @@ export default function AdminUsersPage() {
     setForm({ email: '', nom: '', password: '', role: 'user' })
     setEditingId(null)
     setShowForm(false)
+    setShowPassword(false)
   }
 
   function startEdit(u) {
@@ -151,12 +154,20 @@ export default function AdminUsersPage() {
             </label>
             <label>
               {editingId ? t('admin_users.contrasenya_editar') : t('admin_users.contrasenya')}
-              <input
-                type="password"
-                value={form.password}
-                onChange={e => setForm({ ...form, password: e.target.value })}
-                required={!editingId}
-              />
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  required={!editingId}
+                />
+                <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
+                  {showPassword
+                    ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
             </label>
             <label>
               {t('admin_users.rol')}
@@ -200,12 +211,20 @@ export default function AdminUsersPage() {
             </label>
             <label>
               {t('admin_users.contrasenya_smtp')}
-              <input
-                type="password"
-                value={emailForm.email_smtp_password}
-                onChange={e => setEmailForm({ ...emailForm, email_smtp_password: e.target.value })}
-                placeholder={t('admin_users.contrasenya_smtp_placeholder')}
-              />
+              <div className="password-wrapper">
+                <input
+                  type={showSmtpPassword ? 'text' : 'password'}
+                  value={emailForm.email_smtp_password}
+                  onChange={e => setEmailForm({ ...emailForm, email_smtp_password: e.target.value })}
+                  placeholder={t('admin_users.contrasenya_smtp_placeholder')}
+                />
+                <button type="button" className="password-toggle" onClick={() => setShowSmtpPassword(!showSmtpPassword)} tabIndex={-1}>
+                  {showSmtpPassword
+                    ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
               <small>{t('admin_users.contrasenya_smtp_desc')}</small>
             </label>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
