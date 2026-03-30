@@ -436,6 +436,7 @@ export default function AjudaPage() {
     { id: 'llista', title: t('ajuda.seccio_llista') },
     { id: 'crear', title: t('ajuda.seccio_crear') },
     { id: 'detall', title: t('ajuda.seccio_detall') },
+    { id: 'email', title: t('ajuda.seccio_email') },
     { id: 'dashboard', title: t('ajuda.seccio_dashboard') },
     { id: 'escaner', title: t('ajuda.seccio_escaner') },
     { id: 'exportar', title: t('ajuda.seccio_exportar') },
@@ -651,10 +652,29 @@ export default function AjudaPage() {
         </TipBox>
       </section>
 
-      {/* 7. Dashboard */}
-      <section id="dashboard" className="ajuda-section">
+      {/* 7. Enviar per correu */}
+      <section id="email" className="ajuda-section">
         <div className="ajuda-section-header">
           <span className="ajuda-section-num">7</span>
+          <h2>{t('ajuda.detall_email_title')}</h2>
+        </div>
+        <p>
+          <Trans i18nKey="ajuda.detall_email_desc"><strong>Enviar per correu</strong></Trans>
+        </p>
+        <ol>
+          <li><Trans i18nKey="ajuda.detall_email_pas1"><strong>destinatari</strong><strong>assumpte</strong></Trans></li>
+          <li>{t('ajuda.detall_email_pas2')}</li>
+          <li><Trans i18nKey="ajuda.detall_email_pas3"><strong>historial d'enviaments</strong></Trans></li>
+        </ol>
+        <InfoBox>
+          <Trans i18nKey="ajuda.detall_email_info"><code>POWER_AUTOMATE_WEBHOOK_URL</code></Trans>
+        </InfoBox>
+      </section>
+
+      {/* 8. Dashboard */}
+      <section id="dashboard" className="ajuda-section">
+        <div className="ajuda-section-header">
+          <span className="ajuda-section-num">8</span>
           <h2>{t('ajuda.dashboard_title')}</h2>
         </div>
         <p>
@@ -675,10 +695,10 @@ export default function AjudaPage() {
         </ul>
       </section>
 
-      {/* 8. Escàner */}
+      {/* 9. Escàner */}
       <section id="escaner" className="ajuda-section">
         <div className="ajuda-section-header">
-          <span className="ajuda-section-num">8</span>
+          <span className="ajuda-section-num">9</span>
           <h2>{t('ajuda.escaner_title')}</h2>
         </div>
         <div className="ajuda-two-cols">
@@ -701,10 +721,10 @@ export default function AjudaPage() {
         </div>
       </section>
 
-      {/* 9. Exportar */}
+      {/* 10. Exportar */}
       <section id="exportar" className="ajuda-section">
         <div className="ajuda-section-header">
-          <span className="ajuda-section-num">9</span>
+          <span className="ajuda-section-num">10</span>
           <h2>{t('ajuda.exportar_title')}</h2>
         </div>
         <div className="ajuda-two-cols">
@@ -732,10 +752,10 @@ export default function AjudaPage() {
       {/* Admin sections */}
       {isAdmin && (
         <>
-          {/* 10. Admin: Tipus */}
+          {/* 11. Admin: Tipus */}
           <section id="admin-tipus" className="ajuda-section">
             <div className="ajuda-section-header">
-              <span className="ajuda-section-num">10</span>
+              <span className="ajuda-section-num">11</span>
               <h2>{t('ajuda.admin_tipus_title')}</h2>
             </div>
             <p>
@@ -764,10 +784,10 @@ export default function AjudaPage() {
             </table>
           </section>
 
-          {/* 11. Admin: Seccions i camps */}
+          {/* 12. Admin: Seccions i camps */}
           <section id="admin-camps" className="ajuda-section">
             <div className="ajuda-section-header">
-              <span className="ajuda-section-num">11</span>
+              <span className="ajuda-section-num">12</span>
               <h2>{t('ajuda.admin_camps_title')}</h2>
             </div>
             <h3>{t('ajuda.admin_camps_seccions')}</h3>
@@ -802,10 +822,10 @@ export default function AjudaPage() {
             </TipBox>
           </section>
 
-          {/* 12. Admin: Importar */}
+          {/* 13. Admin: Importar */}
           <section id="admin-importar" className="ajuda-section">
             <div className="ajuda-section-header">
-              <span className="ajuda-section-num">12</span>
+              <span className="ajuda-section-num">13</span>
               <h2>{t('ajuda.admin_importar_title')}</h2>
             </div>
             <p>
@@ -827,10 +847,10 @@ export default function AjudaPage() {
             </WarningBox>
           </section>
 
-          {/* 13. Admin: Usuaris */}
+          {/* 14. Admin: Usuaris */}
           <section id="admin-usuaris" className="ajuda-section">
             <div className="ajuda-section-header">
-              <span className="ajuda-section-num">13</span>
+              <span className="ajuda-section-num">14</span>
               <h2>{t('ajuda.admin_usuaris_title')}</h2>
             </div>
             <p>
@@ -852,19 +872,8 @@ export default function AjudaPage() {
             </table>
             <h3>{t('ajuda.admin_usuaris_correu')}</h3>
             <p>
-              <Trans i18nKey="ajuda.admin_usuaris_correu_desc"><strong>Correu</strong></Trans>
+              <Trans i18nKey="ajuda.admin_usuaris_correu_desc"><code>POWER_AUTOMATE_WEBHOOK_URL</code></Trans>
             </p>
-            <table className="ajuda-ref-table">
-              <thead>
-                <tr><th>{t('ajuda.admin_usuaris_camp')}</th><th>{t('ajuda.nav_descripcio')}</th></tr>
-              </thead>
-              <tbody>
-                <tr><td><strong>{t('ajuda.admin_usuaris_correu_nom')}</strong></td><td>{t('ajuda.admin_usuaris_correu_nom_desc')}</td></tr>
-                <tr><td><strong>{t('ajuda.admin_usuaris_correu_email')}</strong></td><td>{t('ajuda.admin_usuaris_correu_email_desc')}</td></tr>
-                <tr><td><strong>{t('ajuda.admin_usuaris_correu_smtp')}</strong></td><td>{t('ajuda.admin_usuaris_correu_smtp_desc')}</td></tr>
-              </tbody>
-            </table>
-            <InfoBox>{t('ajuda.admin_usuaris_correu_info')}</InfoBox>
           </section>
         </>
       )}
@@ -872,7 +881,7 @@ export default function AjudaPage() {
       {/* Rols */}
       <section id="rols" className="ajuda-section">
         <div className="ajuda-section-header">
-          <span className="ajuda-section-num">{isAdmin ? 14 : 10}</span>
+          <span className="ajuda-section-num">{isAdmin ? 15 : 11}</span>
           <h2>{t('ajuda.rols_title')}</h2>
         </div>
         <p>{t('ajuda.rols_desc')}</p>

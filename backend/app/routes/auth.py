@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request, session, current_app
 from app import db
 from app.models import User
 from app.i18n import t
@@ -27,12 +27,14 @@ def login():
 def me():
     if "email" not in session:
         return jsonify({"error": t('no_autenticat')}), 401
-    return jsonify({
+    result = {
         "id": session["user_id"],
         "email": session["email"],
         "nom": session["nom"],
         "role": session["role"],
-    })
+        "email_configurat": bool(current_app.config.get("POWER_AUTOMATE_WEBHOOK_URL")),
+    }
+    return jsonify(result)
 
 
 @bp.route("/api/auth/logout", methods=["POST"])

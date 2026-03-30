@@ -14,9 +14,6 @@ class User(db.Model):
     nom = db.Column(db.String(100), nullable=False, default="")
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="user")
-    email_smtp_password = db.Column(db.String(256), nullable=True)
-    email_from_name = db.Column(db.String(100), nullable=True)
-    email_from_address = db.Column(db.String(120), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -30,9 +27,6 @@ class User(db.Model):
             "email": self.email,
             "nom": self.nom,
             "role": self.role,
-            "email_from_name": self.email_from_name or "",
-            "email_from_address": self.email_from_address or "",
-            "email_configurat": bool(self.email_smtp_password),
         }
 
 
@@ -162,6 +156,31 @@ class Analisi(db.Model):
         d["created_by"] = self.created_by
         d["updated_by"] = self.updated_by
         return d
+
+
+# --------------- Email log ---------------
+
+class EmailLog(db.Model):
+    __tablename__ = "email_log"
+
+    id = db.Column(db.Integer, primary_key=True)
+    analisi_id = db.Column(db.Integer, db.ForeignKey("analisi.id", ondelete="CASCADE"), nullable=False, index=True)
+    tipus_slug = db.Column(db.String(50), nullable=False)
+    destinatari = db.Column(db.String(200), nullable=False)
+    assumpte = db.Column(db.String(300), nullable=False, default="")
+    enviat_per = db.Column(db.String(120), nullable=False)
+    enviat_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "analisi_id": self.analisi_id,
+            "tipus_slug": self.tipus_slug,
+            "destinatari": self.destinatari,
+            "assumpte": self.assumpte,
+            "enviat_per": self.enviat_per,
+            "enviat_at": self.enviat_at.isoformat() if self.enviat_at else None,
+        }
 
 
 # --------------- Edit lock (presence) ---------------

@@ -108,6 +108,26 @@ export async function findByCodi(codi) {
   return res.json()
 }
 
+export async function obtenirEmailsAnalisi(tipus, id) {
+  const res = await fetch(`/api/analisis/${tipus}/${id}/emails`, { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function enviarEmail(tipus, id, destinatari, assumpte) {
+  const res = await fetch(`/api/analisis/${tipus}/${id}/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...langHeaders() },
+    credentials: 'include',
+    body: JSON.stringify({ destinatari, assumpte }),
+  })
+  if (!res.ok) {
+    const info = await res.json().catch(() => null)
+    throw new Error(info?.error || i18n.t('errors.enviant_email'))
+  }
+  return res.json()
+}
+
 export async function eliminarAnalisi(tipus, id) {
   const res = await fetch(`/api/analisis/${tipus}/${id}`, {
     method: 'DELETE',

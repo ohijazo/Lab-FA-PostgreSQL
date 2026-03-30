@@ -13,10 +13,7 @@ export default function AdminUsersPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ email: '', nom: '', password: '', role: 'user' })
-  const [emailUserId, setEmailUserId] = useState(null)
-  const [emailForm, setEmailForm] = useState({ email_from_name: '', email_from_address: '', email_smtp_password: '' })
   const [showPassword, setShowPassword] = useState(false)
-  const [showSmtpPassword, setShowSmtpPassword] = useState(false)
 
   async function fetchData() {
     setLoading(true)
@@ -41,20 +38,7 @@ export default function AdminUsersPage() {
   function startEdit(u) {
     setForm({ email: u.email, nom: u.nom, password: '', role: u.role })
     setEditingId(u.id)
-    setEmailUserId(null)
     setShowForm(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  function startEmailConfig(u) {
-    setEmailForm({
-      email_from_name: u.email_from_name || '',
-      email_from_address: u.email_from_address || '',
-      email_smtp_password: u.email_configurat ? '••••••••' : '',
-    })
-    setEmailUserId(u.id)
-    setShowForm(false)
-    setEditingId(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -79,20 +63,6 @@ export default function AdminUsersPage() {
     }
   }
 
-  async function handleEmailSubmit(e) {
-    e.preventDefault()
-    setError(null)
-    try {
-      await editarUser(emailUserId, emailForm)
-      addToast(t('admin_users.config_correu_desada'))
-      setEmailUserId(null)
-      await fetchData()
-    } catch (err) {
-      setError(err.message)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
-
   async function handleDelete(id, email) {
     if (!confirm(t('admin_users.confirm_eliminar', { email }))) return
     try {
@@ -106,8 +76,6 @@ export default function AdminUsersPage() {
   }
 
   if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
-
-  const emailUser = users.find(u => u.id === emailUserId)
 
   return (
     <>
@@ -125,7 +93,7 @@ export default function AdminUsersPage() {
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
 
-      <button onClick={() => { resetForm(); setEmailUserId(null); setShowForm(!showForm) }}>
+      <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
         {showForm ? t('common.cancellar') : t('admin_users.nou_usuari')}
       </button>
 
@@ -182,59 +150,6 @@ export default function AdminUsersPage() {
         </form>
       )}
 
-      {emailUserId && emailUser && (
-        <form onSubmit={handleEmailSubmit}>
-          <fieldset>
-            <legend><strong>{t('admin_users.config_correu', { nom: emailUser.nom })}</strong></legend>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.75rem' }}>
-              {t('admin_users.config_correu_desc', { 1: 'smtp.office365.com:587' })}
-            </p>
-            <label>
-              {t('admin_users.nom_remitent')}
-              <input
-                type="text"
-                value={emailForm.email_from_name}
-                onChange={e => setEmailForm({ ...emailForm, email_from_name: e.target.value })}
-                placeholder={emailUser.nom}
-              />
-              <small>{t('admin_users.nom_remitent_desc')}</small>
-            </label>
-            <label>
-              {t('admin_users.email_remitent')}
-              <input
-                type="email"
-                value={emailForm.email_from_address}
-                onChange={e => setEmailForm({ ...emailForm, email_from_address: e.target.value })}
-                placeholder={emailUser.email}
-              />
-              <small>{t('admin_users.email_remitent_desc')}</small>
-            </label>
-            <label>
-              {t('admin_users.contrasenya_smtp')}
-              <div className="password-wrapper">
-                <input
-                  type={showSmtpPassword ? 'text' : 'password'}
-                  value={emailForm.email_smtp_password}
-                  onChange={e => setEmailForm({ ...emailForm, email_smtp_password: e.target.value })}
-                  placeholder={t('admin_users.contrasenya_smtp_placeholder')}
-                />
-                <button type="button" className="password-toggle" onClick={() => setShowSmtpPassword(!showSmtpPassword)} tabIndex={-1}>
-                  {showSmtpPassword
-                    ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                    : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  }
-                </button>
-              </div>
-              <small>{t('admin_users.contrasenya_smtp_desc')}</small>
-            </label>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button type="submit">{t('admin_users.desar_config')}</button>
-              <button type="button" className="outline secondary" onClick={() => setEmailUserId(null)}>{t('common.cancellar')}</button>
-            </div>
-          </fieldset>
-        </form>
-      )}
-
       {users.length === 0 ? (
         <p>{t('admin_users.no_usuaris')}</p>
       ) : (
@@ -244,7 +159,6 @@ export default function AdminUsersPage() {
               <th>{t('admin_users.email')}</th>
               <th>{t('common.nom')}</th>
               <th>{t('admin_users.rol')}</th>
-              <th>{t('admin_users.correu')}</th>
               <th>{t('common.accions')}</th>
             </tr>
           </thead>
@@ -255,15 +169,8 @@ export default function AdminUsersPage() {
                 <td><strong>{u.nom}</strong></td>
                 <td>{u.role === 'admin' ? t('admin_users.rol_admin') : u.role === 'viewer' ? t('admin_users.rol_lectura') : t('admin_users.rol_editor')}</td>
                 <td>
-                  {u.email_configurat
-                    ? <span style={{ color: '#059669', fontSize: '0.8rem' }} title={t('admin_users.correu_configurat')}>{t('admin_users.correu_configurat')}</span>
-                    : <span style={{ color: '#94a3b8', fontSize: '0.8rem' }} title={t('admin_users.correu_no_configurat')}>{t('admin_users.correu_no_configurat')}</span>
-                  }
-                </td>
-                <td>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button className="outline btn-sm" onClick={() => startEdit(u)} title={t('admin_users.title_editar')}>{t('common.editar')}</button>
-                    <button className="outline btn-sm" onClick={() => startEmailConfig(u)} title={t('admin_users.title_correu')}>{t('admin_users.correu')}</button>
                     <button className="outline secondary btn-sm" onClick={() => handleDelete(u.id, u.email)} title={t('admin_users.title_eliminar')}>
                       {t('common.eliminar')}
                     </button>

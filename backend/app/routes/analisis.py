@@ -1,12 +1,15 @@
 import io
+import json
+import urllib.request
+import urllib.error
 from datetime import date, datetime
 from functools import wraps
-from flask import Blueprint, jsonify, request, abort, session, send_file
+from flask import Blueprint, jsonify, request, abort, session, send_file, current_app
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 from app import db
-from app.models import Analisi, EditLock, TipusAnalisi
+from app.models import Analisi, EditLock, EmailLog, TipusAnalisi, User
 from app.i18n import t
 
 bp = Blueprint("analisis", __name__)
@@ -298,13 +301,24 @@ def exportar_multi():
     )
 
 
+def _resolve_user_name(value):
+    """If value looks like an email, try to find the user's nom."""
+    if not value or "@" not in value:
+        return value
+    u = User.query.filter_by(email=value).first()
+    return u.nom if u and u.nom else value
+
+
 @bp.route("/api/analisis/<slug>/<int:id>", methods=["GET"])
 @login_required
 def detall(slug, id):
     a = db.get_or_404(Analisi, id)
     if a.tipus != slug:
         abort(404)
-    return jsonify(a.to_dict())
+    result = a.to_dict()
+    result["created_by"] = _resolve_user_name(result.get("created_by"))
+    result["updated_by"] = _resolve_user_name(result.get("updated_by"))
+    return jsonify(result)
 
 
 @bp.route("/api/analisis/<slug>", methods=["POST"])
@@ -438,3 +452,152 @@ def release_lock(slug, id):
     EditLock.query.filter_by(analisi_id=id, user_email=email).delete()
     db.session.commit()
     return jsonify({"ok": True})
+
+
+# --------------- Send email (via Power Automate webhook) ---------------
+
+@bp.route("/api/analisis/<slug>/<int:id>/email", methods=["POST"])
+@login_required
+def enviar_email(slug, id):
+    webhook_url = current_app.config.get("POWER_AUTOMATE_WEBHOOK_URL", "")
+    if not webhook_url:
+        return jsonify({"error": t('email_no_configurat')}), 400
+
+    user = User.query.filter_by(email=session.get("email")).first()
+    if not user:
+        return jsonify({"error": t('no_autenticat')}), 401
+
+    data = request.get_json()
+    destinatari = (data.get("destinatari") or "").strip()
+    if not destinatari:
+        return jsonify({"error": t('email_destinatari_obligatori')}), 400
+
+    assumpte = (data.get("assumpte") or "").strip()
+
+    tp = _get_tipus_or_404(slug)
+    a = db.get_or_404(Analisi, id)
+    if a.tipus != slug:
+        abort(404)
+
+    dades = a.dades if isinstance(a.dades, dict) else {}
+    seccions = sorted(tp.seccions, key=lambda s: (s.ordre or 0))
+
+    # Determine first column value for reference
+    cols = tp.columnes_llista or []
+    ref_value = dades.get(cols[0], f"#{a.id}") if cols else f"#{a.id}"
+
+    def _format_date_value(val):
+        """Convert YYYY-MM-DD to DD-MM-YYYY if it looks like a date."""
+        if isinstance(val, str) and len(val) >= 10 and val[4:5] == "-" and val[7:8] == "-":
+            try:
+                return datetime.strptime(val[:10], "%Y-%m-%d").strftime("%d-%m-%Y")
+            except ValueError:
+                pass
+        return val
+
+    ref_value = _format_date_value(ref_value)
+
+    # Build HTML body
+    data_str = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
+    html_parts = []
+    html_parts.append('<div style="background-color:#f4f6f8;padding:32px 0;font-family:Arial,Helvetica,sans-serif">')
+    html_parts.append('<div style="max-width:680px;margin:0 auto">')
+
+    # 1) Introductory text OUTSIDE the card, before everything
+    html_parts.append(f'<p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 20px 0;padding:0 4px">{t("email_intro", nom=user.nom, tipus=tp.nom, ref=ref_value)}</p>')
+
+    # 2) Card with header + data
+    html_parts.append('<div style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)">')
+
+    # Header bar
+    html_parts.append('<div style="background:#1a56db;padding:20px 32px">')
+    html_parts.append('<span style="color:#ffffff;font-size:20px;font-weight:600">Lab FA</span>')
+    html_parts.append('</div>')
+
+    # Body content
+    html_parts.append('<div style="padding:24px 32px">')
+
+    for seccio in seccions:
+        camps = sorted(seccio.camps, key=lambda c: (c.ordre or 0))
+        if not camps:
+            continue
+        html_parts.append(f'<h3 style="color:#374151;font-size:13px;font-weight:600;margin:20px 0 8px 0;text-transform:uppercase;letter-spacing:0.5px">{seccio.titol}</h3>')
+        html_parts.append('<table style="width:100%;border-collapse:collapse;margin-bottom:16px">')
+        for i, camp in enumerate(camps):
+            val = dades.get(camp.name, "")
+            if val is None:
+                val = ""
+            if camp.type == "date":
+                val = _format_date_value(val)
+            elif camp.type == "checkbox":
+                val = t("email_si") if val else t("email_no")
+            bg = "#f9fafb" if i % 2 == 0 else "#ffffff"
+            html_parts.append(
+                f'<tr style="background:{bg}">'
+                f'<td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;width:40%">{camp.label}</td>'
+                f'<td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;font-weight:500">{val}</td>'
+                f'</tr>'
+            )
+        html_parts.append('</table>')
+
+    # Footer inside card
+    html_parts.append('<div style="margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb">')
+    html_parts.append(f'<p style="font-size:12px;color:#9ca3af;margin:0 0 4px 0">{t("email_peu", nom=user.nom, data=data_str)}</p>')
+    html_parts.append(f'<p style="font-size:11px;color:#d1d5db;margin:0">{t("email_automatic")}</p>')
+    html_parts.append('</div>')
+
+    html_parts.append('</div>')  # end padding div
+    html_parts.append('</div>')  # end card
+    html_parts.append('</div>')  # end centering div
+    html_parts.append('</div>')  # end outer wrapper
+
+    html_body = "\n".join(html_parts)
+
+    if not assumpte:
+        assumpte = tp.nom
+
+    payload = json.dumps({
+        "destinatari": destinatari,
+        "assumpte": assumpte,
+        "cos_html": html_body,
+        "remitent_nom": user.nom,
+        "remitent_email": user.email,
+    }).encode("utf-8")
+
+    try:
+        req = urllib.request.Request(
+            webhook_url,
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            if resp.status >= 400:
+                return jsonify({"error": t('email_error', error=f"HTTP {resp.status}")}), 500
+    except urllib.error.HTTPError as e:
+        return jsonify({"error": t('email_error', error=f"HTTP {e.code}")}), 500
+    except Exception as e:
+        return jsonify({"error": t('email_error', error=str(e))}), 500
+
+    # Save email log
+    log = EmailLog(
+        analisi_id=a.id,
+        tipus_slug=slug,
+        destinatari=destinatari,
+        assumpte=assumpte,
+        enviat_per=user.email,
+    )
+    db.session.add(log)
+    db.session.commit()
+
+    return jsonify({"ok": True, "message": t('email_enviat')})
+
+
+@bp.route("/api/analisis/<slug>/<int:id>/emails", methods=["GET"])
+@login_required
+def llistar_emails(slug, id):
+    a = db.get_or_404(Analisi, id)
+    if a.tipus != slug:
+        abort(404)
+    logs = EmailLog.query.filter_by(analisi_id=id).order_by(EmailLog.enviat_at.desc()).all()
+    return jsonify([l.to_dict() for l in logs])
