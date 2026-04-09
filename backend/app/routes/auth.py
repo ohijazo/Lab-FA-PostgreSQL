@@ -20,7 +20,9 @@ def login():
     session["email"] = user.email
     session["nom"] = user.nom
     session["role"] = user.role
-    return jsonify(user.to_dict())
+    result = user.to_dict()
+    result["email_configurat"] = bool(current_app.config.get("POWER_AUTOMATE_WEBHOOK_URL"))
+    return jsonify(result)
 
 
 @bp.route("/api/auth/me", methods=["GET"])
