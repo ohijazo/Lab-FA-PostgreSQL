@@ -12,8 +12,18 @@ export default function Layout({ children }) {
   const isHome = location.pathname === '/'
   const [configOpen, setConfigOpen] = useState(false)
   const [scannerOpen, setScannerOpen] = useState(false)
+  const [theme, setTheme] = useState(() => {
+    return document.documentElement.getAttribute('data-theme') || 'light'
+  })
   const dropdownRef = useRef(null)
   const lang = i18n.language?.startsWith('es') ? 'es' : 'ca'
+
+  function toggleTheme() {
+    const next = theme === 'light' ? 'dark' : 'light'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('theme', next)
+  }
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -77,6 +87,9 @@ export default function Layout({ children }) {
               </div>
             )}
             <Link to="/ajuda" className="nav-link">{t('nav.ajuda')}</Link>
+            <button className="theme-toggle" onClick={toggleTheme} title={t('nav.tema')}>
+              {theme === 'light' ? '\u{1F319}' : '\u2600\uFE0F'}
+            </button>
             <button className="nav-link lang-switcher" onClick={() => i18n.changeLanguage(lang === 'ca' ? 'es' : 'ca')}>{lang === 'ca' ? 'ES' : 'CA'}</button>
             <div className="nav-user">
               <a href="#" className="nav-link nav-link-logout" onClick={(e) => { e.preventDefault(); logout() }}>
