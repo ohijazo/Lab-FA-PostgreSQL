@@ -88,7 +88,7 @@ export default function Layout({ children }) {
             )}
             <Link to="/ajuda" className="nav-link">{t('nav.ajuda')}</Link>
             <button className="theme-toggle" onClick={toggleTheme} title={t('nav.tema')}>
-              {theme === 'light' ? '\u{1F319}' : '\u2600\uFE0F'}
+              {theme === 'light' ? '\u263D' : '\u2609'}
             </button>
             <button className="nav-link lang-switcher" onClick={() => i18n.changeLanguage(lang === 'ca' ? 'es' : 'ca')}>{lang === 'ca' ? 'ES' : 'CA'}</button>
             <div className="nav-user">
