@@ -554,6 +554,15 @@
     "rol_viewer_5": "No pot crear ni editar an\u00e0lisis",
     "rol_viewer_6": "No pot accedir a la configuraci\u00f3",
     "footer_dubtes": "Si tens dubtes o incid\u00e8ncies, contacta amb l'administrador del sistema.",
-    "footer_tornar": "\u2190 Tornar a l'inici"
+    "footer_tornar": "\u2190 Tornar a l'inici",
+    "versio_titol": "Versi\u00f3 de l'aplicaci\u00f3",
+    "versio_actual": "Versi\u00f3 actual",
+    "versio_no_disponible": "No disponible",
+    "actualitzar_titol": "Actualitzar aplicaci\u00f3",
+    "actualitzar_clau": "Clau d'administraci\u00f3",
+    "actualitzar_boto": "Actualitzar aplicaci\u00f3",
+    "actualitzar_processant": "Actualitzant...",
+    "actualitzar_ok": "Aplicaci\u00f3 actualitzada correctament. La p\u00e0gina es recarregar\u00e0 en uns segons.",
+    "actualitzar_info": "Aquesta opci\u00f3 descarrega la darrera versi\u00f3 del codi i reinicia el servei."
   }
 }

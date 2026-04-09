@@ -1,8 +1,9 @@
 import re
 import json
+import subprocess
 from datetime import datetime
 from functools import wraps
-from flask import Blueprint, jsonify, request, abort, session
+from flask import Blueprint, jsonify, request, abort, session, current_app
 from io import BytesIO
 from flask import send_file
 from openpyxl import Workbook, load_workbook
@@ -479,6 +480,12 @@ def importar_excel(id):
                     row_errors.append(tr('camp_obligatori_buit', label=camp.label))
                 continue
 
+            # Treat placeholder values as empty
+            if isinstance(val, str) and val.strip() in ("-", "—", "n/a", "N/A", "NA", "--"):
+                if camp.name in required_camps:
+                    row_errors.append(tr('camp_obligatori_buit', label=camp.label))
+                continue
+
             # Type conversion
             if camp.type == "number":
                 try:
@@ -606,3 +613,51 @@ def eliminar_user(id):
     db.session.delete(u)
     db.session.commit()
     return jsonify({"ok": True})
+
+
+# ---- Versió i actualització ----
+
+@bp.route("/api/admin/versio", methods=["GET"])
+def obtenir_versio():
+    try:
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%h %s (%ci)"],
+            capture_output=True, text=True, timeout=10
+        )
+        return jsonify({"versio": result.stdout.strip()})
+    except Exception:
+        return jsonify({"versio": "No disponible"})
+
+
+@bp.route("/api/admin/actualitzar", methods=["POST"])
+def actualitzar_app():
+    data = request.get_json()
+    clau = (data or {}).get("clau", "")
+
+    admin_key = current_app.config.get("ADMIN_KEY", "")
+    if not admin_key:
+        return jsonify({"error": tr('admin_key_no_configurada')}), 500
+
+    if not clau:
+        return jsonify({"error": tr('clau_obligatoria')}), 400
+
+    if clau != admin_key:
+        return jsonify({"error": tr('clau_incorrecta')}), 403
+
+    resultats = {}
+    try:
+        git_pull = subprocess.run(
+            ["git", "pull", "origin", "master"],
+            capture_output=True, text=True, timeout=30
+        )
+        resultats["git_pull"] = git_pull.stdout.strip() or git_pull.stderr.strip()
+
+        restart = subprocess.run(
+            ["sudo", "systemctl", "restart", "labfc"],
+            capture_output=True, text=True, timeout=15
+        )
+        resultats["restart"] = restart.stdout.strip() or restart.stderr.strip() or "OK"
+
+        return jsonify({"ok": True, "msg": tr('actualitzacio_ok'), "detalls": resultats})
+    except Exception as e:
+        return jsonify({"error": tr('actualitzacio_error', error=str(e)), "detalls": resultats}), 500

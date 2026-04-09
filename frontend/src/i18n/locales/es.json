@@ -554,6 +554,15 @@
     "rol_viewer_5": "No puede crear ni editar análisis",
     "rol_viewer_6": "No puede acceder a la configuración",
     "footer_dubtes": "Si tienes dudas o incidencias, contacta con el administrador del sistema.",
-    "footer_tornar": "← Volver al inicio"
+    "footer_tornar": "\u2190 Volver al inicio",
+    "versio_titol": "Versi\u00f3n de la aplicaci\u00f3n",
+    "versio_actual": "Versi\u00f3n actual",
+    "versio_no_disponible": "No disponible",
+    "actualitzar_titol": "Actualizar aplicaci\u00f3n",
+    "actualitzar_clau": "Clave de administraci\u00f3n",
+    "actualitzar_boto": "Actualizar aplicaci\u00f3n",
+    "actualitzar_processant": "Actualizando...",
+    "actualitzar_ok": "Aplicaci\u00f3n actualizada correctamente. La p\u00e1gina se recargar\u00e1 en unos segundos.",
+    "actualitzar_info": "Esta opci\u00f3n descarga la \u00faltima versi\u00f3n del c\u00f3digo y reinicia el servicio."
   }
 }

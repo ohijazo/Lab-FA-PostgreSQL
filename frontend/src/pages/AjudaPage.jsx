@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { obtenirVersio, actualitzarApp } from '../api/admin'
 
 /* ── Inline SVG mockups ── */
 
@@ -428,6 +430,15 @@ export default function AjudaPage() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
   const isViewer = user?.role === 'viewer'
+
+  const [versio, setVersio] = useState(null)
+  const [clau, setClau] = useState('')
+  const [actualitzant, setActualitzant] = useState(false)
+  const [resultat, setResultat] = useState(null)
+
+  useEffect(() => {
+    obtenirVersio().then(d => setVersio(d.versio)).catch(() => setVersio(t('ajuda.versio_no_disponible')))
+  }, [])
 
   const sections = [
     { id: 'introduccio', title: t('ajuda.seccio_introduccio') },
@@ -920,6 +931,66 @@ export default function AjudaPage() {
             </ul>
           </div>
         </div>
+      </section>
+
+      {/* Versió i actualització */}
+      <section className="ajuda-section" id="versio">
+        <h2>{t('ajuda.versio_titol')}</h2>
+        <p><strong>{t('ajuda.versio_actual')}:</strong> {versio || t('common.carregant')}</p>
+
+        {isAdmin && (
+          <div style={{ marginTop: '1.5rem' }}>
+            <h3>{t('ajuda.actualitzar_titol')}</h3>
+            <p style={{ color: '#64748b', fontSize: '0.9rem' }}>{t('ajuda.actualitzar_info')}</p>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <label style={{ flex: '1', minWidth: '200px' }}>
+                {t('ajuda.actualitzar_clau')}
+                <input
+                  type="password"
+                  value={clau}
+                  onChange={e => setClau(e.target.value)}
+                  disabled={actualitzant}
+                />
+              </label>
+              <button
+                onClick={async () => {
+                  setActualitzant(true)
+                  setResultat(null)
+                  try {
+                    const data = await actualitzarApp(clau)
+                    setResultat({ ok: true, msg: t('ajuda.actualitzar_ok'), detalls: data.detalls })
+                    setTimeout(() => window.location.reload(), 5000)
+                  } catch (e) {
+                    setResultat({ ok: false, msg: e.message })
+                  } finally {
+                    setActualitzant(false)
+                  }
+                }}
+                disabled={actualitzant || !clau}
+                className="contrast"
+              >
+                {actualitzant ? t('ajuda.actualitzar_processant') : t('ajuda.actualitzar_boto')}
+              </button>
+            </div>
+            {resultat && (
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                background: resultat.ok ? '#f0fdf4' : '#fef2f2',
+                color: resultat.ok ? '#166534' : '#991b1b',
+                border: `1px solid ${resultat.ok ? '#bbf7d0' : '#fecaca'}`,
+              }}>
+                <p style={{ margin: 0 }}>{resultat.msg}</p>
+                {resultat.detalls && (
+                  <pre style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>
+                    {JSON.stringify(resultat.detalls, null, 2)}
+                  </pre>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Footer */}

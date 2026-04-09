@@ -44,6 +44,11 @@ TRANSLATIONS = {
         'email_automatic': "Aquest correu s'ha generat automàticament des de l'aplicació Lab FA.",
         'email_si': "Sí",
         'email_no': "No",
+        'clau_obligatoria': "La clau d'administració és obligatòria",
+        'clau_incorrecta': "Clau d'administració incorrecta",
+        'actualitzacio_ok': "Aplicació actualitzada correctament",
+        'actualitzacio_error': "Error durant l'actualització: {error}",
+        'admin_key_no_configurada': "ADMIN_KEY no està configurada al servidor",
     },
     'es': {
         'no_autenticat': 'No autenticado',
@@ -88,6 +93,11 @@ TRANSLATIONS = {
         'email_automatic': "Este correo se ha generado automáticamente desde la aplicación Lab FA.",
         'email_si': "Sí",
         'email_no': "No",
+        'clau_obligatoria': "La clave de administración es obligatoria",
+        'clau_incorrecta': "Clave de administración incorrecta",
+        'actualitzacio_ok': "Aplicación actualizada correctamente",
+        'actualitzacio_error': "Error durante la actualización: {error}",
+        'admin_key_no_configurada': "ADMIN_KEY no está configurada en el servidor",
     },
 }
 

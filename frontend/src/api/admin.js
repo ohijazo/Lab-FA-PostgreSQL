@@ -257,3 +257,23 @@ export async function eliminarUser(id) {
   }
   return res.json()
 }
+
+// ---- Versió i actualització ----
+
+export async function obtenirVersio() {
+  const res = await fetch(`${BASE}/versio`, { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) throw new Error('Error obtenint versió')
+  return res.json()
+}
+
+export async function actualitzarApp(clau) {
+  const res = await fetch(`${BASE}/actualitzar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...langHeaders() },
+    credentials: 'include',
+    body: JSON.stringify({ clau }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'Error actualitzant')
+  return data
+}
