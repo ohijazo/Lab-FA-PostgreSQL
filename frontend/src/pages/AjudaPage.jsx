@@ -458,6 +458,7 @@ export default function AjudaPage() {
       { id: 'admin-usuaris', title: t('ajuda.seccio_admin_usuaris') },
     ] : []),
     { id: 'rols', title: t('ajuda.seccio_rols') },
+    { id: 'versio', title: t('ajuda.seccio_versio') },
   ]
 
   return (
@@ -936,20 +937,30 @@ export default function AjudaPage() {
       {/* Versió i actualització */}
       <section className="ajuda-section" id="versio">
         <h2>{t('ajuda.versio_titol')}</h2>
-        <p><strong>{t('ajuda.versio_actual')}:</strong> {versio || t('common.carregant')}</p>
+
+        <div className="ajuda-versio-card">
+          <div className="ajuda-versio-badge">
+            <span className="ajuda-versio-icon">&#9881;</span>
+            <div>
+              <div className="ajuda-versio-label">{t('ajuda.versio_actual')}</div>
+              <div className="ajuda-versio-value">{versio || t('common.carregant')}</div>
+            </div>
+          </div>
+        </div>
 
         {isAdmin && (
-          <div style={{ marginTop: '1.5rem' }}>
+          <div className="ajuda-update-panel">
             <h3>{t('ajuda.actualitzar_titol')}</h3>
-            <p style={{ color: '#64748b', fontSize: '0.9rem' }}>{t('ajuda.actualitzar_info')}</p>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-              <label style={{ flex: '1', minWidth: '200px' }}>
+            <p className="ajuda-update-desc">{t('ajuda.actualitzar_info')}</p>
+            <div className="ajuda-update-form">
+              <label className="ajuda-update-label">
                 {t('ajuda.actualitzar_clau')}
                 <input
                   type="password"
                   value={clau}
                   onChange={e => setClau(e.target.value)}
                   disabled={actualitzant}
+                  placeholder="••••••••"
                 />
               </label>
               <button
@@ -967,26 +978,21 @@ export default function AjudaPage() {
                   }
                 }}
                 disabled={actualitzant || !clau}
-                className="contrast"
+                className="ajuda-update-btn"
               >
+                {actualitzant && <span className="ajuda-update-spinner" />}
                 {actualitzant ? t('ajuda.actualitzar_processant') : t('ajuda.actualitzar_boto')}
               </button>
             </div>
             {resultat && (
-              <div style={{
-                marginTop: '1rem',
-                padding: '0.75rem',
-                borderRadius: '8px',
-                background: resultat.ok ? '#f0fdf4' : '#fef2f2',
-                color: resultat.ok ? '#166534' : '#991b1b',
-                border: `1px solid ${resultat.ok ? '#bbf7d0' : '#fecaca'}`,
-              }}>
-                <p style={{ margin: 0 }}>{resultat.msg}</p>
-                {resultat.detalls && (
-                  <pre style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>
-                    {JSON.stringify(resultat.detalls, null, 2)}
-                  </pre>
-                )}
+              <div className={`ajuda-update-result ${resultat.ok ? 'ajuda-update-ok' : 'ajuda-update-error'}`}>
+                <span>{resultat.ok ? '\u2705' : '\u274c'}</span>
+                <div>
+                  <p>{resultat.msg}</p>
+                  {resultat.detalls && (
+                    <pre>{JSON.stringify(resultat.detalls, null, 2)}</pre>
+                  )}
+                </div>
               </div>
             )}
           </div>
