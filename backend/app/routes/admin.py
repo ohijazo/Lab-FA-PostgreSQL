@@ -652,6 +652,13 @@ def actualitzar_app():
         )
         resultats["git_pull"] = git_pull.stdout.strip() or git_pull.stderr.strip()
 
+        npm_build = subprocess.run(
+            ["npm", "run", "build"],
+            capture_output=True, text=True, timeout=120,
+            cwd="/var/www/lab-fa/frontend"
+        )
+        resultats["npm_build"] = npm_build.stdout.strip() or npm_build.stderr.strip() or "OK"
+
         restart = subprocess.run(
             ["sudo", "systemctl", "restart", "labfc"],
             capture_output=True, text=True, timeout=15
