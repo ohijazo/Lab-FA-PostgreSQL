@@ -130,7 +130,7 @@ export default function HomePage() {
 
       {/* Activitat recent */}
       {data.activitat_recent.length > 0 && (
-        <details open style={{ marginBottom: '1rem' }}>
+        <details style={{ marginBottom: '1rem' }}>
           <summary style={{ fontSize: '0.9rem', fontWeight: 600, color: '#64748b', cursor: 'pointer' }}>{t('home.activitat_recent')}</summary>
           <div className="overflow-auto">
             <table style={{ fontSize: '0.85rem' }}>
