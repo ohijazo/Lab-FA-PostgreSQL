@@ -3,6 +3,7 @@ import json
 import urllib.request
 import urllib.error
 from datetime import date, datetime
+from html import escape
 from functools import wraps
 from flask import Blueprint, jsonify, request, abort, session, send_file, current_app
 from openpyxl import Workbook
@@ -504,7 +505,7 @@ def enviar_email(slug, id):
     html_parts.append('<div style="max-width:680px;margin:0 auto">')
 
     # 1) Introductory text OUTSIDE the card, before everything
-    html_parts.append(f'<p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 20px 0;padding:0 4px">{t("email_intro", nom=user.nom, tipus=tp.nom, ref=ref_value)}</p>')
+    html_parts.append(f'<p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 20px 0;padding:0 4px">{t("email_intro", nom=escape(user.nom), tipus=escape(tp.nom), ref=escape(str(ref_value)))}</p>')
 
     # 2) Card with header + data
     html_parts.append('<div style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)">')
@@ -521,7 +522,7 @@ def enviar_email(slug, id):
         camps = sorted(seccio.camps, key=lambda c: (c.ordre or 0))
         if not camps:
             continue
-        html_parts.append(f'<h3 style="color:#374151;font-size:13px;font-weight:600;margin:20px 0 8px 0;text-transform:uppercase;letter-spacing:0.5px">{seccio.titol}</h3>')
+        html_parts.append(f'<h3 style="color:#374151;font-size:13px;font-weight:600;margin:20px 0 8px 0;text-transform:uppercase;letter-spacing:0.5px">{escape(seccio.titol)}</h3>')
         html_parts.append('<table style="width:100%;border-collapse:collapse;margin-bottom:16px">')
         for i, camp in enumerate(camps):
             val = dades.get(camp.name, "")
@@ -534,8 +535,8 @@ def enviar_email(slug, id):
             bg = "#f9fafb" if i % 2 == 0 else "#ffffff"
             html_parts.append(
                 f'<tr style="background:{bg}">'
-                f'<td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;width:40%">{camp.label}</td>'
-                f'<td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;font-weight:500">{val}</td>'
+                f'<td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;width:40%">{escape(camp.label)}</td>'
+                f'<td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:13px;font-weight:500">{escape(str(val))}</td>'
                 f'</tr>'
             )
         html_parts.append('</table>')

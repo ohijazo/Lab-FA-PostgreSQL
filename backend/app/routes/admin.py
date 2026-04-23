@@ -618,6 +618,7 @@ def eliminar_user(id):
 # ---- Versió i actualització ----
 
 @bp.route("/api/admin/versio", methods=["GET"])
+@admin_required
 def obtenir_versio():
     try:
         result = subprocess.run(
