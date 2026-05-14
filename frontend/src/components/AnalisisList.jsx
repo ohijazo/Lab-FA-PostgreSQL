@@ -16,7 +16,7 @@ function formatCell(col, value, type) {
   return value
 }
 
-export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort, onToggleFinalitzat }) {
+export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
@@ -66,12 +66,8 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
               style={{ cursor: 'pointer' }}
             >
               <td
-                style={{ textAlign: 'center', cursor: onToggleFinalitzat ? 'pointer' : 'default' }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (onToggleFinalitzat) onToggleFinalitzat(a)
-                }}
-                title={a.finalitzat ? t('llista.marcar_pendent') : t('llista.marcar_finalitzat')}
+                style={{ textAlign: 'center' }}
+                title={a.finalitzat ? t('detall.finalitzat') : t('detall.pendent')}
               >
                 <span className={`row-check ${a.finalitzat ? 'is-on' : 'is-off'}`}>
                   {a.finalitzat ? '✓' : ''}

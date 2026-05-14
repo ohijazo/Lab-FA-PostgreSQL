@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { llistarAnalisis, obtenirConfig, desarColumnesUsuari, restablirColumnesUsuari, marcarFinalitzat } from '../api/analisis'
+import { llistarAnalisis, obtenirConfig, desarColumnesUsuari, restablirColumnesUsuari } from '../api/analisis'
 import AnalisisList from '../components/AnalisisList'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
@@ -101,18 +101,6 @@ export default function LlistaPage() {
   function changeEstat(nou) {
     setPage(1)
     setEstat(nou)
-  }
-
-  async function toggleRowFinalitzat(item) {
-    try {
-      const updated = await marcarFinalitzat(tipus, item.id, !item.finalitzat)
-      setData((prev) => ({
-        ...prev,
-        items: prev.items.map((x) => (x.id === item.id ? { ...x, finalitzat: updated.finalitzat } : x)),
-      }))
-    } catch (err) {
-      setError(err.message)
-    }
   }
 
   useEffect(() => {
@@ -508,7 +496,6 @@ export default function LlistaPage() {
             sortCol={sortCol}
             sortDir={sortDir}
             onSort={handleSort}
-            onToggleFinalitzat={isViewer ? null : toggleRowFinalitzat}
           />
           {data.pages > 1 && (
             <nav className="pagination">
