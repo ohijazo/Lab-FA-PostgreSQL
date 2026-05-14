@@ -335,73 +335,95 @@ export default function LlistaPage() {
             <h3>{t('llista.columnes_titol', { nom: config.nom })}</h3>
           </header>
 
-          <p><small>{t('llista.columnes_desc')}</small></p>
+          <p style={{ marginTop: 0 }}><small>{t('llista.columnes_desc')}</small></p>
 
           {columnesError && <p style={{ color: 'var(--pico-del-color)' }}>{columnesError}</p>}
 
-          <strong style={{ fontSize: '0.9rem' }}>{t('llista.columnes_seleccionades')}</strong>
-          {editColumnes.length === 0 ? (
-            <p><small>{t('llista.columnes_cap_seleccionada')}</small></p>
-          ) : (
-            <DndContext sensors={colsSensors} collisionDetection={closestCenter} onDragEnd={handleColumnesDragEnd}>
-              <SortableContext items={editColumnes} strategy={verticalListSortingStrategy}>
-                <ul style={{ padding: 0, margin: '0.5rem 0 1rem 0' }}>
-                  {editColumnes.map((name) => {
-                    const c = campsByName[name]
-                    if (!c) return null
-                    return (
-                      <SortableColumnItem
-                        key={name}
-                        id={name}
-                        label={c.label}
-                        onRemove={() => treureColumna(name)}
-                      />
-                    )
-                  })}
-                </ul>
-              </SortableContext>
-            </DndContext>
-          )}
+          <section style={{ marginBottom: '1.25rem' }}>
+            <h6 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--pico-muted-color)' }}>
+              {t('llista.columnes_seleccionades')}
+            </h6>
+            {editColumnes.length === 0 ? (
+              <p style={{ margin: 0 }}><small>{t('llista.columnes_cap_seleccionada')}</small></p>
+            ) : (
+              <DndContext sensors={colsSensors} collisionDetection={closestCenter} onDragEnd={handleColumnesDragEnd}>
+                <SortableContext items={editColumnes} strategy={verticalListSortingStrategy}>
+                  <ul style={{ padding: 0, margin: 0 }}>
+                    {editColumnes.map((name) => {
+                      const c = campsByName[name]
+                      if (!c) return null
+                      return (
+                        <SortableColumnItem
+                          key={name}
+                          id={name}
+                          label={c.label}
+                          onRemove={() => treureColumna(name)}
+                        />
+                      )
+                    })}
+                  </ul>
+                </SortableContext>
+              </DndContext>
+            )}
+          </section>
 
-          <strong style={{ fontSize: '0.9rem' }}>{t('llista.columnes_disponibles')}</strong>
-          <div style={{ marginTop: '0.5rem' }}>
+          <section>
+            <h6 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--pico-muted-color)' }}>
+              {t('llista.columnes_disponibles')}
+            </h6>
             {config.seccions.filter((s) => s.camps.some((c) => !editColumnes.includes(c.name))).map((s) => (
-              <fieldset key={s.id} style={{ marginBottom: '0.5rem' }}>
-                <legend style={{ fontSize: '0.85rem' }}><strong>{s.titol}</strong></legend>
+              <div key={s.id} style={{ marginBottom: '0.75rem' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--pico-muted-color)', marginBottom: '0.3rem' }}>{s.titol}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
                   {s.camps.filter((c) => !editColumnes.includes(c.name)).map((c) => (
                     <button
                       key={c.name}
                       type="button"
                       className="outline"
-                      style={{ padding: '0.2rem 0.55rem', fontSize: '0.85rem', margin: 0 }}
+                      style={{ padding: '0.2rem 0.6rem', fontSize: '0.85rem', margin: 0, lineHeight: 1.4 }}
                       onClick={() => afegirColumna(c.name)}
                     >
                       + {c.label}
                     </button>
                   ))}
                 </div>
-              </fieldset>
+              </div>
             ))}
             {config.seccions.every((s) => s.camps.every((c) => editColumnes.includes(c.name))) && (
-              <p><small>{t('llista.columnes_totes_seleccionades')}</small></p>
+              <p style={{ margin: 0 }}><small>{t('llista.columnes_totes_seleccionades')}</small></p>
             )}
-          </div>
+          </section>
 
-          <footer>
+          <footer style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <button
+              type="button"
               className="outline secondary"
               onClick={handleResetColumnes}
               disabled={savingColumnes || !config.columnes_llista_personalitzat}
+              style={{ margin: 0 }}
             >
               {t('llista.columnes_restablir')}
             </button>
-            <button className="secondary" onClick={closeColumnesDialog} disabled={savingColumnes}>
-              {t('common.cancellar')}
-            </button>
-            <button onClick={handleSaveColumnes} disabled={savingColumnes} aria-busy={savingColumnes}>
-              {t('common.desar_canvis')}
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+              <button
+                type="button"
+                className="secondary"
+                onClick={closeColumnesDialog}
+                disabled={savingColumnes}
+                style={{ margin: 0 }}
+              >
+                {t('common.cancellar')}
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveColumnes}
+                disabled={savingColumnes}
+                aria-busy={savingColumnes}
+                style={{ margin: 0 }}
+              >
+                {t('common.desar_canvis')}
+              </button>
+            </div>
           </footer>
         </article>
       </dialog>
