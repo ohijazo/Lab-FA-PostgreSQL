@@ -76,7 +76,16 @@
     "anterior": "Anterior",
     "pagina_de": "Página {{page}} de {{pages}}",
     "seguent": "Siguiente",
-    "no_analisis": "No hay análisis registrados."
+    "no_analisis": "No hay análisis registrados.",
+    "columnes": "Columnas",
+    "columnes_title": "Configurar columnas de la lista (personal)",
+    "columnes_titol": "Columnas — {{nom}}",
+    "columnes_desc": "Elige qué columnas quieres ver en tu lista y en qué orden. Esta configuración es personal de cada usuario.",
+    "columnes_seleccionades": "Seleccionadas (arrastra para ordenar)",
+    "columnes_disponibles": "Disponibles",
+    "columnes_cap_seleccionada": "No hay ninguna columna seleccionada. Añade desde la lista de abajo.",
+    "columnes_totes_seleccionades": "Todas las columnas ya están seleccionadas.",
+    "columnes_restablir": "Restablecer por defecto"
   },
   "detall": {
     "informe_analisi": "Informe de análisis",
@@ -277,6 +286,7 @@
     "creant_analisi": "Error creando análisis",
     "editant_analisi": "Error editando análisis",
     "eliminant_analisi": "Error eliminando análisis",
+    "desant_columnes": "Error guardando las columnas",
     "enviant_email": "Error enviando el correo",
     "conflicte_concurrencia": "Conflicto de concurrencia",
     "carregant_dashboard_global": "Error cargando dashboard global",

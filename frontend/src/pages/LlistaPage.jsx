@@ -1,9 +1,43 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { llistarAnalisis, obtenirConfig } from '../api/analisis'
+import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { llistarAnalisis, obtenirConfig, desarColumnesUsuari, restablirColumnesUsuari } from '../api/analisis'
 import AnalisisList from '../components/AnalisisList'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
+
+function SortableColumnItem({ id, label, onRemove }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.4rem 0.6rem',
+    border: '1px solid var(--lab-border)',
+    borderRadius: '0.25rem',
+    marginBottom: '0.25rem',
+    background: 'var(--lab-bg, white)',
+    listStyle: 'none',
+  }
+  return (
+    <li ref={setNodeRef} style={style}>
+      <span {...attributes} {...listeners} className="drag-handle" style={{ cursor: 'grab' }}>⠿</span>
+      <span style={{ flex: 1 }}>{label}</span>
+      <button
+        type="button"
+        className="outline secondary"
+        style={{ padding: '0.1rem 0.5rem', fontSize: '0.85rem', margin: 0 }}
+        onClick={onRemove}
+        aria-label="treure"
+      >×</button>
+    </li>
+  )
+}
 
 export default function LlistaPage() {
   const { t } = useTranslation()
@@ -25,6 +59,16 @@ export default function LlistaPage() {
   const dialogRef = useRef(null)
   const [exportDateFrom, setExportDateFrom] = useState('')
   const [exportDateTo, setExportDateTo] = useState('')
+
+  const colsDialogRef = useRef(null)
+  const [editColumnes, setEditColumnes] = useState([])
+  const [savingColumnes, setSavingColumnes] = useState(false)
+  const [columnesError, setColumnesError] = useState(null)
+
+  const colsSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor)
+  )
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -121,6 +165,69 @@ export default function LlistaPage() {
     setFilters({})
   }
 
+  // --- Configuració de columnes per usuari ---
+  const campsByName = useMemo(() => {
+    const m = {}
+    if (!config) return m
+    for (const s of config.seccions) for (const c of s.camps) m[c.name] = { ...c, seccioTitol: s.titol }
+    return m
+  }, [config])
+
+  function openColumnesDialog() {
+    setColumnesError(null)
+    setEditColumnes(config?.columnes_llista || [])
+    colsDialogRef.current?.showModal()
+  }
+
+  function closeColumnesDialog() {
+    colsDialogRef.current?.close()
+  }
+
+  function afegirColumna(name) {
+    setEditColumnes((prev) => (prev.includes(name) ? prev : [...prev, name]))
+  }
+
+  function treureColumna(name) {
+    setEditColumnes((prev) => prev.filter((n) => n !== name))
+  }
+
+  function handleColumnesDragEnd(event) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = editColumnes.indexOf(active.id)
+    const newIndex = editColumnes.indexOf(over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+    setEditColumnes(arrayMove(editColumnes, oldIndex, newIndex))
+  }
+
+  async function handleSaveColumnes() {
+    setSavingColumnes(true)
+    setColumnesError(null)
+    try {
+      await desarColumnesUsuari(tipus, editColumnes)
+      closeColumnesDialog()
+      await fetchData()
+    } catch (err) {
+      setColumnesError(err.message)
+    } finally {
+      setSavingColumnes(false)
+    }
+  }
+
+  async function handleResetColumnes() {
+    setSavingColumnes(true)
+    setColumnesError(null)
+    try {
+      await restablirColumnesUsuari(tipus)
+      closeColumnesDialog()
+      await fetchData()
+    } catch (err) {
+      setColumnesError(err.message)
+    } finally {
+      setSavingColumnes(false)
+    }
+  }
+
   if (loading && !config) return <p aria-busy="true">{t('common.carregant')}</p>
   if (error) return <p>Error: {error}</p>
   if (!config) return <p>{t('common.tipus_no_trobat')}</p>
@@ -150,6 +257,13 @@ export default function LlistaPage() {
               {activeFilterCount > 0 ? t('llista.filtres_count', { count: activeFilterCount }) : t('llista.filtres')}
             </button>
           )}
+          <button
+            className={config?.columnes_llista_personalitzat ? '' : 'outline'}
+            onClick={openColumnesDialog}
+            title={t('llista.columnes_title')}
+          >
+            {t('llista.columnes')}
+          </button>
           {!isViewer && <Link to={`/${tipus}/nou`} role="button">{t('llista.nou_analisi')}</Link>}
           <button className="outline" onClick={openExportDialog}>
             {t('llista.exportar_excel')}
@@ -213,6 +327,84 @@ export default function LlistaPage() {
           </div>
         </div>
       )}
+
+      <dialog ref={colsDialogRef}>
+        <article style={{ maxWidth: '640px' }}>
+          <header>
+            <button aria-label={t('common.tancar')} rel="prev" onClick={closeColumnesDialog}></button>
+            <h3>{t('llista.columnes_titol', { nom: config.nom })}</h3>
+          </header>
+
+          <p><small>{t('llista.columnes_desc')}</small></p>
+
+          {columnesError && <p style={{ color: 'var(--pico-del-color)' }}>{columnesError}</p>}
+
+          <strong style={{ fontSize: '0.9rem' }}>{t('llista.columnes_seleccionades')}</strong>
+          {editColumnes.length === 0 ? (
+            <p><small>{t('llista.columnes_cap_seleccionada')}</small></p>
+          ) : (
+            <DndContext sensors={colsSensors} collisionDetection={closestCenter} onDragEnd={handleColumnesDragEnd}>
+              <SortableContext items={editColumnes} strategy={verticalListSortingStrategy}>
+                <ul style={{ padding: 0, margin: '0.5rem 0 1rem 0' }}>
+                  {editColumnes.map((name) => {
+                    const c = campsByName[name]
+                    if (!c) return null
+                    return (
+                      <SortableColumnItem
+                        key={name}
+                        id={name}
+                        label={c.label}
+                        onRemove={() => treureColumna(name)}
+                      />
+                    )
+                  })}
+                </ul>
+              </SortableContext>
+            </DndContext>
+          )}
+
+          <strong style={{ fontSize: '0.9rem' }}>{t('llista.columnes_disponibles')}</strong>
+          <div style={{ marginTop: '0.5rem' }}>
+            {config.seccions.filter((s) => s.camps.some((c) => !editColumnes.includes(c.name))).map((s) => (
+              <fieldset key={s.id} style={{ marginBottom: '0.5rem' }}>
+                <legend style={{ fontSize: '0.85rem' }}><strong>{s.titol}</strong></legend>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                  {s.camps.filter((c) => !editColumnes.includes(c.name)).map((c) => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      className="outline"
+                      style={{ padding: '0.2rem 0.55rem', fontSize: '0.85rem', margin: 0 }}
+                      onClick={() => afegirColumna(c.name)}
+                    >
+                      + {c.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            ))}
+            {config.seccions.every((s) => s.camps.every((c) => editColumnes.includes(c.name))) && (
+              <p><small>{t('llista.columnes_totes_seleccionades')}</small></p>
+            )}
+          </div>
+
+          <footer>
+            <button
+              className="outline secondary"
+              onClick={handleResetColumnes}
+              disabled={savingColumnes || !config.columnes_llista_personalitzat}
+            >
+              {t('llista.columnes_restablir')}
+            </button>
+            <button className="secondary" onClick={closeColumnesDialog} disabled={savingColumnes}>
+              {t('common.cancellar')}
+            </button>
+            <button onClick={handleSaveColumnes} disabled={savingColumnes} aria-busy={savingColumnes}>
+              {t('common.desar_canvis')}
+            </button>
+          </footer>
+        </article>
+      </dialog>
 
       <dialog ref={dialogRef}>
         <article>

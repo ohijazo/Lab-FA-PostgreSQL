@@ -128,6 +128,33 @@ export async function enviarEmail(tipus, id, destinatari, assumpte) {
   return res.json()
 }
 
+export async function desarColumnesUsuari(tipus, columnes) {
+  const res = await fetch(`/api/preferencies/columnes/${tipus}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...langHeaders() },
+    credentials: 'include',
+    body: JSON.stringify({ columnes }),
+  })
+  if (!res.ok) {
+    const info = await res.json().catch(() => null)
+    throw new Error(info?.error || i18n.t('errors.desant_columnes'))
+  }
+  return res.json()
+}
+
+export async function restablirColumnesUsuari(tipus) {
+  const res = await fetch(`/api/preferencies/columnes/${tipus}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: langHeaders(),
+  })
+  if (!res.ok) {
+    const info = await res.json().catch(() => null)
+    throw new Error(info?.error || i18n.t('errors.desant_columnes'))
+  }
+  return res.json()
+}
+
 export async function eliminarAnalisi(tipus, id) {
   const res = await fetch(`/api/analisis/${tipus}/${id}`, {
     method: 'DELETE',

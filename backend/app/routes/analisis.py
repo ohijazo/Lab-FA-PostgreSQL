@@ -71,8 +71,56 @@ def llistar_tipus():
 @bp.route("/api/tipus/<slug>/config", methods=["GET"])
 @login_required
 def config_tipus(slug):
-    t = _get_tipus_or_404(slug)
-    return jsonify(t.to_config())
+    tp = _get_tipus_or_404(slug)
+    cfg = tp.to_config()
+    default_cols = list(cfg.get("columnes_llista") or [])
+    cfg["columnes_llista_default"] = default_cols
+
+    user = User.query.filter_by(email=session.get("email")).first()
+    user_cols = user.get_columnes_llista(slug) if user else None
+    if user_cols is not None:
+        # Filter against camps that still exist to avoid stale names breaking the list
+        valid = {c["name"] for s in cfg["seccions"] for c in s["camps"]}
+        cfg["columnes_llista"] = [c for c in user_cols if c in valid]
+        cfg["columnes_llista_personalitzat"] = True
+    else:
+        cfg["columnes_llista_personalitzat"] = False
+    return jsonify(cfg)
+
+
+# --------------- Preferencies de l'usuari ---------------
+
+@bp.route("/api/preferencies/columnes/<slug>", methods=["PUT"])
+@login_required
+def desar_columnes_usuari(slug):
+    tp = _get_tipus_or_404(slug)
+    user = User.query.filter_by(email=session.get("email")).first()
+    if not user:
+        return jsonify({"error": t('no_autenticat')}), 401
+
+    payload = request.get_json(silent=True) or {}
+    cols = payload.get("columnes")
+    if not isinstance(cols, list):
+        return jsonify({"error": "columnes ha de ser una llista"}), 400
+
+    valid = {c.name for s in tp.seccions for c in s.camps}
+    cols = [c for c in cols if isinstance(c, str) and c in valid]
+
+    user.set_columnes_llista(slug, cols)
+    db.session.commit()
+    return jsonify({"columnes_llista": cols})
+
+
+@bp.route("/api/preferencies/columnes/<slug>", methods=["DELETE"])
+@login_required
+def restablir_columnes_usuari(slug):
+    _get_tipus_or_404(slug)
+    user = User.query.filter_by(email=session.get("email")).first()
+    if not user:
+        return jsonify({"error": t('no_autenticat')}), 401
+    user.clear_columnes_llista(slug)
+    db.session.commit()
+    return jsonify({"ok": True})
 
 
 # --------------- CRUD endpoints ---------------

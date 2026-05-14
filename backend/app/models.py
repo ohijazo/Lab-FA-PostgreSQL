@@ -14,12 +14,34 @@ class User(db.Model):
     nom = db.Column(db.String(100), nullable=False, default="")
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="user")
+    preferencies = db.Column(JSONB, nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def get_columnes_llista(self, slug):
+        prefs = self.preferencies or {}
+        cols_map = prefs.get("columnes_llista") or {}
+        val = cols_map.get(slug)
+        return val if isinstance(val, list) else None
+
+    def set_columnes_llista(self, slug, cols):
+        prefs = dict(self.preferencies or {})
+        cols_map = dict(prefs.get("columnes_llista") or {})
+        cols_map[slug] = list(cols)
+        prefs["columnes_llista"] = cols_map
+        self.preferencies = prefs
+
+    def clear_columnes_llista(self, slug):
+        prefs = dict(self.preferencies or {})
+        cols_map = dict(prefs.get("columnes_llista") or {})
+        if slug in cols_map:
+            del cols_map[slug]
+        prefs["columnes_llista"] = cols_map
+        self.preferencies = prefs
 
     def to_dict(self):
         return {

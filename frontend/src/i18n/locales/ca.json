@@ -76,7 +76,16 @@
     "anterior": "Anterior",
     "pagina_de": "P\u00e0gina {{page}} de {{pages}}",
     "seguent": "Seg\u00fcent",
-    "no_analisis": "No hi ha an\u00e0lisis registrades."
+    "no_analisis": "No hi ha an\u00e0lisis registrades.",
+    "columnes": "Columnes",
+    "columnes_title": "Configurar columnes de la llista (personal)",
+    "columnes_titol": "Columnes \u2014 {{nom}}",
+    "columnes_desc": "Tria quines columnes vols veure a la teva llista i en quin ordre. Aquesta configuraci\u00f3 \u00e9s personal de cada usuari.",
+    "columnes_seleccionades": "Seleccionades (arrossega per ordenar)",
+    "columnes_disponibles": "Disponibles",
+    "columnes_cap_seleccionada": "No hi ha cap columna seleccionada. Afegeix-ne des de la llista de sota.",
+    "columnes_totes_seleccionades": "Totes les columnes ja estan seleccionades.",
+    "columnes_restablir": "Restablir per defecte"
   },
   "detall": {
     "informe_analisi": "Informe d'an\u00e0lisi",
@@ -277,6 +286,7 @@
     "creant_analisi": "Error creant an\u00e0lisi",
     "editant_analisi": "Error editant an\u00e0lisi",
     "eliminant_analisi": "Error eliminant an\u00e0lisi",
+    "desant_columnes": "Error desant les columnes",
     "enviant_email": "Error enviant el correu",
     "conflicte_concurrencia": "Conflicte de concurr\u00e8ncia",
     "carregant_dashboard_global": "Error carregant dashboard global",
