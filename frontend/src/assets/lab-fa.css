@@ -26,6 +26,36 @@
   --lab-line: #334155;
 }
 
+/* --- Toolbar de la llista --- */
+.llista-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+.llista-search {
+  flex: 1 1 220px;
+  min-width: 200px;
+  margin-bottom: 0;
+}
+.llista-search input {
+  margin-bottom: 0;
+}
+.llista-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-left: auto;
+}
+.llista-toolbar-actions > button,
+.llista-toolbar-actions > a[role="button"] {
+  width: auto !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
 /* --- Estat finalitzat / pendent --- */
 
 /* Badge clicable a DetallPage */

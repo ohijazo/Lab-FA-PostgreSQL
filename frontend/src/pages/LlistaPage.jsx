@@ -258,8 +258,8 @@ export default function LlistaPage() {
         <p>{t('llista.analisis_count', { count: data.total })}</p>
       </hgroup>
 
-      <div className="grid" style={{ alignItems: 'center' }}>
-        <form onSubmit={handleSearch} role="search" style={{ marginBottom: 0 }}>
+      <div className="llista-toolbar">
+        <form onSubmit={handleSearch} role="search" className="llista-search">
           <input
             type="search"
             placeholder={t('llista.cercar')}
@@ -267,24 +267,24 @@ export default function LlistaPage() {
             onChange={(e) => setSearchInput(e.target.value)}
           />
         </form>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <div className="estat-segmented" role="tablist" aria-label={t('llista.filtre_estat')}>
-            <button
-              type="button"
-              className={estat === '' ? 'active' : ''}
-              onClick={() => changeEstat('')}
-            >{t('llista.estat_tots')}</button>
-            <button
-              type="button"
-              className={estat === 'pendent' ? 'active' : ''}
-              onClick={() => changeEstat('pendent')}
-            >{t('llista.estat_pendents')}</button>
-            <button
-              type="button"
-              className={estat === 'finalitzat' ? 'active' : ''}
-              onClick={() => changeEstat('finalitzat')}
-            >{t('llista.estat_finalitzats')}</button>
-          </div>
+        <div className="estat-segmented" role="tablist" aria-label={t('llista.filtre_estat')}>
+          <button
+            type="button"
+            className={estat === '' ? 'active' : ''}
+            onClick={() => changeEstat('')}
+          >{t('llista.estat_tots')}</button>
+          <button
+            type="button"
+            className={estat === 'pendent' ? 'active' : ''}
+            onClick={() => changeEstat('pendent')}
+          >{t('llista.estat_pendents')}</button>
+          <button
+            type="button"
+            className={estat === 'finalitzat' ? 'active' : ''}
+            onClick={() => changeEstat('finalitzat')}
+          >{t('llista.estat_finalitzats')}</button>
+        </div>
+        <div className="llista-toolbar-actions">
           {filterableCamps.length > 0 && (
             <button
               className={activeFilterCount > 0 ? '' : 'outline'}
