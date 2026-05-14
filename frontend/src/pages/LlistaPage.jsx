@@ -394,23 +394,21 @@ export default function LlistaPage() {
             )}
           </section>
 
-          <footer style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div className="cols-dialog-footer">
             <button
               type="button"
               className="outline secondary"
               onClick={handleResetColumnes}
               disabled={savingColumnes || !config.columnes_llista_personalitzat}
-              style={{ margin: 0 }}
             >
               {t('llista.columnes_restablir')}
             </button>
-            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+            <div className="cols-dialog-footer-actions">
               <button
                 type="button"
                 className="secondary"
                 onClick={closeColumnesDialog}
                 disabled={savingColumnes}
-                style={{ margin: 0 }}
               >
                 {t('common.cancellar')}
               </button>
@@ -419,12 +417,11 @@ export default function LlistaPage() {
                 onClick={handleSaveColumnes}
                 disabled={savingColumnes}
                 aria-busy={savingColumnes}
-                style={{ margin: 0 }}
               >
                 {t('common.desar_canvis')}
               </button>
             </div>
-          </footer>
+          </div>
         </article>
       </dialog>
 

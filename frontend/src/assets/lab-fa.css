@@ -26,6 +26,32 @@
   --lab-line: #334155;
 }
 
+/* Footer del diàleg de columnes (sobreescriu el width:100% de PicoCSS dins de dialog) */
+.cols-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--lab-border);
+}
+
+.cols-dialog-footer > button,
+.cols-dialog-footer-actions > button {
+  width: auto;
+  margin: 0;
+  display: inline-block;
+}
+
+.cols-dialog-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 /* Admin action buttons */
 .admin-actions {
   display: flex;
