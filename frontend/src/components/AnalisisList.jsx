@@ -16,7 +16,7 @@ function formatCell(col, value, type) {
   return value
 }
 
-export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort }) {
+export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort, onToggleFinalitzat }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
@@ -45,6 +45,7 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
       <table>
         <thead>
           <tr>
+            <th style={{ width: '2.5rem', textAlign: 'center' }} title={t('llista.col_finalitzat')}>✓</th>
             {columnes.map((col) => (
               <th
                 key={col}
@@ -61,8 +62,21 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
             <tr
               key={a.id}
               onClick={() => navigate(`/${tipus}/${a.id}`)}
+              className={a.finalitzat ? 'row-finalitzat' : ''}
               style={{ cursor: 'pointer' }}
             >
+              <td
+                style={{ textAlign: 'center', cursor: onToggleFinalitzat ? 'pointer' : 'default' }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (onToggleFinalitzat) onToggleFinalitzat(a)
+                }}
+                title={a.finalitzat ? t('llista.marcar_pendent') : t('llista.marcar_finalitzat')}
+              >
+                <span className={`row-check ${a.finalitzat ? 'is-on' : 'is-off'}`}>
+                  {a.finalitzat ? '✓' : ''}
+                </span>
+              </td>
               {columnes.map((col) => {
                 const camp = campMap[col]
                 return (

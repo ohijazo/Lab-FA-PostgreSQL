@@ -20,16 +20,31 @@ export async function obtenirConfig(tipus) {
 
 // --- CRUD ---
 
-export async function llistarAnalisis(tipus, { page = 1, per_page = 25, q = '', sort = '', sort_dir = '', filters = {} } = {}) {
+export async function llistarAnalisis(tipus, { page = 1, per_page = 25, q = '', sort = '', sort_dir = '', filters = {}, estat = '' } = {}) {
   const params = new URLSearchParams({ page, per_page })
   if (q) params.set('q', q)
   if (sort) params.set('sort', sort)
   if (sort_dir) params.set('sort_dir', sort_dir)
+  if (estat) params.set('estat', estat)
   for (const [key, val] of Object.entries(filters)) {
     if (val) params.set(key, val)
   }
   const res = await fetch(`/api/analisis/${tipus}?${params}`, { credentials: 'include', headers: langHeaders() })
   if (!res.ok) throw new Error(i18n.t('errors.carregant_analisis'))
+  return res.json()
+}
+
+export async function marcarFinalitzat(tipus, id, finalitzat) {
+  const res = await fetch(`/api/analisis/${tipus}/${id}/finalitzat`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...langHeaders() },
+    credentials: 'include',
+    body: JSON.stringify({ finalitzat }),
+  })
+  if (!res.ok) {
+    const info = await res.json().catch(() => null)
+    throw new Error(info?.error || i18n.t('errors.marcant_finalitzat'))
+  }
   return res.json()
 }
 

@@ -138,6 +138,12 @@ def llistar(slug):
 
     query = Analisi.query.filter_by(tipus=slug)
 
+    estat = request.args.get("estat", "").strip().lower()
+    if estat == "pendent":
+        query = query.filter(Analisi.finalitzat.is_(False))
+    elif estat == "finalitzat":
+        query = query.filter(Analisi.finalitzat.is_(True))
+
     if q:
         query = query.filter(
             Analisi.dades.cast(db.Text).ilike(f"%{q}%")
@@ -448,6 +454,24 @@ def eliminar(slug, id):
     db.session.delete(a)
     db.session.commit()
     return jsonify({"ok": True})
+
+
+# --------------- Marcar finalitzat ---------------
+
+@bp.route("/api/analisis/<slug>/<int:id>/finalitzat", methods=["PATCH"])
+@write_required
+def marcar_finalitzat(slug, id):
+    a = db.get_or_404(Analisi, id)
+    if a.tipus != slug:
+        abort(404)
+    payload = request.get_json(silent=True) or {}
+    val = payload.get("finalitzat")
+    if not isinstance(val, bool):
+        return jsonify({"error": "finalitzat ha de ser true o false"}), 400
+    a.finalitzat = val
+    a.updated_by = session.get("email") or a.updated_by
+    db.session.commit()
+    return jsonify(a.to_dict())
 
 
 # --------------- Edit lock (presence) ---------------

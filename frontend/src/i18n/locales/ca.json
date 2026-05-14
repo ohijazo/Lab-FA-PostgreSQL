@@ -85,7 +85,14 @@
     "columnes_disponibles": "Disponibles",
     "columnes_cap_seleccionada": "No hi ha cap columna seleccionada. Afegeix-ne des de la llista de sota.",
     "columnes_totes_seleccionades": "Totes les columnes ja estan seleccionades.",
-    "columnes_restablir": "Restablir per defecte"
+    "columnes_restablir": "Restablir per defecte",
+    "filtre_estat": "Filtre per estat",
+    "estat_tots": "Tots",
+    "estat_pendents": "Pendents",
+    "estat_finalitzats": "Finalitzats",
+    "col_finalitzat": "Finalitzat",
+    "marcar_finalitzat": "Marcar com a finalitzat",
+    "marcar_pendent": "Marcar com a pendent"
   },
   "detall": {
     "informe_analisi": "Informe d'an\u00e0lisi",
@@ -106,7 +113,13 @@
     "no_enviaments": "No s'ha enviat cap correu d'aquesta anàlisi.",
     "enviat_per": "Enviat per",
     "enviat_a": "Enviat a",
-    "data_enviament": "Data"
+    "data_enviament": "Data",
+    "finalitzat": "Finalitzat",
+    "pendent": "Pendent",
+    "marcar_finalitzat": "Marcar com a finalitzat",
+    "marcar_pendent": "Marcar com a pendent",
+    "marcat_finalitzat": "Anàlisi marcada com a finalitzada",
+    "marcat_pendent": "Anàlisi marcada com a pendent"
   },
   "form": {
     "nou_analisi": "Nou An\u00e0lisi \u2014 {{nom}}",
@@ -287,6 +300,7 @@
     "editant_analisi": "Error editant an\u00e0lisi",
     "eliminant_analisi": "Error eliminant an\u00e0lisi",
     "desant_columnes": "Error desant les columnes",
+    "marcant_finalitzat": "Error canviant l'estat",
     "enviant_email": "Error enviant el correu",
     "conflicte_concurrencia": "Conflicte de concurr\u00e8ncia",
     "carregant_dashboard_global": "Error carregant dashboard global",

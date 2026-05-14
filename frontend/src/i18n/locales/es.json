@@ -85,7 +85,14 @@
     "columnes_disponibles": "Disponibles",
     "columnes_cap_seleccionada": "No hay ninguna columna seleccionada. Añade desde la lista de abajo.",
     "columnes_totes_seleccionades": "Todas las columnas ya están seleccionadas.",
-    "columnes_restablir": "Restablecer por defecto"
+    "columnes_restablir": "Restablecer por defecto",
+    "filtre_estat": "Filtro por estado",
+    "estat_tots": "Todos",
+    "estat_pendents": "Pendientes",
+    "estat_finalitzats": "Finalizados",
+    "col_finalitzat": "Finalizado",
+    "marcar_finalitzat": "Marcar como finalizado",
+    "marcar_pendent": "Marcar como pendiente"
   },
   "detall": {
     "informe_analisi": "Informe de análisis",
@@ -106,7 +113,13 @@
     "no_enviaments": "No se ha enviado ningún correo de este análisis.",
     "enviat_per": "Enviado por",
     "enviat_a": "Enviado a",
-    "data_enviament": "Fecha"
+    "data_enviament": "Fecha",
+    "finalitzat": "Finalizado",
+    "pendent": "Pendiente",
+    "marcar_finalitzat": "Marcar como finalizado",
+    "marcar_pendent": "Marcar como pendiente",
+    "marcat_finalitzat": "Análisis marcado como finalizado",
+    "marcat_pendent": "Análisis marcado como pendiente"
   },
   "form": {
     "nou_analisi": "Nuevo Análisis — {{nom}}",
@@ -287,6 +300,7 @@
     "editant_analisi": "Error editando análisis",
     "eliminant_analisi": "Error eliminando análisis",
     "desant_columnes": "Error guardando las columnas",
+    "marcant_finalitzat": "Error cambiando el estado",
     "enviant_email": "Error enviando el correo",
     "conflicte_concurrencia": "Conflicto de concurrencia",
     "carregant_dashboard_global": "Error cargando dashboard global",

@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
-import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi } from '../api/analisis'
+import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat } from '../api/analisis'
 import AnalisisDetail from '../components/AnalisisDetail'
 import QRCode from '../components/QRCode'
 import { useToast } from '../context/ToastContext'
@@ -84,6 +84,23 @@ export default function DetallPage() {
     }
   }
 
+  const [togglingFinalitzat, setTogglingFinalitzat] = useState(false)
+
+  async function handleToggleFinalitzat() {
+    if (togglingFinalitzat) return
+    const nou = !analisi.finalitzat
+    setTogglingFinalitzat(true)
+    try {
+      const updated = await marcarFinalitzat(tipus, id, nou)
+      setAnalisi(updated)
+      addToast(nou ? t('detall.marcat_finalitzat') : t('detall.marcat_pendent'))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setTogglingFinalitzat(false)
+    }
+  }
+
   const emailDialogRef = useRef(null)
 
   function openEmailModal() {
@@ -160,7 +177,24 @@ export default function DetallPage() {
       </div>
       <div className="detall-toolbar no-print">
         <div className="detall-toolbar-info">
-          <h2>Anàlisi {titleValue}</h2>
+          <h2>
+            Anàlisi {titleValue}{' '}
+            {isViewer ? (
+              <span className={`estat-badge ${analisi.finalitzat ? 'estat-finalitzat' : 'estat-pendent'}`}>
+                {analisi.finalitzat ? `✓ ${t('detall.finalitzat')}` : t('detall.pendent')}
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={`estat-badge ${analisi.finalitzat ? 'estat-finalitzat' : 'estat-pendent'}`}
+                onClick={handleToggleFinalitzat}
+                disabled={togglingFinalitzat}
+                title={analisi.finalitzat ? t('detall.marcar_pendent') : t('detall.marcar_finalitzat')}
+              >
+                {analisi.finalitzat ? `✓ ${t('detall.finalitzat')}` : t('detall.pendent')}
+              </button>
+            )}
+          </h2>
           {metaItems.length > 0 && (
             <span className="detall-toolbar-meta">{metaItems.join(' — ')}</span>
           )}

@@ -162,6 +162,7 @@ class Analisi(db.Model):
     dades = db.Column(JSONB, nullable=False, default=dict)
     created_by = db.Column(db.String(120))
     updated_by = db.Column(db.String(120))
+    finalitzat = db.Column(db.Boolean, nullable=False, default=False, server_default="false", index=True)
 
     def get_dades(self):
         return self.dades or {}
@@ -177,6 +178,7 @@ class Analisi(db.Model):
         d["updated_at"] = self.updated_at.isoformat() if self.updated_at else None
         d["created_by"] = self.created_by
         d["updated_by"] = self.updated_by
+        d["finalitzat"] = bool(self.finalitzat)
         return d
 
 

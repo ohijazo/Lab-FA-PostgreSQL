@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { llistarAnalisis, obtenirConfig, desarColumnesUsuari, restablirColumnesUsuari } from '../api/analisis'
+import { llistarAnalisis, obtenirConfig, desarColumnesUsuari, restablirColumnesUsuari, marcarFinalitzat } from '../api/analisis'
 import AnalisisList from '../components/AnalisisList'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
@@ -55,6 +55,7 @@ export default function LlistaPage() {
   const [sortDir, setSortDir] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({})
+  const [estat, setEstat] = useState('')  // '' = tots, 'pendent', 'finalitzat'
 
   const dialogRef = useRef(null)
   const [exportDateFrom, setExportDateFrom] = useState('')
@@ -75,7 +76,7 @@ export default function LlistaPage() {
     try {
       const [cfg, result] = await Promise.all([
         obtenirConfig(tipus),
-        llistarAnalisis(tipus, { page, q, sort: sortCol, sort_dir: sortDir, filters }),
+        llistarAnalisis(tipus, { page, q, sort: sortCol, sort_dir: sortDir, filters, estat }),
       ])
       setConfig(cfg)
       setData(result)
@@ -84,7 +85,7 @@ export default function LlistaPage() {
     } finally {
       setLoading(false)
     }
-  }, [tipus, page, q, sortCol, sortDir, filters])
+  }, [tipus, page, q, sortCol, sortDir, filters, estat])
 
   useEffect(() => {
     setPage(1)
@@ -94,7 +95,25 @@ export default function LlistaPage() {
     setSortDir('')
     setFilters({})
     setShowFilters(false)
+    setEstat('')
   }, [tipus])
+
+  function changeEstat(nou) {
+    setPage(1)
+    setEstat(nou)
+  }
+
+  async function toggleRowFinalitzat(item) {
+    try {
+      const updated = await marcarFinalitzat(tipus, item.id, !item.finalitzat)
+      setData((prev) => ({
+        ...prev,
+        items: prev.items.map((x) => (x.id === item.id ? { ...x, finalitzat: updated.finalitzat } : x)),
+      }))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
   useEffect(() => {
     fetchData()
@@ -248,7 +267,24 @@ export default function LlistaPage() {
             onChange={(e) => setSearchInput(e.target.value)}
           />
         </form>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div className="estat-segmented" role="tablist" aria-label={t('llista.filtre_estat')}>
+            <button
+              type="button"
+              className={estat === '' ? 'active' : ''}
+              onClick={() => changeEstat('')}
+            >{t('llista.estat_tots')}</button>
+            <button
+              type="button"
+              className={estat === 'pendent' ? 'active' : ''}
+              onClick={() => changeEstat('pendent')}
+            >{t('llista.estat_pendents')}</button>
+            <button
+              type="button"
+              className={estat === 'finalitzat' ? 'active' : ''}
+              onClick={() => changeEstat('finalitzat')}
+            >{t('llista.estat_finalitzats')}</button>
+          </div>
           {filterableCamps.length > 0 && (
             <button
               className={activeFilterCount > 0 ? '' : 'outline'}
@@ -472,6 +508,7 @@ export default function LlistaPage() {
             sortCol={sortCol}
             sortDir={sortDir}
             onSort={handleSort}
+            onToggleFinalitzat={isViewer ? null : toggleRowFinalitzat}
           />
           {data.pages > 1 && (
             <nav className="pagination">
