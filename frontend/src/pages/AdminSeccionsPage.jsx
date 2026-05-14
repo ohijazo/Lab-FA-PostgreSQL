@@ -156,16 +156,22 @@ export default function AdminSeccionsPage() {
         </ul>
       </nav>
 
-      <hgroup>
-        <h1>{t('admin_seccions.titol', { nom: tipus.nom })}</h1>
-        <p>{t('admin_seccions.subtitol')}</p>
-      </hgroup>
+      <div className="admin-header">
+        <hgroup>
+          <h1>{t('admin_seccions.titol', { nom: tipus.nom })}</h1>
+          <p>{t('admin_seccions.subtitol')}</p>
+        </hgroup>
+        <div className="admin-header-actions">
+          <button
+            className={showForm ? 'secondary' : ''}
+            onClick={() => { resetForm(); setShowForm(!showForm) }}
+          >
+            {showForm ? t('common.cancellar') : t('admin_seccions.nova_seccio')}
+          </button>
+        </div>
+      </div>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
-
-      <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
-        {showForm ? t('common.cancellar') : t('admin_seccions.nova_seccio')}
-      </button>
 
       {showForm && (
         <form onSubmit={handleSubmit}>
@@ -206,12 +212,12 @@ export default function AdminSeccionsPage() {
                       <td><strong>{s.titol}</strong></td>
                       <td>{s.camps.length}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <Link to={`/admin/seccions/${s.id}/camps`} role="button" className="outline">
+                        <div className="admin-actions-row">
+                          <Link to={`/admin/seccions/${s.id}/camps`} role="button" className="outline btn-sm">
                             {t('admin_seccions.camps')}
                           </Link>
-                          <button className="outline" onClick={() => startEdit(s)}>{t('common.editar')}</button>
-                          <button className="outline secondary" onClick={() => handleDelete(s.id, s.titol)}>
+                          <button className="outline btn-sm" onClick={() => startEdit(s)}>{t('common.editar')}</button>
+                          <button className="outline secondary btn-sm" onClick={() => handleDelete(s.id, s.titol)}>
                             {t('common.eliminar')}
                           </button>
                         </div>

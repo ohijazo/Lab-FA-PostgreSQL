@@ -103,16 +103,22 @@ export default function AdminTipusPage() {
 
   return (
     <>
-      <hgroup>
-        <h1>{t('admin_tipus.titol')}</h1>
-        <p>{t('admin_tipus.subtitol')}</p>
-      </hgroup>
+      <div className="admin-header">
+        <hgroup>
+          <h1>{t('admin_tipus.titol')}</h1>
+          <p>{t('admin_tipus.subtitol')}</p>
+        </hgroup>
+        <div className="admin-header-actions">
+          <button
+            className={showForm ? 'secondary' : ''}
+            onClick={() => { resetForm(); setShowForm(!showForm) }}
+          >
+            {showForm ? t('common.cancellar') : t('admin_tipus.nou_tipus')}
+          </button>
+        </div>
+      </div>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
-
-      <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
-        {showForm ? t('common.cancellar') : t('admin_tipus.nou_tipus')}
-      </button>
 
       {showForm && (
         <form onSubmit={handleSubmit}>

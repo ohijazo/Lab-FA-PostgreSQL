@@ -151,16 +151,22 @@ export default function AdminCampsPage() {
         </ul>
       </nav>
 
-      <hgroup>
-        <h1>{t('admin_camps.titol')}</h1>
-        <p>{t('admin_camps.subtitol')}</p>
-      </hgroup>
+      <div className="admin-header">
+        <hgroup>
+          <h1>{t('admin_camps.titol')}</h1>
+          <p>{t('admin_camps.subtitol')}</p>
+        </hgroup>
+        <div className="admin-header-actions">
+          <button
+            className={showForm ? 'secondary' : ''}
+            onClick={() => { resetForm(); setShowForm(!showForm) }}
+          >
+            {showForm ? t('common.cancellar') : t('admin_camps.nou_camp')}
+          </button>
+        </div>
+      </div>
 
       {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
-
-      <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
-        {showForm ? t('common.cancellar') : t('admin_camps.nou_camp')}
-      </button>
 
       {showForm && (
         <form onSubmit={handleSubmit}>
@@ -349,9 +355,9 @@ export default function AdminCampsPage() {
                     <td>{c.grup || '—'}</td>
                     <td>{c.required ? t('common.si') : t('common.no')}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button className="outline" onClick={() => startEdit(c)}>{t('common.editar')}</button>
-                        <button className="outline secondary" onClick={() => handleDelete(c.id, c.label)}>
+                      <div className="admin-actions-row">
+                        <button className="outline btn-sm" onClick={() => startEdit(c)}>{t('common.editar')}</button>
+                        <button className="outline secondary btn-sm" onClick={() => handleDelete(c.id, c.label)}>
                           {t('common.eliminar')}
                         </button>
                       </div>

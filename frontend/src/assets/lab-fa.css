@@ -26,6 +26,48 @@
   --lab-line: #334155;
 }
 
+/* --- Capçalera de pàgines admin --- */
+.admin-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1.25rem;
+}
+.admin-header > hgroup {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.admin-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.admin-header-actions > button,
+.admin-header-actions > a[role="button"] {
+  width: auto !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+/* Defensiu: botons petits no s'han d'estirar a tot l'ample */
+.btn-sm,
+.btn-sm[role="button"],
+.btn-xs,
+.btn-xs[role="button"] {
+  width: auto !important;
+}
+
+.admin-actions-row > button,
+.admin-actions-row > a[role="button"] {
+  width: auto !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
 /* --- Toolbar de la llista --- */
 .llista-toolbar {
   display: flex;
