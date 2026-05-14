@@ -132,6 +132,7 @@ class Camp(db.Model):
     alerta_max = db.Column(db.Float, nullable=True)
     alerta_color_min = db.Column(db.String(20), nullable=True)
     alerta_color_max = db.Column(db.String(20), nullable=True)
+    formula = db.Column(db.String(500), nullable=True)
 
     def to_dict(self):
         return {
@@ -147,6 +148,7 @@ class Camp(db.Model):
             "alerta_max": self.alerta_max,
             "alerta_color_min": self.alerta_color_min,
             "alerta_color_max": self.alerta_color_max,
+            "formula": self.formula or "",
         }
 
 

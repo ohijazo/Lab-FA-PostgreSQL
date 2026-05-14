@@ -32,7 +32,7 @@ export default function AdminCampsPage() {
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [form, setForm] = useState({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e' })
+  const [form, setForm] = useState({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e', formula: '' })
   const [novaOpcio, setNovaOpcio] = useState('')
 
   const sensors = useSensors(
@@ -54,7 +54,7 @@ export default function AdminCampsPage() {
   useEffect(() => { fetchData() }, [seccioId])
 
   function resetForm() {
-    setForm({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e' })
+    setForm({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e', formula: '' })
     setNovaOpcio('')
     setEditingId(null)
     setShowForm(false)
@@ -72,6 +72,7 @@ export default function AdminCampsPage() {
       alerta_max: c.alerta_max != null ? c.alerta_max : '',
       alerta_color_min: c.alerta_color_min || '#3b82f6',
       alerta_color_max: c.alerta_color_max || '#e53e3e',
+      formula: c.formula || '',
     })
     setNovaOpcio('')
     setEditingId(c.id)
@@ -93,6 +94,7 @@ export default function AdminCampsPage() {
       alerta_max: form.type === 'number' && form.alerta_max !== '' ? parseFloat(form.alerta_max) : null,
       alerta_color_min: form.type === 'number' ? form.alerta_color_min : null,
       alerta_color_max: form.type === 'number' ? form.alerta_color_max : null,
+      formula: form.formula || '',
     }
     try {
       if (editingId) {
@@ -316,13 +318,41 @@ export default function AdminCampsPage() {
               </div>
             )}
             <label>
+              {t('admin_camps.formula')}
+              <input
+                type="text"
+                value={form.formula}
+                onChange={e => setForm({ ...form, formula: e.target.value })}
+                placeholder={t('admin_camps.formula_placeholder')}
+              />
+              <small style={{ color: 'var(--lab-text-muted)' }}>
+                {t('admin_camps.formula_ajuda')}
+                {camps.length > 0 && (
+                  <>
+                    {' '}{t('admin_camps.formula_camps_disponibles')}{' '}
+                    {camps.filter(c => c.id !== editingId).map((c, i) => (
+                      <span key={c.id}>
+                        {i > 0 && ', '}<code>{c.name}</code>
+                      </span>
+                    ))}
+                  </>
+                )}
+              </small>
+            </label>
+            <label>
               <input
                 type="checkbox"
                 checked={form.required}
                 onChange={e => setForm({ ...form, required: e.target.checked })}
                 role="switch"
+                disabled={!!form.formula && !!form.formula.trim()}
               />
               {t('admin_camps.obligatori')}
+              {form.formula && form.formula.trim() && (
+                <small style={{ color: 'var(--lab-text-muted)', marginLeft: '0.5rem' }}>
+                  ({t('admin_camps.no_aplica_calculat')})
+                </small>
+              )}
             </label>
             <button type="submit">{editingId ? t('common.desar_canvis') : t('common.crear')}</button>
           </fieldset>
@@ -350,7 +380,10 @@ export default function AdminCampsPage() {
                 {camps.map(c => (
                   <SortableRow key={c.id} id={c.id}>
                     <td><code>{c.name}</code></td>
-                    <td>{c.label}</td>
+                    <td>
+                      {c.label}
+                      {c.formula && <span className="formula-badge" title={c.formula} style={{ marginLeft: '0.35rem' }}>ƒ</span>}
+                    </td>
                     <td>{c.type}</td>
                     <td>{c.grup || '—'}</td>
                     <td>{c.required ? t('common.si') : t('common.no')}</td>

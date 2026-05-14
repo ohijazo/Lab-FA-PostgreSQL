@@ -98,6 +98,27 @@
   white-space: nowrap;
 }
 
+/* --- Camp calculat (fórmula) --- */
+.formula-badge {
+  display: inline-block;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--lab-primary);
+  background: var(--lab-bg-subtle);
+  border: 1px solid var(--lab-border);
+  border-radius: 0.25rem;
+  padding: 0 0.3rem;
+  margin-left: 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+.form-camp-calc input[readonly] {
+  background: var(--lab-bg-subtle);
+  cursor: default;
+  color: var(--lab-text);
+}
+
 /* --- Estat finalitzat / pendent --- */
 
 /* Badge clicable a DetallPage */

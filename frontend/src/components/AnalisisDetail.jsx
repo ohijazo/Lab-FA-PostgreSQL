@@ -1,11 +1,16 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { groupCamps } from '../utils/groupCamps'
 import { alertaStyle } from '../utils/alertes'
+import { recomputeFormulas } from '../utils/formula'
 
 const WIDE_THRESHOLD = 4
 
 export default function AnalisisDetail({ seccions, analisi }) {
   const { t } = useTranslation()
+  // Recalcula els camps amb fórmula a partir dels valors desats
+  // (sempre actualitzat segons les fórmules actuals)
+  const data = useMemo(() => recomputeFormulas(seccions, analisi || {}), [seccions, analisi])
   function formatValue(camp, val) {
     if (val === null || val === undefined || val === '') return '—'
     if (camp.type === 'checkbox') return val ? t('common.si') : t('common.no')
@@ -23,11 +28,16 @@ export default function AnalisisDetail({ seccions, analisi }) {
 
   function renderCamp(camp) {
     const isWideItem = camp.label.length > 30 || camp.type === 'textarea'
+    const isCalc = !!(camp.formula && camp.formula.trim())
+    const val = data[camp.name]
     return (
       <div key={camp.name} className={`camp-item${isWideItem ? ' camp-item-wide' : ''}${camp.type === 'textarea' ? ' camp-item-textarea' : ''}`}>
-        <span className="camp-label">{camp.label}:</span>
-        <span className="camp-value" style={alertaStyle(camp, analisi[camp.name])}>
-          {formatValue(camp, analisi[camp.name])}
+        <span className="camp-label">
+          {camp.label}:
+          {isCalc && <span className="formula-badge" title={camp.formula}>ƒ</span>}
+        </span>
+        <span className="camp-value" style={alertaStyle(camp, val)}>
+          {formatValue(camp, val)}
         </span>
       </div>
     )

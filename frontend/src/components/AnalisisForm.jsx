@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { groupCamps } from '../utils/groupCamps'
 import { getAlertaColor } from '../utils/alertes'
+import { recomputeFormulas } from '../utils/formula'
 
 const WIDE_THRESHOLD = 4
 
@@ -24,6 +25,10 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
     return { ...defaults, ...initialData }
   })
 
+  // Recalcula tots els camps amb fórmula a partir dels valors actuals.
+  // Així si l'usuari canvia un input, els calculats s'actualitzen.
+  const computed = useMemo(() => recomputeFormulas(seccions, form), [seccions, form])
+
   function handleChange(e) {
     const { name, value, type, checked } = e.target
     setForm((prev) => ({
@@ -34,7 +39,8 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
 
   function handleSubmit(e) {
     e.preventDefault()
-    onSubmit(form)
+    // Envia els valors amb els camps calculats actualitzats
+    onSubmit(computed)
   }
 
   function renderCamp(camp) {
@@ -83,17 +89,24 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
         </label>
       )
     }
-    const alertColor = getAlertaColor(camp, form[camp.name])
+    const isCalc = !!(camp.formula && camp.formula.trim())
+    const displayValue = isCalc ? (computed[camp.name] ?? '') : (form[camp.name] || '')
+    const alertColor = getAlertaColor(camp, displayValue)
     return (
-      <label key={camp.name} className={`form-camp${camp.label.length > 30 ? ' form-camp-wide' : ''}`}>
-        <span className="form-camp-label">{camp.label}</span>
+      <label key={camp.name} className={`form-camp${camp.label.length > 30 ? ' form-camp-wide' : ''}${isCalc ? ' form-camp-calc' : ''}`}>
+        <span className="form-camp-label">
+          {camp.label}
+          {isCalc && <span className="formula-badge" title={camp.formula}>ƒ</span>}
+        </span>
         <input
-          type={camp.type}
+          type={isCalc ? 'text' : camp.type}
           name={camp.name}
-          value={form[camp.name] || ''}
-          onChange={handleChange}
-          required={camp.required}
-          step={camp.type === 'number' ? 'any' : undefined}
+          value={displayValue === null || displayValue === undefined ? '' : displayValue}
+          onChange={isCalc ? undefined : handleChange}
+          readOnly={isCalc}
+          tabIndex={isCalc ? -1 : undefined}
+          required={!isCalc && camp.required}
+          step={camp.type === 'number' && !isCalc ? 'any' : undefined}
           style={alertColor ? { color: alertColor, borderColor: alertColor, fontWeight: 700 } : undefined}
         />
       </label>

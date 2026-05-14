@@ -223,6 +223,7 @@ def crear_camp(seccio_id):
         alerta_max=data.get("alerta_max"),
         alerta_color_min=data.get("alerta_color_min"),
         alerta_color_max=data.get("alerta_color_max"),
+        formula=(data.get("formula") or "").strip() or None,
     )
     db.session.add(c)
     db.session.commit()
@@ -271,6 +272,9 @@ def editar_camp(id):
         c.alerta_color_min = data["alerta_color_min"]
     if "alerta_color_max" in data:
         c.alerta_color_max = data["alerta_color_max"]
+    if "formula" in data:
+        f = (data["formula"] or "").strip()
+        c.formula = f or None
     db.session.commit()
     return jsonify(c.to_dict())
 
