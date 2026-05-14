@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
-import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat } from '../api/analisis'
+import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat, marcarAlerta } from '../api/analisis'
 import AnalisisDetail from '../components/AnalisisDetail'
 import QRCode from '../components/QRCode'
 import { useToast } from '../context/ToastContext'
@@ -101,6 +101,37 @@ export default function DetallPage() {
     }
   }
 
+  const alertaDialogRef = useRef(null)
+  const [alertaForm, setAlertaForm] = useState({ alerta: false, motiu: '' })
+  const [savingAlerta, setSavingAlerta] = useState(false)
+  const [alertaError, setAlertaError] = useState('')
+
+  function openAlertaModal() {
+    setAlertaError('')
+    setAlertaForm({ alerta: !!analisi.alerta, motiu: analisi.alerta_motiu || '' })
+    alertaDialogRef.current?.showModal()
+  }
+
+  function closeAlertaModal() {
+    alertaDialogRef.current?.close()
+  }
+
+  async function handleSaveAlerta(e) {
+    e.preventDefault()
+    setSavingAlerta(true)
+    setAlertaError('')
+    try {
+      const updated = await marcarAlerta(tipus, id, alertaForm.alerta, alertaForm.motiu)
+      setAnalisi(updated)
+      closeAlertaModal()
+      addToast(updated.alerta ? t('detall.alerta_activada') : t('detall.alerta_desactivada'))
+    } catch (err) {
+      setAlertaError(err.message)
+    } finally {
+      setSavingAlerta(false)
+    }
+  }
+
   const emailDialogRef = useRef(null)
 
   function openEmailModal() {
@@ -194,6 +225,25 @@ export default function DetallPage() {
                 {analisi.finalitzat ? `✓ ${t('detall.finalitzat')}` : t('detall.pendent')}
               </button>
             )}
+            {isViewer ? (
+              analisi.alerta && (
+                <span
+                  className="estat-badge estat-alerta"
+                  title={analisi.alerta_motiu || t('detall.alerta')}
+                >
+                  ⚠ {t('detall.alerta')}
+                </span>
+              )
+            ) : (
+              <button
+                type="button"
+                className={`estat-badge ${analisi.alerta ? 'estat-alerta' : 'estat-sense-alerta'}`}
+                onClick={openAlertaModal}
+                title={analisi.alerta ? (analisi.alerta_motiu || t('detall.alerta')) : t('detall.afegir_alerta')}
+              >
+                {analisi.alerta ? `⚠ ${t('detall.alerta')}` : `+ ${t('detall.alerta')}`}
+              </button>
+            )}
           </h2>
           {metaItems.length > 0 && (
             <span className="detall-toolbar-meta">{metaItems.join(' — ')}</span>
@@ -252,6 +302,48 @@ export default function DetallPage() {
           </table>
         </details>
       )}
+      <dialog ref={alertaDialogRef}>
+        <article style={{ minWidth: '380px' }}>
+          <header>
+            <button aria-label={t('common.tancar')} rel="prev" onClick={closeAlertaModal}></button>
+            <h3>{t('detall.alerta_titol')}</h3>
+          </header>
+          <form onSubmit={handleSaveAlerta}>
+            <label>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={alertaForm.alerta}
+                onChange={(e) => setAlertaForm((f) => ({ ...f, alerta: e.target.checked }))}
+              />
+              {t('detall.alerta_activa')}
+            </label>
+            {alertaForm.alerta && (
+              <label>
+                {t('detall.alerta_motiu')}
+                <textarea
+                  value={alertaForm.motiu}
+                  onChange={(e) => setAlertaForm((f) => ({ ...f, motiu: e.target.value }))}
+                  rows={3}
+                  maxLength={500}
+                  placeholder={t('detall.alerta_motiu_placeholder')}
+                  autoFocus
+                />
+              </label>
+            )}
+            {alertaError && <p style={{ color: 'var(--pico-del-color)' }}>{alertaError}</p>}
+            <footer style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button type="button" className="secondary" onClick={closeAlertaModal} disabled={savingAlerta} style={{ width: 'auto', margin: 0 }}>
+                {t('common.cancellar')}
+              </button>
+              <button type="submit" disabled={savingAlerta} aria-busy={savingAlerta} style={{ width: 'auto', margin: 0 }}>
+                {t('common.desar_canvis')}
+              </button>
+            </footer>
+          </form>
+        </article>
+      </dialog>
+
       {emailModalOpen && (
         <dialog ref={emailDialogRef} onClose={closeEmailModal}>
           <article style={{ minWidth: '350px' }}>

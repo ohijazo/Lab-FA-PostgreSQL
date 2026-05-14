@@ -91,6 +91,7 @@
     "estat_pendents": "Pendientes",
     "estat_finalitzats": "Finalizados",
     "col_finalitzat": "Finalizado",
+    "col_alerta": "Alerta",
     "marcar_finalitzat": "Marcar como finalizado",
     "marcar_pendent": "Marcar como pendiente"
   },
@@ -119,7 +120,15 @@
     "marcar_finalitzat": "Marcar como finalizado",
     "marcar_pendent": "Marcar como pendiente",
     "marcat_finalitzat": "Análisis marcado como finalizado",
-    "marcat_pendent": "Análisis marcado como pendiente"
+    "marcat_pendent": "Análisis marcado como pendiente",
+    "alerta": "Alerta",
+    "afegir_alerta": "Añadir alerta",
+    "alerta_titol": "Alerta del análisis",
+    "alerta_activa": "Activar alerta",
+    "alerta_motiu": "Motivo (opcional)",
+    "alerta_motiu_placeholder": "Por ejemplo: bichos detectados",
+    "alerta_activada": "Alerta activada",
+    "alerta_desactivada": "Alerta desactivada"
   },
   "form": {
     "nou_analisi": "Nuevo Análisis — {{nom}}",
@@ -301,6 +310,7 @@
     "eliminant_analisi": "Error eliminando análisis",
     "desant_columnes": "Error guardando las columnas",
     "marcant_finalitzat": "Error cambiando el estado",
+    "marcant_alerta": "Error cambiando la alerta",
     "enviant_email": "Error enviando el correo",
     "conflicte_concurrencia": "Conflicto de concurrencia",
     "carregant_dashboard_global": "Error cargando dashboard global",

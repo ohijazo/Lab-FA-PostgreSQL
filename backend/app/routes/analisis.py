@@ -474,6 +474,33 @@ def marcar_finalitzat(slug, id):
     return jsonify(a.to_dict())
 
 
+# --------------- Marcar alerta ---------------
+
+@bp.route("/api/analisis/<slug>/<int:id>/alerta", methods=["PATCH"])
+@write_required
+def marcar_alerta(slug, id):
+    a = db.get_or_404(Analisi, id)
+    if a.tipus != slug:
+        abort(404)
+    payload = request.get_json(silent=True) or {}
+    val = payload.get("alerta")
+    if not isinstance(val, bool):
+        return jsonify({"error": "alerta ha de ser true o false"}), 400
+    motiu = payload.get("motiu")
+    if motiu is not None and not isinstance(motiu, str):
+        return jsonify({"error": "motiu ha de ser una cadena"}), 400
+    a.alerta = val
+    if val:
+        # Quan s'activa l'alerta, accepta el motiu (pot ser buit)
+        a.alerta_motiu = (motiu or "").strip()[:500] or None
+    else:
+        # Quan es desactiva, neteja el motiu
+        a.alerta_motiu = None
+    a.updated_by = session.get("email") or a.updated_by
+    db.session.commit()
+    return jsonify(a.to_dict())
+
+
 # --------------- Edit lock (presence) ---------------
 
 @bp.route("/api/analisis/<slug>/<int:id>/lock", methods=["POST"])

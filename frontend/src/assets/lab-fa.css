@@ -125,11 +125,25 @@ button.estat-badge { margin-bottom: 0; }
   color: #92400e;
   border-color: #fcd34d;
 }
+.estat-badge.estat-alerta {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+.estat-badge.estat-sense-alerta {
+  background: transparent;
+  color: var(--lab-text-muted);
+  border-color: var(--lab-border);
+  border-style: dashed;
+}
 [data-theme="dark"] .estat-badge.estat-finalitzat {
   background: #064e3b; color: #d1fae5; border-color: #047857;
 }
 [data-theme="dark"] .estat-badge.estat-pendent {
   background: #78350f; color: #fef3c7; border-color: #b45309;
+}
+[data-theme="dark"] .estat-badge.estat-alerta {
+  background: #7f1d1d; color: #fee2e2; border-color: #dc2626;
 }
 
 /* Segmented control a LlistaPage */
@@ -187,6 +201,43 @@ button.estat-badge { margin-bottom: 0; }
   background: transparent;
   border: 1.5px dashed var(--lab-border);
   color: transparent;
+}
+
+/* --- Files amb alerta a la llista --- */
+.row-alerta {
+  background: #fef2f2 !important;
+}
+.row-alerta td {
+  color: #7f1d1d;
+}
+.row-alerta:hover {
+  background: #fee2e2 !important;
+}
+/* Combinada: finalitzat + alerta → l'alerta té prioritat visual */
+.row-finalitzat.row-alerta {
+  background: #fef2f2 !important;
+}
+.row-finalitzat.row-alerta td {
+  opacity: 1;
+  color: #7f1d1d;
+}
+.row-alerta-icon {
+  display: inline-block;
+  color: #dc2626;
+  font-size: 1rem;
+  line-height: 1;
+}
+[data-theme="dark"] .row-alerta {
+  background: #450a0a !important;
+}
+[data-theme="dark"] .row-alerta:hover {
+  background: #7f1d1d !important;
+}
+[data-theme="dark"] .row-alerta td {
+  color: #fecaca;
+}
+[data-theme="dark"] .row-alerta-icon {
+  color: #f87171;
 }
 
 /* --- Taula de la llista d'anàlisis: compacta i auto-fit per columnes --- */

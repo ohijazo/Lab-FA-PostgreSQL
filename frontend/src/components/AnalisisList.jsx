@@ -46,6 +46,7 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
         <thead>
           <tr>
             <th className="col-check" title={t('llista.col_finalitzat')}>✓</th>
+            <th className="col-check" title={t('llista.col_alerta')}>⚠</th>
             {columnes.map((col) => (
               <th
                 key={col}
@@ -59,11 +60,15 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
           </tr>
         </thead>
         <tbody>
-          {analisis.map((a) => (
+          {analisis.map((a) => {
+            const rowClasses = []
+            if (a.finalitzat) rowClasses.push('row-finalitzat')
+            if (a.alerta) rowClasses.push('row-alerta')
+            return (
             <tr
               key={a.id}
               onClick={() => navigate(`/${tipus}/${a.id}`)}
-              className={a.finalitzat ? 'row-finalitzat' : ''}
+              className={rowClasses.join(' ')}
             >
               <td
                 className="col-check"
@@ -72,6 +77,12 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
                 <span className={`row-check ${a.finalitzat ? 'is-on' : 'is-off'}`}>
                   {a.finalitzat ? '✓' : ''}
                 </span>
+              </td>
+              <td
+                className="col-check"
+                title={a.alerta ? (a.alerta_motiu || t('detall.alerta')) : ''}
+              >
+                {a.alerta && <span className="row-alerta-icon">⚠</span>}
               </td>
               {columnes.map((col) => {
                 const camp = campMap[col]
@@ -89,7 +100,8 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
                 )
               })}
             </tr>
-          ))}
+            )
+          })}
         </tbody>
       </table>
     </div>
