@@ -75,11 +75,14 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
               </td>
               {columnes.map((col) => {
                 const camp = campMap[col]
+                const rawVal = a[col]
+                const titleAttr = rawVal !== null && rawVal !== undefined && rawVal !== '' ? String(rawVal) : undefined
                 return (
                   <td
                     key={col}
                     data-col-type={typeMap[col] || 'text'}
                     style={camp ? alertaStyle(camp, a[col]) : undefined}
+                    title={titleAttr}
                   >
                     {formatCell(col, a[col], typeMap[col])}
                   </td>
