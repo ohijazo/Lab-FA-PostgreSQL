@@ -26,30 +26,47 @@
   --lab-line: #334155;
 }
 
-/* Footer del diàleg de columnes (sobreescriu el width:100% de PicoCSS dins de dialog) */
+/* Diàleg de columnes — caixa més ampla per encabir els 3 botons */
+.cols-dialog-article {
+  max-width: 760px;
+}
+
+/* Footer del diàleg de columnes
+   - Grid de 3 columnes: Restablir | (spacer) | Cancel + Desar
+   - Sobreescriu el width:100% de PicoCSS dins del diàleg */
 .cols-dialog-footer {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
   margin-top: 1rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--lab-border);
 }
 
-.cols-dialog-footer > button,
-.cols-dialog-footer-actions > button {
-  width: auto;
-  margin: 0;
-  display: inline-block;
+.cols-dialog-footer-actions {
+  grid-column: 3;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
-.cols-dialog-footer-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-left: auto;
+.cols-dialog-footer button,
+.cols-dialog-footer-actions button {
+  width: auto !important;
+  margin: 0 !important;
+  display: inline-block !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .cols-dialog-footer {
+    grid-template-columns: 1fr;
+  }
+  .cols-dialog-footer-actions {
+    grid-column: 1;
+    justify-content: flex-end;
+  }
 }
 
 /* Admin action buttons */

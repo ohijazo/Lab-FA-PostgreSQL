@@ -329,7 +329,7 @@ export default function LlistaPage() {
       )}
 
       <dialog ref={colsDialogRef}>
-        <article style={{ maxWidth: '640px' }}>
+        <article className="cols-dialog-article">
           <header>
             <button aria-label={t('common.tancar')} rel="prev" onClick={closeColumnesDialog}></button>
             <h3>{t('llista.columnes_titol', { nom: config.nom })}</h3>
