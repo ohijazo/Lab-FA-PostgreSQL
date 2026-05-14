@@ -245,9 +245,6 @@ export default function DetallPage() {
               </button>
             )}
           </h2>
-          {metaItems.length > 0 && (
-            <span className="detall-toolbar-meta">{metaItems.join(' — ')}</span>
-          )}
           {(analisi.created_by || analisi.updated_by) && (
             <div style={{ fontSize: '0.85em', marginTop: '0.25rem', color: 'var(--pico-muted-color)' }}>
               {analisi.created_by && <span>{t('detall.creat_per', { nom: analisi.created_by })}</span>}
