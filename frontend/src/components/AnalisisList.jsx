@@ -42,15 +42,16 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
 
   return (
     <div className="overflow-auto">
-      <table>
+      <table className="analisis-list-table">
         <thead>
           <tr>
-            <th style={{ width: '2.5rem', textAlign: 'center' }} title={t('llista.col_finalitzat')}>✓</th>
+            <th className="col-check" title={t('llista.col_finalitzat')}>✓</th>
             {columnes.map((col) => (
               <th
                 key={col}
                 onClick={() => onSort(col)}
-                style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                data-col-type={typeMap[col] || 'text'}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
               >
                 {labelMap[col] || col}{sortIndicator(col)}
               </th>
@@ -63,10 +64,9 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
               key={a.id}
               onClick={() => navigate(`/${tipus}/${a.id}`)}
               className={a.finalitzat ? 'row-finalitzat' : ''}
-              style={{ cursor: 'pointer' }}
             >
               <td
-                style={{ textAlign: 'center' }}
+                className="col-check"
                 title={a.finalitzat ? t('detall.finalitzat') : t('detall.pendent')}
               >
                 <span className={`row-check ${a.finalitzat ? 'is-on' : 'is-off'}`}>
@@ -76,7 +76,11 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
               {columnes.map((col) => {
                 const camp = campMap[col]
                 return (
-                  <td key={col} style={camp ? alertaStyle(camp, a[col]) : undefined}>
+                  <td
+                    key={col}
+                    data-col-type={typeMap[col] || 'text'}
+                    style={camp ? alertaStyle(camp, a[col]) : undefined}
+                  >
                     {formatCell(col, a[col], typeMap[col])}
                   </td>
                 )

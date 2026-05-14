@@ -171,12 +171,12 @@ button.estat-badge { margin-bottom: 0; }
 }
 .row-check {
   display: inline-block;
-  width: 1.2rem;
-  height: 1.2rem;
-  line-height: 1.2rem;
+  width: 1rem;
+  height: 1rem;
+  line-height: 1rem;
   text-align: center;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 .row-check.is-on {
@@ -187,6 +187,49 @@ button.estat-badge { margin-bottom: 0; }
   background: transparent;
   border: 1.5px dashed var(--lab-border);
   color: transparent;
+}
+
+/* --- Taula de la llista d'anàlisis: compacta i auto-fit per columnes --- */
+.analisis-list-table {
+  font-size: 0.88rem;
+  table-layout: auto;
+  width: 100%;
+}
+.analisis-list-table th,
+.analisis-list-table td {
+  padding: 0.3rem 0.55rem;
+  line-height: 1.3;
+  vertical-align: middle;
+}
+.analisis-list-table tbody tr {
+  cursor: pointer;
+}
+.analisis-list-table th {
+  white-space: nowrap;
+}
+/* Tipus de columna: dates i números no s'embolcallen → la columna agafa
+   la seva amplada natural en lloc d'encongir-se */
+.analisis-list-table th[data-col-type="date"],
+.analisis-list-table td[data-col-type="date"],
+.analisis-list-table th[data-col-type="number"],
+.analisis-list-table td[data-col-type="number"] {
+  white-space: nowrap;
+}
+.analisis-list-table td[data-col-type="number"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+/* Text llarg: permet wrap però amb un mínim raonable */
+.analisis-list-table td[data-col-type="text"],
+.analisis-list-table td[data-col-type="textarea"] {
+  white-space: normal;
+  word-break: break-word;
+}
+.analisis-list-table .col-check {
+  width: 2rem;
+  text-align: center;
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
 }
 
 /* Diàleg de columnes — caixa més ampla per encabir els 3 botons */
