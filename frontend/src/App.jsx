@@ -22,6 +22,12 @@ function AdminRoute({ children }) {
   return children
 }
 
+function EditorOrAdminRoute({ children }) {
+  const { user } = useAuth()
+  if (user?.role !== 'admin' && user?.role !== 'user') return <Navigate to="/" replace />
+  return children
+}
+
 function WriteRoute({ children }) {
   const { user } = useAuth()
   if (user?.role === 'viewer') return <Navigate to="/" replace />
@@ -37,10 +43,10 @@ function AppRoutes() {
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/admin/tipus" element={<AdminRoute><AdminTipusPage /></AdminRoute>} />
-        <Route path="/admin/tipus/:tipusId/seccions" element={<AdminRoute><AdminSeccionsPage /></AdminRoute>} />
-        <Route path="/admin/seccions/:seccioId/camps" element={<AdminRoute><AdminCampsPage /></AdminRoute>} />
-        <Route path="/admin/tipus/:tipusId/import" element={<AdminRoute><AdminImportPage /></AdminRoute>} />
+        <Route path="/admin/tipus" element={<EditorOrAdminRoute><AdminTipusPage /></EditorOrAdminRoute>} />
+        <Route path="/admin/tipus/:tipusId/seccions" element={<EditorOrAdminRoute><AdminSeccionsPage /></EditorOrAdminRoute>} />
+        <Route path="/admin/seccions/:seccioId/camps" element={<EditorOrAdminRoute><AdminCampsPage /></EditorOrAdminRoute>} />
+        <Route path="/admin/tipus/:tipusId/import" element={<EditorOrAdminRoute><AdminImportPage /></EditorOrAdminRoute>} />
         <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
         <Route path="/ajuda" element={<AjudaPage />} />
         <Route path="/dashboard/:tipus" element={<DashboardPage />} />

@@ -65,7 +65,7 @@ export default function Layout({ children }) {
                 window.dispatchEvent(new CustomEvent('open-export-dialog'))
               }}>{t('nav.exportar_excel')}</a>
             )}
-            {user?.role === 'admin' && (
+            {(user?.role === 'admin' || user?.role === 'user') && (
               <div className="nav-dropdown" ref={dropdownRef}>
                 <a
                   href="#"
@@ -79,9 +79,11 @@ export default function Layout({ children }) {
                     <Link to="/admin/tipus" className="nav-dropdown-item" onClick={() => setConfigOpen(false)}>
                       {t('nav.tipus_analisi')}
                     </Link>
-                    <Link to="/admin/users" className="nav-dropdown-item" onClick={() => setConfigOpen(false)}>
-                      {t('nav.gestio_usuaris')}
-                    </Link>
+                    {user?.role === 'admin' && (
+                      <Link to="/admin/users" className="nav-dropdown-item" onClick={() => setConfigOpen(false)}>
+                        {t('nav.gestio_usuaris')}
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>

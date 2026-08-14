@@ -25,6 +25,17 @@ def admin_required(f):
     return decorated
 
 
+def editor_or_admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "email" not in session:
+            return jsonify({"error": tr('no_autenticat')}), 401
+        if session.get("role") not in ("admin", "user"):
+            return jsonify({"error": tr('acces_denegat')}), 403
+        return f(*args, **kwargs)
+    return decorated
+
+
 def _slugify(text):
     text = text.lower().strip()
     text = re.sub(r"[àáâã]", "a", text)
@@ -40,14 +51,14 @@ def _slugify(text):
 # ===================== TIPUS ANALISI =====================
 
 @bp.route("/api/admin/tipus", methods=["GET"])
-@admin_required
+@editor_or_admin_required
 def llistar_tipus():
     tots = TipusAnalisi.query.order_by(TipusAnalisi.nom).all()
     return jsonify([t.to_dict() for t in tots])
 
 
 @bp.route("/api/admin/tipus", methods=["POST"])
-@admin_required
+@editor_or_admin_required
 def crear_tipus():
     data = request.get_json()
     nom = data.get("nom", "").strip()
@@ -71,14 +82,14 @@ def crear_tipus():
 
 
 @bp.route("/api/admin/tipus/<int:id>", methods=["GET"])
-@admin_required
+@editor_or_admin_required
 def detall_tipus(id):
     t = db.get_or_404(TipusAnalisi, id)
     return jsonify(t.to_config())
 
 
 @bp.route("/api/admin/tipus/<int:id>", methods=["PUT"])
-@admin_required
+@editor_or_admin_required
 def editar_tipus(id):
     t = db.get_or_404(TipusAnalisi, id)
     data = request.get_json()
@@ -104,7 +115,7 @@ def editar_tipus(id):
 
 
 @bp.route("/api/admin/tipus/<int:id>", methods=["DELETE"])
-@admin_required
+@editor_or_admin_required
 def eliminar_tipus(id):
     t = db.get_or_404(TipusAnalisi, id)
     n = Analisi.query.filter_by(tipus=t.slug).count()
@@ -118,7 +129,7 @@ def eliminar_tipus(id):
 # ===================== SECCIONS =====================
 
 @bp.route("/api/admin/tipus/<int:tipus_id>/seccions", methods=["GET"])
-@admin_required
+@editor_or_admin_required
 def llistar_seccions(tipus_id):
     db.get_or_404(TipusAnalisi, tipus_id)
     seccions = Seccio.query.filter_by(tipus_id=tipus_id).order_by(Seccio.ordre).all()
@@ -126,7 +137,7 @@ def llistar_seccions(tipus_id):
 
 
 @bp.route("/api/admin/tipus/<int:tipus_id>/seccions", methods=["POST"])
-@admin_required
+@editor_or_admin_required
 def crear_seccio(tipus_id):
     db.get_or_404(TipusAnalisi, tipus_id)
     data = request.get_json()
@@ -147,7 +158,7 @@ def crear_seccio(tipus_id):
 
 
 @bp.route("/api/admin/tipus/<int:tipus_id>/seccions/reorder", methods=["PUT"])
-@admin_required
+@editor_or_admin_required
 def reordenar_seccions(tipus_id):
     db.get_or_404(TipusAnalisi, tipus_id)
     data = request.get_json()
@@ -162,7 +173,7 @@ def reordenar_seccions(tipus_id):
 
 
 @bp.route("/api/admin/seccions/<int:id>", methods=["PUT"])
-@admin_required
+@editor_or_admin_required
 def editar_seccio(id):
     s = db.get_or_404(Seccio, id)
     data = request.get_json()
@@ -175,7 +186,7 @@ def editar_seccio(id):
 
 
 @bp.route("/api/admin/seccions/<int:id>", methods=["DELETE"])
-@admin_required
+@editor_or_admin_required
 def eliminar_seccio(id):
     s = db.get_or_404(Seccio, id)
     t = db.get_or_404(TipusAnalisi, s.tipus_id)
@@ -190,7 +201,7 @@ def eliminar_seccio(id):
 # ===================== CAMPS =====================
 
 @bp.route("/api/admin/seccions/<int:seccio_id>/camps", methods=["GET"])
-@admin_required
+@editor_or_admin_required
 def llistar_camps(seccio_id):
     db.get_or_404(Seccio, seccio_id)
     camps = Camp.query.filter_by(seccio_id=seccio_id).order_by(Camp.ordre).all()
@@ -198,7 +209,7 @@ def llistar_camps(seccio_id):
 
 
 @bp.route("/api/admin/seccions/<int:seccio_id>/camps", methods=["POST"])
-@admin_required
+@editor_or_admin_required
 def crear_camp(seccio_id):
     db.get_or_404(Seccio, seccio_id)
     data = request.get_json()
@@ -231,7 +242,7 @@ def crear_camp(seccio_id):
 
 
 @bp.route("/api/admin/seccions/<int:seccio_id>/camps/reorder", methods=["PUT"])
-@admin_required
+@editor_or_admin_required
 def reordenar_camps(seccio_id):
     db.get_or_404(Seccio, seccio_id)
     data = request.get_json()
@@ -246,7 +257,7 @@ def reordenar_camps(seccio_id):
 
 
 @bp.route("/api/admin/camps/<int:id>", methods=["PUT"])
-@admin_required
+@editor_or_admin_required
 def editar_camp(id):
     c = db.get_or_404(Camp, id)
     data = request.get_json()
@@ -280,7 +291,7 @@ def editar_camp(id):
 
 
 @bp.route("/api/admin/camps/<int:id>", methods=["DELETE"])
-@admin_required
+@editor_or_admin_required
 def eliminar_camp(id):
     c = db.get_or_404(Camp, id)
     s = db.get_or_404(Seccio, c.seccio_id)
@@ -296,7 +307,7 @@ def eliminar_camp(id):
 # ===================== PLANTILLA EXCEL =====================
 
 @bp.route("/api/admin/tipus/<int:id>/plantilla", methods=["GET"])
-@admin_required
+@editor_or_admin_required
 def descarregar_plantilla(id):
     t = db.get_or_404(TipusAnalisi, id)
 
@@ -325,7 +336,7 @@ def descarregar_plantilla(id):
 # ===================== DUPLICAR TIPUS =====================
 
 @bp.route("/api/admin/tipus/<int:id>/duplicar", methods=["POST"])
-@admin_required
+@editor_or_admin_required
 def duplicar_tipus(id):
     original = db.get_or_404(TipusAnalisi, id)
 
@@ -381,7 +392,7 @@ def duplicar_tipus(id):
 # ===================== ESTADISTIQUES =====================
 
 @bp.route("/api/admin/estadistiques", methods=["GET"])
-@admin_required
+@editor_or_admin_required
 def estadistiques():
     tots_tipus = TipusAnalisi.query.order_by(TipusAnalisi.nom).all()
     result = []
@@ -401,7 +412,7 @@ def estadistiques():
 # ===================== IMPORTACIO EXCEL =====================
 
 @bp.route("/api/admin/tipus/<int:id>/import", methods=["POST"])
-@admin_required
+@editor_or_admin_required
 def importar_excel(id):
     t = db.get_or_404(TipusAnalisi, id)
 
