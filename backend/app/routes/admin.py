@@ -598,7 +598,7 @@ def editar_user(id):
     if "nom" in data:
         u.nom = data["nom"].strip()
     if "role" in data:
-        if data["role"] not in ("admin", "user"):
+        if data["role"] not in ("admin", "user", "viewer"):
             abort(400, description=tr('role_invalid'))
         u.role = data["role"]
     if "password" in data and data["password"].strip():
