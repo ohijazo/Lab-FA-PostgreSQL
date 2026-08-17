@@ -380,6 +380,125 @@ button.estat-badge { margin-bottom: 0; }
 [data-theme="dark"] .row-apte-icon.is-apte { color: #60a5fa; }
 [data-theme="dark"] .row-apte-icon.is-no-apte { color: #f87171; }
 
+/* --- Pantalla de recepció (rol recepcio) --- */
+.recepcio-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--lab-space-4) 0;
+}
+.recepcio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--lab-space-3);
+  margin-bottom: var(--lab-space-4);
+  flex-wrap: wrap;
+}
+.recepcio-header hgroup h1 { margin: 0; }
+.recepcio-header hgroup p { margin: 0; color: var(--lab-text-muted); }
+.recepcio-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--lab-text-muted);
+}
+.recepcio-search-wrap {
+  position: relative;
+  margin-bottom: var(--lab-space-4);
+}
+.recepcio-search-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--lab-text-muted);
+  pointer-events: none;
+}
+.recepcio-search {
+  width: 100%;
+  font-size: 1.05rem;
+  padding: 0.85rem 0.85rem 0.85rem 2.4rem;
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  background: var(--lab-bg-card);
+}
+.recepcio-list {
+  display: grid;
+  gap: var(--lab-space-3);
+}
+.recepcio-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--lab-space-3);
+  align-items: center;
+  padding: var(--lab-space-4);
+  border: 2px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  background: var(--lab-bg-card);
+  transition: transform 0.1s ease;
+}
+.recepcio-card-apte { border-color: #3b82f6; background: #eff6ff; }
+.recepcio-card-no_apte { border-color: #dc2626; background: #fef2f2; }
+.recepcio-card-pendent { border-style: dashed; }
+.recepcio-card-info { min-width: 0; }
+.recepcio-card-codi {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--lab-text);
+}
+.recepcio-card-meta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--lab-text-muted);
+  margin-bottom: 0.5rem;
+}
+.recepcio-card-sep { opacity: 0.5; }
+.recepcio-card-msg {
+  font-size: 1rem;
+  font-weight: 500;
+}
+.recepcio-card-apte .recepcio-card-msg { color: #1e40af; }
+.recepcio-card-no_apte .recepcio-card-msg { color: #991b1b; }
+.recepcio-card-pendent .recepcio-card-msg { color: var(--lab-text-muted); }
+.recepcio-badge-gran {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+  border-radius: var(--lab-radius);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+.recepcio-badge-gran.is-apte { background: #1e40af; color: #ffffff; }
+.recepcio-badge-gran.is-no_apte { background: #991b1b; color: #ffffff; }
+.recepcio-badge-gran.is-pendent {
+  background: transparent;
+  color: var(--lab-text-muted);
+  border: 2px dashed var(--lab-border);
+}
+/* Dark mode */
+[data-theme="dark"] .recepcio-card-apte { background: #1e3a8a; border-color: #3b82f6; }
+[data-theme="dark"] .recepcio-card-no_apte { background: #450a0a; border-color: #dc2626; }
+[data-theme="dark"] .recepcio-card-apte .recepcio-card-msg { color: #dbeafe; }
+[data-theme="dark"] .recepcio-card-no_apte .recepcio-card-msg { color: #fee2e2; }
+[data-theme="dark"] .recepcio-badge-gran.is-apte { background: #2563eb; }
+[data-theme="dark"] .recepcio-badge-gran.is-no_apte { background: #dc2626; }
+/* Responsive mòbil */
+@media (max-width: 640px) {
+  .recepcio-card {
+    grid-template-columns: 1fr;
+  }
+  .recepcio-badge-gran {
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+}
+
 /* --- Taula de la llista d'anàlisis: compacta i auto-fit per columnes --- */
 .analisis-list-table {
   font-size: 0.88rem;

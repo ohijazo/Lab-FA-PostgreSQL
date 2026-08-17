@@ -166,6 +166,7 @@ export default function AdminUsersPage() {
                 <option value="user">{t('admin_users.rol_editor')}</option>
                 <option value="admin">{t('admin_users.rol_admin')}</option>
                 <option value="viewer">{t('admin_users.rol_lectura')}</option>
+                <option value="recepcio">{t('admin_users.rol_recepcio')}</option>
               </select>
             </label>
             <button type="submit">{editingId ? t('common.desar_canvis') : t('common.crear')}</button>
@@ -203,7 +204,7 @@ export default function AdminUsersPage() {
               <tr key={u.id}>
                 <td>{u.email}</td>
                 <td><strong>{u.nom}</strong></td>
-                <td>{u.role === 'admin' ? t('admin_users.rol_admin') : u.role === 'viewer' ? t('admin_users.rol_lectura') : t('admin_users.rol_editor')}</td>
+                <td>{u.role === 'admin' ? t('admin_users.rol_admin') : u.role === 'viewer' ? t('admin_users.rol_lectura') : u.role === 'recepcio' ? t('admin_users.rol_recepcio') : t('admin_users.rol_editor')}</td>
                 <td>
                   <div className="admin-actions-row">
                     <Button variant="ghost" size="sm" icon={<Icon name="Pencil" size={12} />} onClick={() => startEdit(u)} title={t('admin_users.title_editar')}>

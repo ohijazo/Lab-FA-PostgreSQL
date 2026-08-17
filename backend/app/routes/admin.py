@@ -602,7 +602,7 @@ def crear_user():
         abort(400, description=tr('email_password_obligatoris'))
     if not nom:
         abort(400, description=tr('nom_obligatori_user'))
-    if role not in ("admin", "user", "viewer"):
+    if role not in ("admin", "user", "viewer", "recepcio"):
         abort(400, description=tr('role_invalid'))
     if User.query.filter_by(email=email).first():
         abort(409, description=tr('ja_existeix_email', email=email))

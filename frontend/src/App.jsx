@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import { ConfirmProvider } from './context/ConfirmContext'
@@ -17,6 +17,7 @@ import AdminUsersPage from './pages/AdminUsersPage'
 import AdminImportPage from './pages/AdminImportPage'
 import LoginPage from './pages/LoginPage'
 import AjudaPage from './pages/AjudaPage'
+import RecepcioPage from './pages/RecepcioPage'
 
 function AdminRoute({ children }) {
   const { user } = useAuth()
@@ -32,19 +33,32 @@ function EditorOrAdminRoute({ children }) {
 
 function WriteRoute({ children }) {
   const { user } = useAuth()
-  if (user?.role === 'viewer') return <Navigate to="/" replace />
+  if (user?.role === 'viewer' || user?.role === 'recepcio') return <Navigate to="/" replace />
+  return children
+}
+
+function RecepcioRoute({ children }) {
+  const { user } = useAuth()
+  if (user?.role !== 'recepcio' && user?.role !== 'admin') return <Navigate to="/" replace />
   return children
 }
 
 function AppRoutes() {
   const { user } = useAuth()
+  const location = useLocation()
 
   if (!user) return <LoginPage />
+
+  // Rol recepció: només pot veure /recepcio, la resta redirigeix
+  if (user.role === 'recepcio' && location.pathname !== '/recepcio') {
+    return <Navigate to="/recepcio" replace />
+  }
 
   return (
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/recepcio" element={<RecepcioRoute><RecepcioPage /></RecepcioRoute>} />
         <Route path="/admin/tipus" element={<EditorOrAdminRoute><AdminTipusPage /></EditorOrAdminRoute>} />
         <Route path="/admin/tipus/:tipusId/seccions" element={<EditorOrAdminRoute><AdminSeccionsPage /></EditorOrAdminRoute>} />
         <Route path="/admin/seccions/:seccioId/camps" element={<EditorOrAdminRoute><AdminCampsPage /></EditorOrAdminRoute>} />

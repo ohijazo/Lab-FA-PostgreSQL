@@ -44,6 +44,40 @@ export default function Layout({ children }) {
   }, [location.pathname])
 
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`
+  const isRecepcio = user?.role === 'recepcio'
+
+  if (isRecepcio) {
+    return (
+      <>
+        <nav className="nav-sticky">
+          <div className="container nav-bar">
+            <div className="nav-brand">
+              <img src={logoApp} alt="Lab FC" style={{ height: 36, width: 'auto' }} />
+              <div className="nav-brand-text">
+                <span className="nav-brand-name">Lab FC</span>
+                <span className="nav-brand-sub">{t('recepcio.titol')}</span>
+              </div>
+            </div>
+            <div className="nav-actions">
+              <button className="theme-toggle" onClick={toggleTheme} title={t('nav.tema')} aria-label={t('nav.tema')}>
+                <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={16} />
+              </button>
+              <div className="nav-user">
+                <a href="#" className="nav-link nav-link-logout" onClick={(e) => { e.preventDefault(); logout() }}>
+                  <Icon name="LogOut" size={14} />
+                  <span>{t('nav.sortir')}</span>
+                </a>
+                <span className="nav-user-name">{user?.nom || user?.email}</span>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <main className="container">
+          {children}
+        </main>
+      </>
+    )
+  }
 
   return (
     <>

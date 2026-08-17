@@ -207,3 +207,14 @@ export async function eliminarAnalisi(tipus, id) {
   if (!res.ok) throw new Error(i18n.t('errors.eliminant_analisi'))
   return res.json()
 }
+
+export async function llistarAnalisisRecepcio(q = '') {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  const res = await fetch(`/api/recepcio/analisis?${params}`, {
+    credentials: 'include',
+    headers: langHeaders(),
+  })
+  if (!res.ok) throw new Error(i18n.t('errors.carregant_recepcio'))
+  return res.json()
+}

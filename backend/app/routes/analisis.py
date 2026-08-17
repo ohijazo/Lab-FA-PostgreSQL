@@ -16,6 +16,12 @@ from app.i18n import t
 bp = Blueprint("analisis", __name__)
 
 
+@bp.before_request
+def _block_recepcio_from_analisis():
+    if session.get("role") == "recepcio":
+        return jsonify({"error": "forbidden"}), 403
+
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -30,7 +36,7 @@ def write_required(f):
     def decorated(*args, **kwargs):
         if "email" not in session:
             return jsonify({"error": t('no_autenticat')}), 401
-        if session.get("role") == "viewer":
+        if session.get("role") not in ("admin", "user"):
             return jsonify({"error": t('acces_lectura')}), 403
         return f(*args, **kwargs)
     return decorated

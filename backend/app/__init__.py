@@ -24,10 +24,12 @@ def create_app():
     from app.routes.admin import bp as admin_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.dashboard import bp as dashboard_bp
+    from app.routes.recepcio import bp as recepcio_bp
 
     app.register_blueprint(analisis_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(recepcio_bp)
 
     return app

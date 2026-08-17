@@ -21,7 +21,11 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      await login(email, password)
+      const u = await login(email, password)
+      if (u?.role === 'recepcio') {
+        navigate('/recepcio', { replace: true })
+        return
+      }
       const redirect = sessionStorage.getItem('redirectAfterLogin')
       if (redirect) {
         sessionStorage.removeItem('redirectAfterLogin')

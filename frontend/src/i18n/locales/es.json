@@ -300,6 +300,7 @@
     "rol_editor": "Editor",
     "rol_admin": "Administrador",
     "rol_lectura": "Lectura",
+    "rol_recepcio": "Recepción",
     "no_usuaris": "Todavía no hay usuarios.",
     "no_usuaris_desc": "Crea usuarios para que tu equipo pueda acceder al sistema.",
     "crear_primer_usuari": "Crear el primer usuario",
@@ -331,6 +332,17 @@
     "anar_llista": "Ir a la lista",
     "importar_altre": "Importar otro fichero"
   },
+  "recepcio": {
+    "titol": "Recepción de camiones",
+    "subtitol": "Análisis de hoy",
+    "cercar_codi": "Buscar por código...",
+    "actualitzat": "Actualizado: {{hora}}",
+    "cap_analisi": "Todavía no hay análisis hoy",
+    "cap_analisi_desc": "Cuando el laboratorio registre un análisis, aparecerá aquí.",
+    "apte_msg": "Dejar descargar el camión",
+    "no_apte_msg": "NO dejar descargar el camión",
+    "pendent_msg": "Esperar valoración del laboratorio"
+  },
   "errors": {
     "carregant_tipus": "Error cargando tipos",
     "carregant_config": "Error cargando config de {{tipus}}",
@@ -343,6 +355,7 @@
     "marcant_finalitzat": "Error cambiando el estado",
     "marcant_alerta": "Error cambiando la alerta",
     "marcant_apte": "Error cambiando la valoración APTO",
+    "carregant_recepcio": "Error cargando los análisis de hoy",
     "enviant_email": "Error enviando el correo",
     "conflicte_concurrencia": "Conflicto de concurrencia",
     "carregant_dashboard_global": "Error cargando dashboard global",
