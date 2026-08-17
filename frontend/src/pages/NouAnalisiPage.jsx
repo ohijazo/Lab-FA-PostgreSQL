@@ -3,6 +3,8 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { crearAnalisi, obtenirConfig } from '../api/analisis'
 import AnalisisForm from '../components/AnalisisForm'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import LoadingBlock from '../components/ui/LoadingBlock'
 import { useToast } from '../context/ToastContext'
 
 export default function NouAnalisiPage() {
@@ -38,11 +40,18 @@ export default function NouAnalisiPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading) return <LoadingBlock label={t('common.carregant')} />
   if (error && !config) return <p>Error: {error}</p>
 
   return (
     <>
+      <Breadcrumbs
+        items={[
+          { label: t('nav.inici'), to: '/' },
+          { label: config.nom, to: `/${tipus}` },
+          { label: t('nav.nou') },
+        ]}
+      />
       <h2 style={{ marginBottom: '0.5rem' }}>
         {duplicatDe ? t('form.duplicar_analisi', { nom: config.nom }) : t('form.nou_analisi', { nom: config.nom })}
       </h2>

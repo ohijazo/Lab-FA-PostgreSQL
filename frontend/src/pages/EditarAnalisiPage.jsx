@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { obtenirAnalisi, editarAnalisi, obtenirConfig, acquireLock, releaseLock } from '../api/analisis'
 import AnalisisForm from '../components/AnalisisForm'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import LoadingBlock from '../components/ui/LoadingBlock'
 import { useToast } from '../context/ToastContext'
 
 const HEARTBEAT_INTERVAL = 15 * 1000 // 15 seg
@@ -104,18 +106,28 @@ export default function EditarAnalisiPage() {
       .finally(() => setLoading(false))
   }
 
-  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading) return <LoadingBlock label={t('common.carregant')} />
   if (error && !config) return <p>Error: {error}</p>
   if (!analisi) return <p>{t('common.no_trobat')}</p>
 
+  const analisiRef = config.columnes_llista?.[0] && analisi[config.columnes_llista[0]]
+    ? String(analisi[config.columnes_llista[0]])
+    : `#${analisi.id}`
+
   return (
     <>
+      <Breadcrumbs
+        items={[
+          { label: t('nav.inici'), to: '/' },
+          { label: config.nom, to: `/${tipus}` },
+          { label: analisiRef, to: `/${tipus}/${id}` },
+          { label: t('nav.editar') },
+        ]}
+      />
       <h2 style={{ marginBottom: '0.5rem' }}>
         {t('form.editar_titol', {
           nom: config.nom,
-          ref: config.columnes_llista?.[0] && analisi[config.columnes_llista[0]]
-            ? `(${analisi[config.columnes_llista[0]]})`
-            : `#${analisi.id}`
+          ref: `(${analisiRef})`
         })}
       </h2>
 

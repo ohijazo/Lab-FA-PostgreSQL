@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
-import BarcodeScanner from './BarcodeScanner'
+import Icon from './Icon'
 import logoApp from '../logos/logoApp.png'
 
 export default function Layout({ children }) {
@@ -10,8 +10,8 @@ export default function Layout({ children }) {
   const { t, i18n } = useTranslation()
   const location = useLocation()
   const isHome = location.pathname === '/'
+  const isAdminRoute = location.pathname.startsWith('/admin')
   const [configOpen, setConfigOpen] = useState(false)
-  const [scannerOpen, setScannerOpen] = useState(false)
   const [theme, setTheme] = useState(() => {
     return document.documentElement.getAttribute('data-theme') || 'light'
   })
@@ -43,6 +43,8 @@ export default function Layout({ children }) {
     setConfigOpen(false)
   }, [location.pathname])
 
+  const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`
+
   return (
     <>
       <nav className="nav-sticky">
@@ -55,10 +57,6 @@ export default function Layout({ children }) {
             </div>
           </Link>
           <div className="nav-actions">
-            <a href="#" className="nav-link" onClick={(e) => {
-              e.preventDefault()
-              setScannerOpen(true)
-            }}>{t('nav.escaner')}</a>
             {isHome && (
               <a href="#" className="nav-link" onClick={(e) => {
                 e.preventDefault()
@@ -69,45 +67,49 @@ export default function Layout({ children }) {
               <div className="nav-dropdown" ref={dropdownRef}>
                 <a
                   href="#"
-                  className="nav-link"
+                  className={`nav-link${isAdminRoute ? ' is-active' : ''}`}
                   onClick={(e) => { e.preventDefault(); setConfigOpen((v) => !v) }}
                 >
                   {t('nav.configuracio')}
                 </a>
                 {configOpen && (
                   <div className="nav-dropdown-menu">
-                    <Link to="/admin/tipus" className="nav-dropdown-item" onClick={() => setConfigOpen(false)}>
+                    <NavLink
+                      to="/admin/tipus"
+                      className={({ isActive }) => `nav-dropdown-item${isActive ? ' is-active' : ''}`}
+                      onClick={() => setConfigOpen(false)}
+                    >
                       {t('nav.tipus_analisi')}
-                    </Link>
+                    </NavLink>
                     {user?.role === 'admin' && (
-                      <Link to="/admin/users" className="nav-dropdown-item" onClick={() => setConfigOpen(false)}>
+                      <NavLink
+                        to="/admin/users"
+                        className={({ isActive }) => `nav-dropdown-item${isActive ? ' is-active' : ''}`}
+                        onClick={() => setConfigOpen(false)}
+                      >
                         {t('nav.gestio_usuaris')}
-                      </Link>
+                      </NavLink>
                     )}
                   </div>
                 )}
               </div>
             )}
-            <Link to="/ajuda" className="nav-link">{t('nav.ajuda')}</Link>
-            <button className="theme-toggle" onClick={toggleTheme} title={t('nav.tema')}>
-              {theme === 'light' ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                </svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="5"/>
-                  <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                  <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                </svg>
-              )}
+            <NavLink to="/ajuda" className={navLinkClass}>{t('nav.ajuda')}</NavLink>
+            <button className="theme-toggle" onClick={toggleTheme} title={t('nav.tema')} aria-label={t('nav.tema')}>
+              <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={16} />
             </button>
-            <button className="nav-link lang-switcher" onClick={() => i18n.changeLanguage(lang === 'ca' ? 'es' : 'ca')}>{lang === 'ca' ? 'ES' : 'CA'}</button>
+            <button
+              className="nav-link lang-switcher"
+              onClick={() => i18n.changeLanguage(lang === 'ca' ? 'es' : 'ca')}
+              title={t('nav.tema')}
+            >
+              <Icon name="Languages" size={14} />
+              <span>{lang === 'ca' ? 'ES' : 'CA'}</span>
+            </button>
             <div className="nav-user">
               <a href="#" className="nav-link nav-link-logout" onClick={(e) => { e.preventDefault(); logout() }}>
-                {t('nav.sortir')}
+                <Icon name="LogOut" size={14} />
+                <span>{t('nav.sortir')}</span>
               </a>
               <span className="nav-user-name">{user?.nom || user?.email}</span>
             </div>
@@ -117,7 +119,6 @@ export default function Layout({ children }) {
       <main className="container">
         {children}
       </main>
-      <BarcodeScanner open={scannerOpen} onClose={() => setScannerOpen(false)} />
     </>
   )
 }

@@ -6,6 +6,12 @@ import { CSS } from '@dnd-kit/utilities'
 import { useTranslation } from 'react-i18next'
 import { obtenirTipusAdmin, llistarSeccions, crearSeccio, editarSeccio, eliminarSeccio, editarTipus, reordenarSeccions } from '../api/admin'
 import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../context/ConfirmContext'
+import Icon from '../components/Icon'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingBlock from '../components/ui/LoadingBlock'
 
 function SortableRow({ id, children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
@@ -16,7 +22,7 @@ function SortableRow({ id, children }) {
   }
   return (
     <tr ref={setNodeRef} style={style}>
-      <td {...attributes} {...listeners} className="drag-handle">⠿</td>
+      <td {...attributes} {...listeners} className="drag-handle"><Icon name="GripVertical" size={14} /></td>
       {children}
     </tr>
   )
@@ -26,6 +32,7 @@ export default function AdminSeccionsPage() {
   const { t } = useTranslation()
   const { tipusId } = useParams()
   const { addToast } = useToast()
+  const confirm = useConfirm()
   const [tipus, setTipus] = useState(null)
   const [seccions, setSeccions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -132,7 +139,14 @@ export default function AdminSeccionsPage() {
   }
 
   async function handleDelete(id, titol) {
-    if (!confirm(t('admin_seccions.confirm_eliminar', { titol }))) return
+    const ok = await confirm({
+      title: t('common.eliminar'),
+      message: t('admin_seccions.confirm_eliminar', { titol }),
+      confirmLabel: t('common.eliminar'),
+      cancelLabel: t('common.cancellar'),
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await eliminarSeccio(id)
       addToast(t('admin_seccions.seccio_eliminada'))
@@ -160,17 +174,18 @@ export default function AdminSeccionsPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading) return <LoadingBlock label={t('common.carregant')} />
   if (!tipus) return <p>{t('common.tipus_no_trobat')}</p>
 
   return (
     <>
-      <nav aria-label="breadcrumb">
-        <ul>
-          <li><Link to="/admin/tipus">{t('admin_seccions.breadcrumb_tipus')}</Link></li>
-          <li>{tipus.nom}</li>
-        </ul>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: t('admin_seccions.breadcrumb_tipus'), to: '/admin/tipus' },
+          { label: tipus.nom, to: `/admin/tipus/${tipusId}/seccions` },
+          { label: t('nav.seccions') },
+        ]}
+      />
 
       <div className="admin-header">
         <hgroup>
@@ -187,7 +202,12 @@ export default function AdminSeccionsPage() {
         </div>
       </div>
 
-      {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
+      {error && (
+        <div className="alert alert-danger">
+          <Icon name="AlertCircle" size={14} />
+          <span>{error}</span>
+        </div>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit}>
@@ -208,7 +228,20 @@ export default function AdminSeccionsPage() {
       )}
 
       {seccions.length === 0 ? (
-        <p>{t('admin_seccions.no_seccions')}</p>
+        <EmptyState
+          icon={<Icon name="Layers" size={40} />}
+          title={t('admin_seccions.no_seccions')}
+          description={t('admin_seccions.no_seccions_desc')}
+          action={
+            <Button
+              variant="primary"
+              icon={<Icon name="Plus" size={14} />}
+              onClick={() => { resetForm(); setShowForm(true) }}
+            >
+              {t('admin_seccions.crear_primera_seccio')}
+            </Button>
+          }
+        />
       ) : (
         <>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -229,13 +262,16 @@ export default function AdminSeccionsPage() {
                       <td>{s.camps.length}</td>
                       <td>
                         <div className="admin-actions-row">
-                          <Link to={`/admin/seccions/${s.id}/camps`} role="button" className="outline btn-sm">
-                            {t('admin_seccions.camps')}
+                          <Link to={`/admin/seccions/${s.id}/camps`} className="btn btn-outline btn-sm">
+                            <Icon name="LayoutList" size={12} />
+                            <span>{t('admin_seccions.camps')}</span>
                           </Link>
-                          <button className="outline btn-sm" onClick={() => startEdit(s)}>{t('common.editar')}</button>
-                          <button className="outline secondary btn-sm" onClick={() => handleDelete(s.id, s.titol)}>
+                          <Button variant="ghost" size="sm" icon={<Icon name="Pencil" size={12} />} onClick={() => startEdit(s)}>
+                            {t('common.editar')}
+                          </Button>
+                          <Button variant="danger" size="sm" icon={<Icon name="Trash2" size={12} />} onClick={() => handleDelete(s.id, s.titol)}>
                             {t('common.eliminar')}
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </SortableRow>
@@ -249,8 +285,8 @@ export default function AdminSeccionsPage() {
             <article>
               <header><strong>{t('admin_seccions.rangs_condicionals', 'Rangs condicionals')}</strong></header>
               <p>{t('admin_seccions.rangs_condicionals_desc', 'Selecciona el camp que determina els rangs de min/max per altres camps numèrics.')}</p>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                <label style={{ flex: 1, minWidth: '220px' }}>
+              <div className="admin-inline-row">
+                <label className="admin-inline-field">
                   {t('admin_seccions.camp_controlador', 'Camp controlador')}
                   <select
                     value={campControlador}
@@ -264,17 +300,13 @@ export default function AdminSeccionsPage() {
                     ))}
                   </select>
                 </label>
-                <button onClick={saveCampControlador} style={{ margin: 0 }}>
+                <Button variant="primary" size="sm" icon={<Icon name="Save" size={12} />} onClick={saveCampControlador}>
                   {t('common.desar', 'Desar')}
-                </button>
+                </Button>
                 {campControlador && (
-                  <Link
-                    to={`/admin/tipus/${tipusId}/rangs`}
-                    role="button"
-                    className="outline"
-                    style={{ margin: 0 }}
-                  >
-                    {t('admin_seccions.taula_rangs', 'Taula de rangs')}
+                  <Link to={`/admin/tipus/${tipusId}/rangs`} className="btn btn-outline btn-sm">
+                    <Icon name="Table2" size={12} />
+                    <span>{t('admin_seccions.taula_rangs', 'Taula de rangs')}</span>
                   </Link>
                 )}
               </div>

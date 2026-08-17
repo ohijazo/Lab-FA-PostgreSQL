@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import Icon from '../components/Icon'
+import Button from '../components/ui/Button'
 import logoApp from '../logos/logoApp.png'
 
 export default function LoginPage() {
@@ -33,45 +35,64 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="container" style={{ maxWidth: 400, marginTop: '8vh' }}>
-      <article>
-        <header style={{ textAlign: 'center' }}>
-          <img src={logoApp} alt="Lab FC" style={{ width: 220, height: 'auto', marginBottom: '0.75rem' }} />
-          <h2 style={{ margin: 0 }}>{t('login.iniciar_sessio')}</h2>
+    <main className="login-container">
+      <article className="login-card">
+        <header className="login-header">
+          <img src={logoApp} alt="Lab FC" className="login-logo" />
+          <h2 className="login-title">{t('login.iniciar_sessio')}</h2>
         </header>
         <form onSubmit={handleSubmit}>
-          <label>
-            {t('login.email')}
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('login.placeholder_email')}
-              autoFocus
-              required
-            />
+          <label className="login-field">
+            <span className="login-label">{t('login.email')}</span>
+            <div className="login-input-wrap">
+              <Icon name="Mail" size={14} className="login-input-icon" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('login.placeholder_email')}
+                autoFocus
+                required
+              />
+            </div>
           </label>
-          <label>
-            {t('login.contrasenya')}
-            <div className="password-wrapper">
+          <label className="login-field">
+            <span className="login-label">{t('login.contrasenya')}</span>
+            <div className="login-input-wrap">
+              <Icon name="Lock" size={14} className="login-input-icon" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
-                {showPassword
-                  ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                }
+              <button
+                type="button"
+                className="login-input-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                aria-label={showPassword ? 'Amagar' : 'Mostrar'}
+              >
+                <Icon name={showPassword ? 'EyeOff' : 'Eye'} size={16} />
               </button>
             </div>
           </label>
-          {error && <p style={{ color: 'var(--pico-color-red-500, red)' }}>{error}</p>}
-          <button type="submit" aria-busy={loading} disabled={loading}>
+          {error && (
+            <div className="alert alert-danger">
+              <Icon name="AlertCircle" size={14} />
+              <span>{error}</span>
+            </div>
+          )}
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            loading={loading}
+            icon={<Icon name="LogIn" size={16} />}
+            className="login-submit"
+          >
             {t('login.entrar')}
-          </button>
+          </Button>
         </form>
       </article>
     </main>

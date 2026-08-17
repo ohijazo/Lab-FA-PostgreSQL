@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { groupCamps } from '../utils/groupCamps'
 import { getAlertaColor } from '../utils/alertes'
 import { recomputeFormulas } from '../utils/formula'
+import Icon from './Icon'
+import Button from './ui/Button'
 
 const WIDE_THRESHOLD = 4
 
@@ -61,7 +63,10 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
     if (camp.type === 'select') {
       return (
         <label key={camp.name} className={`form-camp${camp.label.length > 30 ? ' form-camp-wide' : ''}`}>
-          <span className="form-camp-label">{camp.label}</span>
+          <span className="form-camp-label">
+            {camp.label}
+            {camp.required && <span className="required-mark" aria-label="required">*</span>}
+          </span>
           <select
             name={camp.name}
             value={form[camp.name] || ''}
@@ -79,7 +84,10 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
     if (camp.type === 'textarea') {
       return (
         <label key={camp.name} className="form-camp form-camp-wide">
-          <span className="form-camp-label">{camp.label}</span>
+          <span className="form-camp-label">
+            {camp.label}
+            {camp.required && <span className="required-mark" aria-label="required">*</span>}
+          </span>
           <textarea
             name={camp.name}
             value={form[camp.name] || ''}
@@ -96,7 +104,8 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
       <label key={camp.name} className={`form-camp${camp.label.length > 30 ? ' form-camp-wide' : ''}${isCalc ? ' form-camp-calc' : ''}`}>
         <span className="form-camp-label">
           {camp.label}
-          {isCalc && <span className="formula-badge" title={camp.formula}>ƒ</span>}
+          {!isCalc && camp.required && <span className="required-mark" aria-label="required">*</span>}
+          {isCalc && <span className="formula-badge" title={camp.formula}><Icon name="Sigma" size={11} /></span>}
         </span>
         <input
           type={isCalc ? 'text' : camp.type}
@@ -151,14 +160,19 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
           </fieldset>
         )
       })}
-      <div style={{ display: 'flex', gap: '0.5rem', gridColumn: '1 / -1' }}>
-        <button type="submit" aria-busy={submitting}>
+      <div className="form-submit-row">
+        <Button
+          type="submit"
+          variant="primary"
+          loading={submitting}
+          icon={<Icon name="Save" size={14} />}
+        >
           {submitting ? t('common.desant') : t('common.desar')}
-        </button>
+        </Button>
         {onCancel && (
-          <button type="button" className="outline secondary" onClick={onCancel}>
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
             {t('common.cancellar')}
-          </button>
+          </Button>
         )}
       </div>
     </form>

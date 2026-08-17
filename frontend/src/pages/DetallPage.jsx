@@ -1,11 +1,17 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
 import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat, marcarAlerta } from '../api/analisis'
 import AnalisisDetail from '../components/AnalisisDetail'
+import Icon from '../components/Icon'
 import QRCode from '../components/QRCode'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import Button from '../components/ui/Button'
+import Modal from '../components/ui/Modal'
+import LoadingBlock from '../components/ui/LoadingBlock'
 import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../context/ConfirmContext'
 import { useAuth } from '../context/AuthContext'
 import logoApp from '../logos/logoApp.png'
 
@@ -38,6 +44,7 @@ export default function DetallPage() {
   const { tipus, id } = useParams()
   const navigate = useNavigate()
   const { addToast } = useToast()
+  const confirm = useConfirm()
   const { user } = useAuth()
   const isViewer = user?.role === 'viewer'
   const [config, setConfig] = useState(null)
@@ -74,7 +81,14 @@ export default function DetallPage() {
   }, [config])
 
   async function handleDelete() {
-    if (!confirm(t('detall.confirm_eliminar'))) return
+    const ok = await confirm({
+      title: t('common.eliminar'),
+      message: t('detall.confirm_eliminar'),
+      confirmLabel: t('common.eliminar'),
+      cancelLabel: t('common.cancellar'),
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await eliminarAnalisi(tipus, id)
       addToast(t('detall.analisi_eliminada'))
@@ -101,7 +115,7 @@ export default function DetallPage() {
     }
   }
 
-  const alertaDialogRef = useRef(null)
+  const [alertaOpen, setAlertaOpen] = useState(false)
   const [alertaForm, setAlertaForm] = useState({ alerta: false, motiu: '' })
   const [savingAlerta, setSavingAlerta] = useState(false)
   const [alertaError, setAlertaError] = useState('')
@@ -109,11 +123,11 @@ export default function DetallPage() {
   function openAlertaModal() {
     setAlertaError('')
     setAlertaForm({ alerta: !!analisi.alerta, motiu: analisi.alerta_motiu || '' })
-    alertaDialogRef.current?.showModal()
+    setAlertaOpen(true)
   }
 
   function closeAlertaModal() {
-    alertaDialogRef.current?.close()
+    setAlertaOpen(false)
   }
 
   async function handleSaveAlerta(e) {
@@ -132,8 +146,6 @@ export default function DetallPage() {
     }
   }
 
-  const emailDialogRef = useRef(null)
-
   function openEmailModal() {
     let tv = titleField ? (analisi[titleField] || `#${analisi.id}`) : `#${analisi.id}`
     tv = formatDate(tv) || tv
@@ -143,12 +155,6 @@ export default function DetallPage() {
     setEmailModalOpen(true)
   }
 
-  useEffect(() => {
-    if (emailModalOpen && emailDialogRef.current) {
-      emailDialogRef.current.showModal()
-    }
-  }, [emailModalOpen])
-
   async function handleSendEmail(e) {
     e.preventDefault()
     setEmailSending(true)
@@ -156,7 +162,6 @@ export default function DetallPage() {
     try {
       await enviarEmail(tipus, id, emailDestinatari, emailAssumpte)
       setEmailModalOpen(false)
-      emailDialogRef.current?.close()
       addToast(t('detall.email_enviat'))
       obtenirEmailsAnalisi(tipus, id).then(setEmailLogs)
     } catch (err) {
@@ -168,10 +173,9 @@ export default function DetallPage() {
 
   function closeEmailModal() {
     setEmailModalOpen(false)
-    emailDialogRef.current?.close()
   }
 
-  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading) return <LoadingBlock label={t('common.carregant')} />
   if (error) return <p>Error: {error}</p>
   if (!analisi) return <p>{t('common.no_trobat')}</p>
 
@@ -206,13 +210,21 @@ export default function DetallPage() {
           </div>
         )}
       </div>
+      <Breadcrumbs
+        className="no-print"
+        items={[
+          { label: t('nav.inici'), to: '/' },
+          { label: config.nom, to: `/${tipus}` },
+          { label: String(titleValue) },
+        ]}
+      />
       <div className="detall-toolbar no-print">
         <div className="detall-toolbar-info">
           <h2>
             Anàlisi {titleValue}{' '}
             {isViewer ? (
               <span className={`estat-badge ${analisi.finalitzat ? 'estat-finalitzat' : 'estat-pendent'}`}>
-                {analisi.finalitzat ? `✓ ${t('detall.finalitzat')}` : t('detall.pendent')}
+                {analisi.finalitzat ? <><Icon name="Check" size={12} /> {t('detall.finalitzat')}</> : t('detall.pendent')}
               </span>
             ) : (
               <button
@@ -222,7 +234,7 @@ export default function DetallPage() {
                 disabled={togglingFinalitzat}
                 title={analisi.finalitzat ? t('detall.marcar_pendent') : t('detall.marcar_finalitzat')}
               >
-                {analisi.finalitzat ? `✓ ${t('detall.finalitzat')}` : t('detall.pendent')}
+                {analisi.finalitzat ? <><Icon name="Check" size={12} /> {t('detall.finalitzat')}</> : t('detall.pendent')}
               </button>
             )}
             {isViewer ? (
@@ -231,7 +243,7 @@ export default function DetallPage() {
                   className="estat-badge estat-alerta"
                   title={analisi.alerta_motiu || t('detall.alerta')}
                 >
-                  ⚠ {t('detall.alerta')}
+                  <Icon name="AlertTriangle" size={12} /> {t('detall.alerta')}
                 </span>
               )
             ) : (
@@ -241,12 +253,14 @@ export default function DetallPage() {
                 onClick={openAlertaModal}
                 title={analisi.alerta ? (analisi.alerta_motiu || t('detall.alerta')) : t('detall.afegir_alerta')}
               >
-                {analisi.alerta ? `⚠ ${t('detall.alerta')}` : `+ ${t('detall.alerta')}`}
+                {analisi.alerta
+                  ? <><Icon name="AlertTriangle" size={12} /> {t('detall.alerta')}</>
+                  : <><Icon name="Plus" size={12} /> {t('detall.alerta')}</>}
               </button>
             )}
           </h2>
           {(analisi.created_by || analisi.updated_by) && (
-            <div style={{ fontSize: '0.85em', marginTop: '0.25rem', color: 'var(--pico-muted-color)' }}>
+            <div className="detall-toolbar-meta">
               {analisi.created_by && <span>{t('detall.creat_per', { nom: analisi.created_by })}</span>}
               {analisi.created_by && analisi.updated_by && analisi.updated_by !== analisi.created_by && ' | '}
               {analisi.updated_by && analisi.updated_by !== analisi.created_by && (
@@ -256,28 +270,46 @@ export default function DetallPage() {
           )}
         </div>
         <div className="detall-toolbar-actions">
-          <button className="outline contrast" onClick={() => navigate(`/${tipus}`)}>{t('detall.tornar_llista')}</button>
+          <Button variant="ghost" size="sm" icon={<Icon name="ArrowLeft" size={12} />} onClick={() => navigate(`/${tipus}`)}>
+            {t('detall.tornar_llista')}
+          </Button>
           {!isViewer && (
             <>
-              <Link to={`/${tipus}/${id}/editar`} role="button" className="outline">{t('common.editar')}</Link>
-              <button className="outline" onClick={() => {
-                const { id: _id, created_at, updated_at, created_by, updated_by, tipus: _t, ...dades } = analisi
-                navigate(`/${tipus}/nou`, { state: { duplicatDe: dades } })
-              }}>{t('common.duplicar')}</button>
-              <button className="outline secondary" onClick={handleDelete}>{t('common.eliminar')}</button>
+              <Link to={`/${tipus}/${id}/editar`} className="btn btn-primary btn-sm">
+                <Icon name="Pencil" size={12} />
+                <span>{t('common.editar')}</span>
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                icon={<Icon name="Copy" size={12} />}
+                onClick={() => {
+                  const { id: _id, created_at, updated_at, created_by, updated_by, tipus: _t, ...dades } = analisi
+                  navigate(`/${tipus}/nou`, { state: { duplicatDe: dades } })
+                }}
+              >
+                {t('common.duplicar')}
+              </Button>
+              <Button variant="danger" size="sm" icon={<Icon name="Trash2" size={12} />} onClick={handleDelete}>
+                {t('common.eliminar')}
+              </Button>
             </>
           )}
-          <button className="outline contrast" onClick={() => window.print()}>{t('detall.imprimir')}</button>
+          <Button variant="outline" size="sm" icon={<Icon name="Printer" size={12} />} onClick={() => window.print()}>
+            {t('detall.imprimir')}
+          </Button>
           {user?.email_configurat && (
-            <button className="outline contrast" onClick={openEmailModal}>{t('detall.enviar_email')}</button>
+            <Button variant="outline" size="sm" icon={<Icon name="Mail" size={12} />} onClick={openEmailModal}>
+              {t('detall.enviar_email')}
+            </Button>
           )}
         </div>
       </div>
       <AnalisisDetail seccions={config.seccions} analisi={analisi} tipusConfig={config} />
       {emailLogs.length > 0 && (
-        <details className="no-print" style={{ marginTop: '1.5rem' }}>
+        <details className="no-print detall-email-history">
           <summary><strong>{t('detall.historial_enviaments')}</strong> ({emailLogs.length})</summary>
-          <table style={{ marginTop: '0.5rem' }}>
+          <table className="detall-email-history-table">
             <thead>
               <tr>
                 <th>{t('detall.enviat_a')}</th>
@@ -299,86 +331,91 @@ export default function DetallPage() {
           </table>
         </details>
       )}
-      <dialog ref={alertaDialogRef}>
-        <article style={{ minWidth: '380px' }}>
-          <header>
-            <button aria-label={t('common.tancar')} rel="prev" onClick={closeAlertaModal}></button>
-            <h3>{t('detall.alerta_titol')}</h3>
-          </header>
-          <form onSubmit={handleSaveAlerta}>
+      <Modal
+        open={alertaOpen}
+        onClose={closeAlertaModal}
+        title={t('detall.alerta_titol')}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeAlertaModal} disabled={savingAlerta}>
+              {t('common.cancellar')}
+            </Button>
+            <Button variant="primary" onClick={handleSaveAlerta} loading={savingAlerta}>
+              {t('common.desar_canvis')}
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleSaveAlerta} id="alerta-form">
+          <label>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={alertaForm.alerta}
+              onChange={(e) => setAlertaForm((f) => ({ ...f, alerta: e.target.checked }))}
+            />
+            {t('detall.alerta_activa')}
+          </label>
+          {alertaForm.alerta && (
             <label>
-              <input
-                type="checkbox"
-                role="switch"
-                checked={alertaForm.alerta}
-                onChange={(e) => setAlertaForm((f) => ({ ...f, alerta: e.target.checked }))}
+              {t('detall.alerta_motiu')}
+              <textarea
+                value={alertaForm.motiu}
+                onChange={(e) => setAlertaForm((f) => ({ ...f, motiu: e.target.value }))}
+                rows={3}
+                maxLength={500}
+                placeholder={t('detall.alerta_motiu_placeholder')}
+                autoFocus
               />
-              {t('detall.alerta_activa')}
             </label>
-            {alertaForm.alerta && (
-              <label>
-                {t('detall.alerta_motiu')}
-                <textarea
-                  value={alertaForm.motiu}
-                  onChange={(e) => setAlertaForm((f) => ({ ...f, motiu: e.target.value }))}
-                  rows={3}
-                  maxLength={500}
-                  placeholder={t('detall.alerta_motiu_placeholder')}
-                  autoFocus
-                />
-              </label>
-            )}
-            {alertaError && <p style={{ color: 'var(--pico-del-color)' }}>{alertaError}</p>}
-            <footer style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <button type="button" className="secondary" onClick={closeAlertaModal} disabled={savingAlerta} style={{ width: 'auto', margin: 0 }}>
-                {t('common.cancellar')}
-              </button>
-              <button type="submit" disabled={savingAlerta} aria-busy={savingAlerta} style={{ width: 'auto', margin: 0 }}>
-                {t('common.desar_canvis')}
-              </button>
-            </footer>
-          </form>
-        </article>
-      </dialog>
+          )}
+          {alertaError && <p className="form-error-text">{alertaError}</p>}
+        </form>
+      </Modal>
 
-      {emailModalOpen && (
-        <dialog ref={emailDialogRef} onClose={closeEmailModal}>
-          <article style={{ minWidth: '350px' }}>
-            <header>
-              <button aria-label="Close" rel="prev" onClick={closeEmailModal}></button>
-              <h3>{t('detall.enviar_email')}</h3>
-            </header>
-            <form onSubmit={handleSendEmail}>
-              <label>
-                {t('detall.destinatari')}
-                <input
-                  type="email"
-                  required
-                  value={emailDestinatari}
-                  onChange={e => setEmailDestinatari(e.target.value)}
-                  placeholder="email@exemple.com"
-                  autoFocus
-                />
-              </label>
-              <label>
-                {t('detall.assumpte')}
-                <input
-                  type="text"
-                  value={emailAssumpte}
-                  onChange={e => setEmailAssumpte(e.target.value)}
-                />
-              </label>
-              {emailError && <p style={{ color: 'var(--pico-del-color, red)', fontSize: '0.9em' }}>{emailError}</p>}
-              <footer style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                <button type="button" className="outline secondary" onClick={closeEmailModal}>{t('common.cancellar')}</button>
-                <button type="submit" disabled={emailSending} aria-busy={emailSending}>
-                  {emailSending ? t('detall.enviant') : t('detall.enviar')}
-                </button>
-              </footer>
-            </form>
-          </article>
-        </dialog>
-      )}
+      <Modal
+        open={emailModalOpen}
+        onClose={closeEmailModal}
+        title={t('detall.enviar_email')}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeEmailModal}>{t('common.cancellar')}</Button>
+            <Button
+              variant="primary"
+              icon={<Icon name="Mail" size={14} />}
+              onClick={handleSendEmail}
+              loading={emailSending}
+            >
+              {emailSending ? t('detall.enviant') : t('detall.enviar')}
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleSendEmail}>
+          <label>
+            {t('detall.destinatari')}
+            <input
+              type="email"
+              required
+              value={emailDestinatari}
+              onChange={e => setEmailDestinatari(e.target.value)}
+              placeholder="email@exemple.com"
+              autoFocus
+            />
+          </label>
+          <label>
+            {t('detall.assumpte')}
+            <input
+              type="text"
+              value={emailAssumpte}
+              onChange={e => setEmailAssumpte(e.target.value)}
+            />
+          </label>
+          {emailError && <p className="form-error-text">{emailError}</p>}
+        </form>
+      </Modal>
     </>
   )
 }

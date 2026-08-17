@@ -6,6 +6,12 @@ import { CSS } from '@dnd-kit/utilities'
 import { useTranslation } from 'react-i18next'
 import { llistarCamps, crearCamp, editarCamp, eliminarCamp, reordenarCamps, obtenirSeccio, obtenirTipusAdmin } from '../api/admin'
 import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../context/ConfirmContext'
+import Icon from '../components/Icon'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingBlock from '../components/ui/LoadingBlock'
 
 function SortableRow({ id, children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
@@ -16,7 +22,7 @@ function SortableRow({ id, children }) {
   }
   return (
     <tr ref={setNodeRef} style={style}>
-      <td {...attributes} {...listeners} className="drag-handle">⠿</td>
+      <td {...attributes} {...listeners} className="drag-handle"><Icon name="GripVertical" size={14} /></td>
       {children}
     </tr>
   )
@@ -37,7 +43,7 @@ function SortableOpcio({ id, value, onChange, onRemove, isDup }) {
   }
   return (
     <div ref={setNodeRef} style={style}>
-      <span {...attributes} {...listeners} className="drag-handle" style={{ cursor: 'grab', padding: '0 0.25rem' }}>⠿</span>
+      <span {...attributes} {...listeners} className="drag-handle" style={{ cursor: 'grab', padding: '0 0.25rem' }}><Icon name="GripVertical" size={14} /></span>
       <input
         type="text"
         value={value}
@@ -50,7 +56,7 @@ function SortableOpcio({ id, value, onChange, onRemove, isDup }) {
         style={{ padding: '0.15rem 0.5rem', margin: 0, fontSize: '0.85rem', lineHeight: 1 }}
         onClick={onRemove}
         title="Eliminar"
-      >×</button>
+      ><Icon name="X" size={14} /></button>
     </div>
   )
 }
@@ -60,8 +66,10 @@ export default function AdminCampsPage() {
   const { seccioId } = useParams()
   const navigate = useNavigate()
   const { addToast } = useToast()
+  const confirm = useConfirm()
   const [camps, setCamps] = useState([])
   const [tipus, setTipus] = useState(null)
+  const [seccio, setSeccio] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
@@ -83,6 +91,7 @@ export default function AdminCampsPage() {
         obtenirSeccio(seccioId),
       ])
       setCamps(campsData)
+      setSeccio(seccioData || null)
       if (seccioData && seccioData.tipus_id) {
         const tipusData = await obtenirTipusAdmin(seccioData.tipus_id)
         setTipus(tipusData)
@@ -189,7 +198,14 @@ export default function AdminCampsPage() {
   }
 
   async function handleDelete(id, label) {
-    if (!confirm(t('admin_camps.confirm_eliminar', { label }))) return
+    const ok = await confirm({
+      title: t('common.eliminar'),
+      message: t('admin_camps.confirm_eliminar', { label }),
+      confirmLabel: t('common.eliminar'),
+      cancelLabel: t('common.cancellar'),
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await eliminarCamp(id)
       addToast(t('admin_camps.camp_eliminat'))
@@ -217,17 +233,18 @@ export default function AdminCampsPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading) return <LoadingBlock label={t('common.carregant')} />
 
   return (
     <>
-      <nav aria-label="breadcrumb">
-        <ul>
-          <li><Link to="/admin/tipus">{t('admin_camps.breadcrumb_tipus')}</Link></li>
-          <li><Link to="#" onClick={(e) => { e.preventDefault(); navigate(-1) }}>{t('admin_camps.breadcrumb_seccions')}</Link></li>
-          <li>{t('admin_camps.breadcrumb_camps')}</li>
-        </ul>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: t('admin_camps.breadcrumb_tipus'), to: '/admin/tipus' },
+          ...(tipus ? [{ label: tipus.nom, to: `/admin/tipus/${tipus.id}/seccions` }] : []),
+          ...(seccio ? [{ label: seccio.titol }] : [{ label: t('admin_camps.breadcrumb_seccions') }]),
+          { label: t('nav.camps') },
+        ]}
+      />
 
       <div className="admin-header">
         <hgroup>
@@ -315,10 +332,15 @@ export default function AdminCampsPage() {
                       <button
                         type="button"
                         className="outline secondary btn-sm"
-                        onClick={() => {
-                          if (confirm(t('admin_camps.confirm_buidar', 'Segur que vols eliminar totes les opcions?'))) {
-                            setForm({ ...form, opcions: [] })
-                          }
+                        onClick={async () => {
+                          const ok = await confirm({
+                            title: t('admin_camps.buidar', 'Buidar'),
+                            message: t('admin_camps.confirm_buidar', 'Segur que vols eliminar totes les opcions?'),
+                            confirmLabel: t('admin_camps.buidar', 'Buidar'),
+                            cancelLabel: t('common.cancellar'),
+                            variant: 'danger',
+                          })
+                          if (ok) setForm({ ...form, opcions: [] })
                         }}
                       >{t('admin_camps.buidar', 'Buidar')}</button>
                     </div>
@@ -568,7 +590,20 @@ export default function AdminCampsPage() {
       )}
 
       {camps.length === 0 ? (
-        <p>{t('admin_camps.no_camps')}</p>
+        <EmptyState
+          icon={<Icon name="LayoutList" size={40} />}
+          title={t('admin_camps.no_camps')}
+          description={t('admin_camps.no_camps_desc')}
+          action={
+            <Button
+              variant="primary"
+              icon={<Icon name="Plus" size={14} />}
+              onClick={() => { resetForm(); setShowForm(true) }}
+            >
+              {t('admin_camps.crear_primer_camp')}
+            </Button>
+          }
+        />
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <table>
@@ -590,17 +625,19 @@ export default function AdminCampsPage() {
                     <td><code>{c.name}</code></td>
                     <td>
                       {c.label}
-                      {c.formula && <span className="formula-badge" title={c.formula} style={{ marginLeft: '0.35rem' }}>ƒ</span>}
+                      {c.formula && <span className="formula-badge" title={c.formula} style={{ marginLeft: '0.35rem' }}><Icon name="Sigma" size={11} /></span>}
                     </td>
                     <td>{c.type}</td>
                     <td>{c.grup || '—'}</td>
                     <td>{c.required ? t('common.si') : t('common.no')}</td>
                     <td>
                       <div className="admin-actions-row">
-                        <button className="outline btn-sm" onClick={() => startEdit(c)}>{t('common.editar')}</button>
-                        <button className="outline secondary btn-sm" onClick={() => handleDelete(c.id, c.label)}>
+                        <Button variant="ghost" size="sm" icon={<Icon name="Pencil" size={12} />} onClick={() => startEdit(c)}>
+                          {t('common.editar')}
+                        </Button>
+                        <Button variant="danger" size="sm" icon={<Icon name="Trash2" size={12} />} onClick={() => handleDelete(c.id, c.label)}>
                           {t('common.eliminar')}
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </SortableRow>

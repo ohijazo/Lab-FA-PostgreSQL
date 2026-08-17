@@ -3,10 +3,17 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { llistarUsers, crearUser, editarUser, eliminarUser } from '../api/admin'
 import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../context/ConfirmContext'
+import Icon from '../components/Icon'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import LoadingBlock from '../components/ui/LoadingBlock'
 
 export default function AdminUsersPage() {
   const { t } = useTranslation()
   const { addToast } = useToast()
+  const confirm = useConfirm()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -64,7 +71,14 @@ export default function AdminUsersPage() {
   }
 
   async function handleDelete(id, email) {
-    if (!confirm(t('admin_users.confirm_eliminar', { email }))) return
+    const ok = await confirm({
+      title: t('common.eliminar'),
+      message: t('admin_users.confirm_eliminar', { email }),
+      confirmLabel: t('common.eliminar'),
+      cancelLabel: t('common.cancellar'),
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await eliminarUser(id)
       addToast(t('admin_users.usuari_eliminat'))
@@ -75,27 +89,39 @@ export default function AdminUsersPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading) return <LoadingBlock label={t('common.carregant')} />
 
   return (
     <>
-      <nav aria-label="breadcrumb">
-        <ul>
-          <li><Link to="/admin/tipus">{t('admin_users.breadcrumb_config')}</Link></li>
-          <li>{t('admin_users.breadcrumb_usuaris')}</li>
-        </ul>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: t('admin_users.breadcrumb_config'), to: '/admin/tipus' },
+          { label: t('admin_users.breadcrumb_usuaris') },
+        ]}
+      />
 
-      <hgroup>
-        <h1>{t('admin_users.titol')}</h1>
-        <p>{t('admin_users.subtitol')}</p>
-      </hgroup>
+      <div className="admin-header">
+        <hgroup>
+          <h1>{t('admin_users.titol')}</h1>
+          <p>{t('admin_users.subtitol')}</p>
+        </hgroup>
+        <div className="admin-header-actions">
+          <Button
+            variant={showForm ? 'ghost' : 'primary'}
+            icon={<Icon name={showForm ? 'X' : 'UserPlus'} size={14} />}
+            onClick={() => { resetForm(); setShowForm(!showForm) }}
+          >
+            {showForm ? t('common.cancellar') : t('admin_users.nou_usuari')}
+          </Button>
+        </div>
+      </div>
 
-      {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
-
-      <button onClick={() => { resetForm(); setShowForm(!showForm) }}>
-        {showForm ? t('common.cancellar') : t('admin_users.nou_usuari')}
-      </button>
+      {error && (
+        <div className="alert alert-danger">
+          <Icon name="AlertCircle" size={14} />
+          <span>{error}</span>
+        </div>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit}>
@@ -129,11 +155,8 @@ export default function AdminUsersPage() {
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   required={!editingId}
                 />
-                <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
-                  {showPassword
-                    ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                    : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  }
+                <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1} aria-label={showPassword ? 'Amagar' : 'Mostrar'}>
+                  <Icon name={showPassword ? 'EyeOff' : 'Eye'} size={16} />
                 </button>
               </div>
             </label>
@@ -151,7 +174,20 @@ export default function AdminUsersPage() {
       )}
 
       {users.length === 0 ? (
-        <p>{t('admin_users.no_usuaris')}</p>
+        <EmptyState
+          icon={<Icon name="Users" size={40} />}
+          title={t('admin_users.no_usuaris')}
+          description={t('admin_users.no_usuaris_desc')}
+          action={
+            <Button
+              variant="primary"
+              icon={<Icon name="Plus" size={14} />}
+              onClick={() => { resetForm(); setShowForm(true) }}
+            >
+              {t('admin_users.crear_primer_usuari')}
+            </Button>
+          }
+        />
       ) : (
         <table>
           <thead>
@@ -169,11 +205,13 @@ export default function AdminUsersPage() {
                 <td><strong>{u.nom}</strong></td>
                 <td>{u.role === 'admin' ? t('admin_users.rol_admin') : u.role === 'viewer' ? t('admin_users.rol_lectura') : t('admin_users.rol_editor')}</td>
                 <td>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="outline btn-sm" onClick={() => startEdit(u)} title={t('admin_users.title_editar')}>{t('common.editar')}</button>
-                    <button className="outline secondary btn-sm" onClick={() => handleDelete(u.id, u.email)} title={t('admin_users.title_eliminar')}>
+                  <div className="admin-actions-row">
+                    <Button variant="ghost" size="sm" icon={<Icon name="Pencil" size={12} />} onClick={() => startEdit(u)} title={t('admin_users.title_editar')}>
+                      {t('common.editar')}
+                    </Button>
+                    <Button variant="danger" size="sm" icon={<Icon name="Trash2" size={12} />} onClick={() => handleDelete(u.id, u.email)} title={t('admin_users.title_eliminar')}>
                       {t('common.eliminar')}
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>

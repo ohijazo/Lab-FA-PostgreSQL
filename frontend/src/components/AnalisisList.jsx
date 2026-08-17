@@ -1,6 +1,8 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { alertaStyle } from '../utils/alertes'
+import Icon from './Icon'
+import EmptyState from './ui/EmptyState'
 
 function formatCell(col, value, type) {
   if (value === null || value === undefined || value === '') return '—'
@@ -16,12 +18,24 @@ function formatCell(col, value, type) {
   return value
 }
 
-export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort, tipusConfig }) {
+export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort, tipusConfig, canCreate = false }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
   if (analisis.length === 0) {
-    return <p>{t('llista.no_analisis')}</p>
+    return (
+      <EmptyState
+        icon={<Icon name="Inbox" size={40} />}
+        title={t('llista.no_analisis')}
+        description={t('llista.no_analisis_desc')}
+        action={canCreate ? (
+          <Link to={`/${tipus}/nou`} className="btn btn-primary">
+            <Icon name="Plus" size={14} />
+            <span>{t('llista.nou_analisi')}</span>
+          </Link>
+        ) : null}
+      />
+    )
   }
 
   const labelMap = {}
@@ -36,8 +50,10 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
   }
 
   function sortIndicator(col) {
-    if (sortCol !== col) return ' ↕'
-    return sortDir === 'asc' ? ' ↑' : ' ↓'
+    if (sortCol !== col) return <Icon name="ChevronsUpDown" size={12} className="sort-icon" />
+    return sortDir === 'asc'
+      ? <Icon name="ArrowUp" size={12} className="sort-icon" />
+      : <Icon name="ArrowDown" size={12} className="sort-icon" />
   }
 
   return (
@@ -45,8 +61,8 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
       <table className="analisis-list-table">
         <thead>
           <tr>
-            <th className="col-check" title={t('llista.col_finalitzat')}>✓</th>
-            <th className="col-check" title={t('llista.col_alerta')}>⚠</th>
+            <th className="col-check" title={t('llista.col_finalitzat')}><Icon name="Check" size={14} /></th>
+            <th className="col-check" title={t('llista.col_alerta')}><Icon name="AlertTriangle" size={14} /></th>
             {columnes.map((col) => (
               <th
                 key={col}
@@ -75,14 +91,14 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
                 title={a.finalitzat ? t('detall.finalitzat') : t('detall.pendent')}
               >
                 <span className={`row-check ${a.finalitzat ? 'is-on' : 'is-off'}`}>
-                  {a.finalitzat ? '✓' : ''}
+                  {a.finalitzat ? <Icon name="Check" size={14} /> : null}
                 </span>
               </td>
               <td
                 className="col-check"
                 title={a.alerta ? (a.alerta_motiu || t('detall.alerta')) : ''}
               >
-                {a.alerta && <span className="row-alerta-icon">⚠</span>}
+                {a.alerta && <span className="row-alerta-icon"><Icon name="AlertTriangle" size={14} /></span>}
               </td>
               {columnes.map((col) => {
                 const camp = campMap[col]

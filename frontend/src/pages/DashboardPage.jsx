@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchDashboard } from '../api/dashboard'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import LoadingBlock from '../components/ui/LoadingBlock'
 import KpiCards from '../components/dashboard/KpiCards'
 import GraficLinia from '../components/dashboard/GraficLinia'
 import GraficBarres from '../components/dashboard/GraficBarres'
@@ -58,6 +60,13 @@ export default function DashboardPage() {
 
   return (
     <>
+      <Breadcrumbs
+        items={[
+          { label: t('nav.inici'), to: '/' },
+          { label: data?.nom || tipus, to: `/${tipus}` },
+          { label: t('nav.dashboard') },
+        ]}
+      />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
         <h2 style={{ margin: 0 }}>{t('dashboard_page.dashboard', { nom: data?.nom || tipus })}</h2>
         <Link to={`/${tipus}`} role="button" className="outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85em' }}>
@@ -91,7 +100,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {loading && <p aria-busy="true">{t('dashboard_page.carregant')}</p>}
+      {loading && <LoadingBlock label={t('dashboard_page.carregant')} />}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {data && !loading && (

@@ -3,10 +3,16 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { llistarTipusAdmin, crearTipus, editarTipus, eliminarTipus, descarregarPlantilla, duplicarTipus, obtenirEstadistiques } from '../api/admin'
 import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../context/ConfirmContext'
+import Icon from '../components/Icon'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingBlock from '../components/ui/LoadingBlock'
 
 export default function AdminTipusPage() {
   const { t, i18n } = useTranslation()
   const { addToast } = useToast()
+  const confirm = useConfirm()
   const [tipus, setTipus] = useState([])
   const [stats, setStats] = useState([])
   const [loading, setLoading] = useState(true)
@@ -63,7 +69,13 @@ export default function AdminTipusPage() {
   }
 
   async function handleDuplicar(id, nom) {
-    if (!confirm(t('admin_tipus.confirm_duplicar', { nom }))) return
+    const ok = await confirm({
+      title: t('common.duplicar'),
+      message: t('admin_tipus.confirm_duplicar', { nom }),
+      confirmLabel: t('common.duplicar'),
+      cancelLabel: t('common.cancellar'),
+    })
+    if (!ok) return
     try {
       await duplicarTipus(id)
       addToast(t('admin_tipus.tipus_duplicat'))
@@ -88,7 +100,14 @@ export default function AdminTipusPage() {
   }
 
   async function handleDelete(id, nom) {
-    if (!confirm(t('admin_tipus.confirm_eliminar', { nom }))) return
+    const ok = await confirm({
+      title: t('common.eliminar'),
+      message: t('admin_tipus.confirm_eliminar', { nom }),
+      confirmLabel: t('common.eliminar'),
+      cancelLabel: t('common.cancellar'),
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await eliminarTipus(id)
       addToast(t('admin_tipus.tipus_eliminat'))
@@ -99,7 +118,7 @@ export default function AdminTipusPage() {
     }
   }
 
-  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading) return <LoadingBlock label={t('common.carregant')} />
 
   return (
     <>
@@ -118,7 +137,12 @@ export default function AdminTipusPage() {
         </div>
       </div>
 
-      {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
+      {error && (
+        <div className="alert alert-danger">
+          <Icon name="AlertCircle" size={14} />
+          <span>{error}</span>
+        </div>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit}>
@@ -147,7 +171,20 @@ export default function AdminTipusPage() {
       )}
 
       {tipus.length === 0 ? (
-        <p>{t('admin_tipus.no_tipus')}</p>
+        <EmptyState
+          icon={<Icon name="Layers" size={40} />}
+          title={t('admin_tipus.no_tipus')}
+          description={t('admin_tipus.no_tipus_desc')}
+          action={
+            <Button
+              variant="primary"
+              icon={<Icon name="Plus" size={14} />}
+              onClick={() => { resetForm(); setShowForm(true) }}
+            >
+              {t('admin_tipus.crear_primer_tipus')}
+            </Button>
+          }
+        />
       ) : (
         <table>
           <thead>
@@ -173,27 +210,29 @@ export default function AdminTipusPage() {
                   <td>{st.ultima_analisi ? new Date(st.ultima_analisi).toLocaleDateString(i18n.language === 'es' ? 'es-ES' : 'ca-ES') : '—'}</td>
                   <td>
                     <div className="admin-actions-row">
-                      <Link to={`/admin/tipus/${tp.id}/seccions`} role="button" className="outline btn-sm" title={t('admin_tipus.title_seccions')}>
-                        {t('admin_tipus.seccions')}
+                      <Link to={`/admin/tipus/${tp.id}/seccions`} className="btn btn-outline btn-sm" title={t('admin_tipus.title_seccions')}>
+                        <Icon name="Layers" size={12} />
+                        <span>{t('admin_tipus.seccions')}</span>
                       </Link>
-                      <button className="outline btn-sm" onClick={() => startEdit(tp)} title={t('admin_tipus.title_editar')}>
+                      <Button variant="ghost" size="sm" icon={<Icon name="Pencil" size={12} />} onClick={() => startEdit(tp)} title={t('admin_tipus.title_editar')}>
                         {t('common.editar')}
-                      </button>
-                      <button className="outline btn-sm" onClick={() => handleDuplicar(tp.id, tp.nom)} title={t('admin_tipus.title_duplicar')}>
+                      </Button>
+                      <Button variant="ghost" size="sm" icon={<Icon name="Copy" size={12} />} onClick={() => handleDuplicar(tp.id, tp.nom)} title={t('admin_tipus.title_duplicar')}>
                         {t('common.duplicar')}
-                      </button>
-                      <button className="outline secondary btn-sm" onClick={() => handleDelete(tp.id, tp.nom)} title={t('admin_tipus.title_eliminar')}>
+                      </Button>
+                      <Button variant="danger" size="sm" icon={<Icon name="Trash2" size={12} />} onClick={() => handleDelete(tp.id, tp.nom)} title={t('admin_tipus.title_eliminar')}>
                         {t('common.eliminar')}
-                      </button>
+                      </Button>
                     </div>
                   </td>
                   <td>
                     <div className="admin-actions-row">
-                      <button className="outline contrast btn-xs" onClick={() => handlePlantilla(tp.id)} title={t('admin_tipus.title_plantilla')}>
+                      <Button variant="ghost" size="sm" icon={<Icon name="FileDown" size={12} />} onClick={() => handlePlantilla(tp.id)} title={t('admin_tipus.title_plantilla')}>
                         {t('admin_tipus.descarregar_plantilla')}
-                      </button>
-                      <Link to={`/admin/tipus/${tp.id}/import`} role="button" className="contrast btn-xs" title={t('admin_tipus.title_importar')}>
-                        {t('admin_tipus.importar_dades')}
+                      </Button>
+                      <Link to={`/admin/tipus/${tp.id}/import`} className="btn btn-outline btn-sm" title={t('admin_tipus.title_importar')}>
+                        <Icon name="Upload" size={12} />
+                        <span>{t('admin_tipus.importar_dades')}</span>
                       </Link>
                     </div>
                   </td>

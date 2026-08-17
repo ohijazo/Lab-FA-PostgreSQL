@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { importarAnalisis, obtenirTipusAdmin } from '../api/admin'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import Button from '../components/ui/Button'
+import LoadingBlock from '../components/ui/LoadingBlock'
+import Icon from '../components/Icon'
 
 export default function AdminImportPage() {
   const { t } = useTranslation()
@@ -36,25 +40,30 @@ export default function AdminImportPage() {
     }
   }
 
-  if (loadingTipus) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loadingTipus) return <LoadingBlock label={t('common.carregant')} />
   if (!tipus) return <p>{t('common.tipus_no_trobat')}</p>
 
   return (
     <>
-      <nav aria-label="breadcrumb">
-        <ul>
-          <li><Link to="/admin/tipus">{t('admin_import.breadcrumb_tipus')}</Link></li>
-          <li><Link to={`/admin/tipus/${tipusId}/seccions`}>{tipus.nom}</Link></li>
-          <li>{t('admin_import.breadcrumb_importar')}</li>
-        </ul>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: t('admin_import.breadcrumb_tipus'), to: '/admin/tipus' },
+          { label: tipus.nom, to: `/admin/tipus/${tipusId}/seccions` },
+          { label: t('nav.importar') },
+        ]}
+      />
 
       <hgroup>
         <h1>{t('admin_import.titol', { nom: tipus.nom })}</h1>
         <p>{t('admin_import.subtitol')}</p>
       </hgroup>
 
-      {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
+      {error && (
+        <div className="alert alert-danger">
+          <Icon name="AlertCircle" size={14} />
+          <span>{error}</span>
+        </div>
+      )}
 
       {!result && (
         <form onSubmit={handleSubmit}>
@@ -68,9 +77,15 @@ export default function AdminImportPage() {
                 required
               />
             </label>
-            <button type="submit" disabled={!file || loading} aria-busy={loading}>
+            <Button
+              type="submit"
+              variant="primary"
+              icon={<Icon name="Upload" size={14} />}
+              disabled={!file}
+              loading={loading}
+            >
               {loading ? t('admin_import.important') : t('admin_import.importar')}
-            </button>
+            </Button>
           </fieldset>
         </form>
       )}
@@ -79,18 +94,18 @@ export default function AdminImportPage() {
         <article>
           <header><strong>{t('admin_import.resultat')}</strong></header>
 
-          <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem' }}>
-            <div>
-              <strong style={{ fontSize: '2rem', color: 'var(--pico-primary)' }}>{result.importats}</strong>
-              <br />{t('admin_import.registres_importats')}
+          <div className="import-result-summary">
+            <div className="import-result-stat">
+              <strong className="import-result-value import-result-value-primary">{result.importats}</strong>
+              <span>{t('admin_import.registres_importats')}</span>
             </div>
-            <div>
-              <strong style={{ fontSize: '2rem', color: 'var(--pico-secondary)' }}>{result.saltats}</strong>
-              <br />{t('admin_import.duplicats_saltats')}
+            <div className="import-result-stat">
+              <strong className="import-result-value import-result-value-muted">{result.saltats}</strong>
+              <span>{t('admin_import.duplicats_saltats')}</span>
             </div>
-            <div>
-              <strong style={{ fontSize: '2rem', color: result.errors.length > 0 ? 'var(--pico-del-color)' : 'inherit' }}>{result.errors.length}</strong>
-              <br />{t('admin_import.errors')}
+            <div className="import-result-stat">
+              <strong className={`import-result-value ${result.errors.length > 0 ? 'import-result-value-danger' : ''}`}>{result.errors.length}</strong>
+              <span>{t('admin_import.errors')}</span>
             </div>
           </div>
 
@@ -130,13 +145,14 @@ export default function AdminImportPage() {
             </details>
           )}
 
-          <footer style={{ display: 'flex', gap: '1rem' }}>
-            <Link to={`/${tipus.slug}`} role="button">
-              {t('admin_import.anar_llista')}
+          <footer className="import-result-actions">
+            <Link to={`/${tipus.slug}`} className="btn btn-primary">
+              <Icon name="List" size={14} />
+              <span>{t('admin_import.anar_llista')}</span>
             </Link>
-            <button className="outline" onClick={() => { setResult(null); setFile(null) }}>
+            <Button variant="outline" icon={<Icon name="RefreshCw" size={14} />} onClick={() => { setResult(null); setFile(null) }}>
               {t('admin_import.importar_altre')}
-            </button>
+            </Button>
           </footer>
         </article>
       )}

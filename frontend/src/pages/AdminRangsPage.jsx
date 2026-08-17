@@ -3,6 +3,11 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { obtenirTipusAdmin, editarCamp } from '../api/admin'
 import { useToast } from '../context/ToastContext'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingBlock from '../components/ui/LoadingBlock'
+import Icon from '../components/Icon'
 
 export default function AdminRangsPage() {
   const { t } = useTranslation()
@@ -38,7 +43,7 @@ export default function AdminRangsPage() {
 
   useEffect(() => { fetchData() }, [tipusId])
 
-  if (loading) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading) return <LoadingBlock label={t('common.carregant')} />
   if (!tipus) return <p>{t('common.tipus_no_trobat')}</p>
 
   const controladorCamp = (() => {
@@ -54,15 +59,25 @@ export default function AdminRangsPage() {
   if (!controladorCamp) {
     return (
       <>
-        <nav aria-label="breadcrumb">
-          <ul>
-            <li><Link to="/admin/tipus">{t('admin_seccions.breadcrumb_tipus')}</Link></li>
-            <li><Link to="#" onClick={(e) => { e.preventDefault(); navigate(-1) }}>{tipus.nom}</Link></li>
-            <li>{t('admin_rangs.titol', 'Taula de rangs')}</li>
-          </ul>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: t('admin_seccions.breadcrumb_tipus'), to: '/admin/tipus' },
+            { label: tipus.nom, to: `/admin/tipus/${tipusId}/seccions` },
+            { label: t('nav.rangs') },
+          ]}
+        />
         <h1>{t('admin_rangs.titol', 'Taula de rangs')}</h1>
-        <p>{t('admin_rangs.no_controlador', 'Aquest tipus no té camp controlador configurat.')}</p>
+        <EmptyState
+          icon={<Icon name="SlidersHorizontal" size={40} />}
+          title={t('admin_rangs.no_controlador', 'Aquest tipus no té camp controlador configurat.')}
+          description={t('admin_rangs.no_controlador_desc', "El camp controlador (de tipus 'select') determina els rangs vàlids segons el valor triat. Configura'l des de la pàgina de seccions.")}
+          action={
+            <Link to={`/admin/tipus/${tipusId}/seccions`} className="btn btn-primary">
+              <Icon name="Layers" size={14} />
+              <span>{t('admin_rangs.anar_a_seccions', 'Configurar seccions')}</span>
+            </Link>
+          }
+        />
       </>
     )
   }
@@ -116,28 +131,38 @@ export default function AdminRangsPage() {
   if (campsNumerics.length === 0) {
     return (
       <>
-        <nav aria-label="breadcrumb">
-          <ul>
-            <li><Link to="/admin/tipus">{t('admin_seccions.breadcrumb_tipus')}</Link></li>
-            <li><Link to={`/admin/tipus/${tipusId}/seccions`}>{tipus.nom}</Link></li>
-            <li>{t('admin_rangs.titol', 'Taula de rangs')}</li>
-          </ul>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: t('admin_seccions.breadcrumb_tipus'), to: '/admin/tipus' },
+            { label: tipus.nom, to: `/admin/tipus/${tipusId}/seccions` },
+            { label: t('nav.rangs') },
+          ]}
+        />
         <h1>{t('admin_rangs.titol', 'Taula de rangs')}</h1>
-        <p>{t('admin_rangs.no_camps_numerics', 'No hi ha camps numèrics per configurar.')}</p>
+        <EmptyState
+          icon={<Icon name="Ruler" size={40} />}
+          title={t('admin_rangs.no_camps_numerics', 'No hi ha camps numèrics per configurar.')}
+          description={t('admin_rangs.no_camps_numerics_desc', "Afegeix camps de tipus 'número' a alguna secció per poder-los configurar aquí.")}
+          action={
+            <Link to={`/admin/tipus/${tipusId}/seccions`} className="btn btn-primary">
+              <Icon name="Layers" size={14} />
+              <span>{t('admin_rangs.anar_a_seccions', 'Configurar seccions')}</span>
+            </Link>
+          }
+        />
       </>
     )
   }
 
   return (
     <>
-      <nav aria-label="breadcrumb">
-        <ul>
-          <li><Link to="/admin/tipus">{t('admin_seccions.breadcrumb_tipus')}</Link></li>
-          <li><Link to={`/admin/tipus/${tipusId}/seccions`}>{tipus.nom}</Link></li>
-          <li>{t('admin_rangs.titol', 'Taula de rangs')}</li>
-        </ul>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: t('admin_seccions.breadcrumb_tipus'), to: '/admin/tipus' },
+          { label: tipus.nom, to: `/admin/tipus/${tipusId}/seccions` },
+          { label: t('nav.rangs') },
+        ]}
+      />
 
       <div className="admin-header">
         <hgroup>
@@ -147,36 +172,39 @@ export default function AdminRangsPage() {
           </p>
         </hgroup>
         <div className="admin-header-actions">
-          <button onClick={desar} disabled={saving} aria-busy={saving}>
+          <Button variant="primary" icon={<Icon name="Save" size={14} />} loading={saving} onClick={desar}>
             {saving ? t('common.desant', 'Desant...') : t('common.desar_canvis')}
-          </button>
+          </Button>
         </div>
       </div>
 
-      {error && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
+      {error && (
+        <div className="alert alert-danger">
+          <Icon name="AlertCircle" size={14} />
+          <span>{error}</span>
+        </div>
+      )}
 
-      <div style={{ overflowX: 'auto' }}>
+      <div className="rangs-matrix-wrap">
         <table className="rangs-matrix">
           <thead>
             <tr>
-              <th rowSpan={2} style={{ verticalAlign: 'bottom', minWidth: '8rem' }}>
+              <th rowSpan={2} className="rangs-col-header">
                 {controladorCamp.label}
               </th>
               {campsNumerics.map(c => (
-                <th key={c.id} colSpan={2} style={{ textAlign: 'center', borderLeft: '1px solid var(--pico-muted-border-color)' }}>
+                <th key={c.id} colSpan={2} className="rangs-camp-header">
                   {c.label}
-                  <div style={{ fontSize: '0.75rem', fontWeight: 'normal', color: 'var(--lab-text-muted)' }}>
-                    {c.seccioTitol}
-                  </div>
+                  <div className="rangs-camp-header-sub">{c.seccioTitol}</div>
                 </th>
               ))}
             </tr>
             <tr>
               {campsNumerics.flatMap(c => [
-                <th key={`${c.id}-min`} style={{ borderLeft: '1px solid var(--pico-muted-border-color)', textAlign: 'center', fontSize: '0.85rem' }}>
+                <th key={`${c.id}-min`} className="rangs-minmax-header rangs-minmax-header-min">
                   {t('admin_camps.minim')}
                 </th>,
-                <th key={`${c.id}-max`} style={{ textAlign: 'center', fontSize: '0.85rem' }}>
+                <th key={`${c.id}-max`} className="rangs-minmax-header">
                   {t('admin_camps.maxim')}
                 </th>,
               ])}
@@ -188,23 +216,25 @@ export default function AdminRangsPage() {
                 <td><strong>{op}</strong></td>
                 {campsNumerics.flatMap(c => {
                   const rang = (rangs[c.id] || {})[op] || {}
+                  const hasMin = rang.min != null
+                  const hasMax = rang.max != null
                   return [
-                    <td key={`${c.id}-${op}-min`} style={{ borderLeft: '1px solid var(--pico-muted-border-color)', padding: '0.25rem' }}>
+                    <td key={`${c.id}-${op}-min`} className={`rangs-cell rangs-cell-min${hasMin ? ' rangs-cell-filled' : ''}`}>
                       <input
                         type="number"
                         step="any"
-                        value={rang.min != null ? rang.min : ''}
+                        value={hasMin ? rang.min : ''}
                         onChange={e => setRang(c.id, op, 'min', e.target.value)}
-                        style={{ margin: 0, minWidth: '5rem' }}
+                        className="rangs-input"
                       />
                     </td>,
-                    <td key={`${c.id}-${op}-max`} style={{ padding: '0.25rem' }}>
+                    <td key={`${c.id}-${op}-max`} className={`rangs-cell${hasMax ? ' rangs-cell-filled' : ''}`}>
                       <input
                         type="number"
                         step="any"
-                        value={rang.max != null ? rang.max : ''}
+                        value={hasMax ? rang.max : ''}
                         onChange={e => setRang(c.id, op, 'max', e.target.value)}
-                        style={{ margin: 0, minWidth: '5rem' }}
+                        className="rangs-input"
                       />
                     </td>,
                   ]
@@ -215,10 +245,10 @@ export default function AdminRangsPage() {
         </table>
       </div>
 
-      <div style={{ marginTop: '1rem' }}>
-        <button onClick={desar} disabled={saving} aria-busy={saving}>
+      <div className="rangs-footer">
+        <Button variant="primary" icon={<Icon name="Save" size={14} />} loading={saving} onClick={desar}>
           {saving ? t('common.desant', 'Desant...') : t('common.desar_canvis')}
-        </button>
+        </Button>
       </div>
     </>
   )

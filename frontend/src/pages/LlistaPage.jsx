@@ -1,10 +1,15 @@
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { llistarAnalisis, obtenirConfig, desarColumnesUsuari, restablirColumnesUsuari } from '../api/analisis'
 import AnalisisList from '../components/AnalisisList'
+import Icon from '../components/Icon'
+import Button from '../components/ui/Button'
+import Modal from '../components/ui/Modal'
+import Skeleton from '../components/ui/Skeleton'
+import LoadingBlock from '../components/ui/LoadingBlock'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 
@@ -14,27 +19,17 @@ function SortableColumnItem({ id, label, onRemove }) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.4rem 0.6rem',
-    border: '1px solid var(--lab-border)',
-    borderRadius: '0.25rem',
-    marginBottom: '0.25rem',
-    background: 'var(--lab-bg, white)',
-    listStyle: 'none',
   }
   return (
-    <li ref={setNodeRef} style={style}>
-      <span {...attributes} {...listeners} className="drag-handle" style={{ cursor: 'grab' }}>⠿</span>
-      <span style={{ flex: 1 }}>{label}</span>
+    <li ref={setNodeRef} style={style} className="cols-item">
+      <span {...attributes} {...listeners} className="drag-handle cols-item-drag"><Icon name="GripVertical" size={14} /></span>
+      <span className="cols-item-label">{label}</span>
       <button
         type="button"
-        className="outline secondary"
-        style={{ padding: '0.1rem 0.5rem', fontSize: '0.85rem', margin: 0 }}
+        className="cols-item-remove"
         onClick={onRemove}
         aria-label="treure"
-      >×</button>
+      ><Icon name="X" size={14} /></button>
     </li>
   )
 }
@@ -57,11 +52,11 @@ export default function LlistaPage() {
   const [filters, setFilters] = useState({})
   const [estat, setEstat] = useState('')  // '' = tots, 'pendent', 'finalitzat'
 
-  const dialogRef = useRef(null)
+  const [exportOpen, setExportOpen] = useState(false)
   const [exportDateFrom, setExportDateFrom] = useState('')
   const [exportDateTo, setExportDateTo] = useState('')
 
-  const colsDialogRef = useRef(null)
+  const [colsOpen, setColsOpen] = useState(false)
   const [editColumnes, setEditColumnes] = useState([])
   const [savingColumnes, setSavingColumnes] = useState(false)
   const [columnesError, setColumnesError] = useState(null)
@@ -126,11 +121,11 @@ export default function LlistaPage() {
   function openExportDialog() {
     setExportDateFrom('')
     setExportDateTo('')
-    dialogRef.current?.showModal()
+    setExportOpen(true)
   }
 
   function closeExportDialog() {
-    dialogRef.current?.close()
+    setExportOpen(false)
   }
 
   function handleExport() {
@@ -183,11 +178,11 @@ export default function LlistaPage() {
   function openColumnesDialog() {
     setColumnesError(null)
     setEditColumnes(config?.columnes_llista || [])
-    colsDialogRef.current?.showModal()
+    setColsOpen(true)
   }
 
   function closeColumnesDialog() {
-    colsDialogRef.current?.close()
+    setColsOpen(false)
   }
 
   function afegirColumna(name) {
@@ -235,7 +230,7 @@ export default function LlistaPage() {
     }
   }
 
-  if (loading && !config) return <p aria-busy="true">{t('common.carregant')}</p>
+  if (loading && !config) return <LoadingBlock label={t('common.carregant')} />
   if (error) return <p>Error: {error}</p>
   if (!config) return <p>{t('common.tipus_no_trobat')}</p>
 
@@ -248,12 +243,15 @@ export default function LlistaPage() {
 
       <div className="llista-toolbar">
         <form onSubmit={handleSearch} role="search" className="llista-search">
-          <input
-            type="search"
-            placeholder={t('llista.cercar')}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
+          <div className="search-input-wrap">
+            <Icon name="Search" size={14} className="search-input-icon" />
+            <input
+              type="search"
+              placeholder={t('llista.cercar')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
         </form>
         <div className="estat-segmented" role="tablist" aria-label={t('llista.filtre_estat')}>
           <button
@@ -274,56 +272,70 @@ export default function LlistaPage() {
         </div>
         <div className="llista-toolbar-actions">
           {filterableCamps.length > 0 && (
-            <button
-              className={activeFilterCount > 0 ? '' : 'outline'}
+            <Button
+              variant={activeFilterCount > 0 ? 'primary' : 'outline'}
+              size="sm"
+              icon={<Icon name="Filter" size={12} />}
               onClick={() => setShowFilters((v) => !v)}
             >
               {activeFilterCount > 0 ? t('llista.filtres_count', { count: activeFilterCount }) : t('llista.filtres')}
-            </button>
+            </Button>
           )}
-          <button
-            className={config?.columnes_llista_personalitzat ? '' : 'outline'}
+          <Button
+            variant={config?.columnes_llista_personalitzat ? 'primary' : 'outline'}
+            size="sm"
+            icon={<Icon name="Columns3" size={12} />}
             onClick={openColumnesDialog}
             title={t('llista.columnes_title')}
           >
             {t('llista.columnes')}
-          </button>
-          {!isViewer && <Link to={`/${tipus}/nou`} role="button">{t('llista.nou_analisi')}</Link>}
-          <button className="outline" onClick={openExportDialog}>
+          </Button>
+          {!isViewer && (
+            <Link to={`/${tipus}/nou`} className="btn btn-primary btn-sm">
+              <Icon name="Plus" size={12} />
+              <span>{t('llista.nou_analisi')}</span>
+            </Link>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            icon={<Icon name="Download" size={12} />}
+            onClick={openExportDialog}
+          >
             {t('llista.exportar_excel')}
-          </button>
+          </Button>
         </div>
       </div>
 
       {showFilters && filterableCamps.length > 0 && (
-        <div style={{ border: '1px solid var(--lab-border)', borderRadius: '0.375rem', padding: '0.75rem', marginBottom: '0.75rem', background: 'var(--lab-bg-subtle)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <strong style={{ fontSize: '0.85rem' }}>{t('llista.filtres_avancats')}</strong>
+        <div className="llista-filters-panel">
+          <div className="llista-filters-header">
+            <strong>{t('llista.filtres_avancats')}</strong>
             {activeFilterCount > 0 && (
-              <button className="outline secondary" style={{ padding: '0.2rem 0.6rem', fontSize: '0.8rem', margin: 0 }} onClick={clearFilters}>
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
                 {t('llista.netejar_filtres')}
-              </button>
+              </Button>
             )}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.5rem 0.75rem' }}>
+          <div className="llista-filters-grid">
             {filterableCamps.map((c) => {
               if (c.type === 'date') {
                 return (
-                  <fieldset key={c.name} style={{ border: 'none', padding: 0, margin: 0, gridColumn: 'span 2' }}>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748b', marginBottom: '0.15rem' }}>{c.label}</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '0.3rem', alignItems: 'center' }}>
+                  <fieldset key={c.name} className="filter-field filter-field-date">
+                    <label className="filter-label">{c.label}</label>
+                    <div className="filter-date-range">
                       <input
                         type="date"
                         value={filters[`f_${c.name}_from`] || ''}
                         onChange={(e) => updateFilter(`f_${c.name}_from`, e.target.value)}
-                        style={{ marginBottom: 0, padding: '0.25rem 0.4rem', fontSize: '0.85rem' }}
+                        className="filter-input"
                       />
-                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>—</span>
+                      <span className="filter-date-sep">—</span>
                       <input
                         type="date"
                         value={filters[`f_${c.name}_to`] || ''}
                         onChange={(e) => updateFilter(`f_${c.name}_to`, e.target.value)}
-                        style={{ marginBottom: 0, padding: '0.25rem 0.4rem', fontSize: '0.85rem' }}
+                        className="filter-input"
                       />
                     </div>
                   </fieldset>
@@ -331,12 +343,12 @@ export default function LlistaPage() {
               }
               if (c.type === 'select') {
                 return (
-                  <fieldset key={c.name} style={{ border: 'none', padding: 0, margin: 0 }}>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748b', marginBottom: '0.15rem' }}>{c.label}</label>
+                  <fieldset key={c.name} className="filter-field">
+                    <label className="filter-label">{c.label}</label>
                     <select
                       value={filters[`f_${c.name}`] || ''}
                       onChange={(e) => updateFilter(`f_${c.name}`, e.target.value)}
-                      style={{ marginBottom: 0, padding: '0.25rem 0.4rem', fontSize: '0.85rem' }}
+                      className="filter-input"
                     >
                       <option value="">{t('common.tots')}</option>
                       {(c.opcions || []).map((op) => (
@@ -352,110 +364,106 @@ export default function LlistaPage() {
         </div>
       )}
 
-      <dialog ref={colsDialogRef}>
-        <article className="cols-dialog-article">
-          <header>
-            <button aria-label={t('common.tancar')} rel="prev" onClick={closeColumnesDialog}></button>
-            <h3>{t('llista.columnes_titol', { nom: config.nom })}</h3>
-          </header>
-
-          <p style={{ marginTop: 0 }}><small>{t('llista.columnes_desc')}</small></p>
-
-          {columnesError && <p style={{ color: 'var(--pico-del-color)' }}>{columnesError}</p>}
-
-          <section style={{ marginBottom: '1.25rem' }}>
-            <h6 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--pico-muted-color)' }}>
-              {t('llista.columnes_seleccionades')}
-            </h6>
-            {editColumnes.length === 0 ? (
-              <p style={{ margin: 0 }}><small>{t('llista.columnes_cap_seleccionada')}</small></p>
-            ) : (
-              <DndContext sensors={colsSensors} collisionDetection={closestCenter} onDragEnd={handleColumnesDragEnd}>
-                <SortableContext items={editColumnes} strategy={verticalListSortingStrategy}>
-                  <ul style={{ padding: 0, margin: 0 }}>
-                    {editColumnes.map((name) => {
-                      const c = campsByName[name]
-                      if (!c) return null
-                      return (
-                        <SortableColumnItem
-                          key={name}
-                          id={name}
-                          label={c.label}
-                          onRemove={() => treureColumna(name)}
-                        />
-                      )
-                    })}
-                  </ul>
-                </SortableContext>
-              </DndContext>
-            )}
-          </section>
-
-          <section>
-            <h6 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--pico-muted-color)' }}>
-              {t('llista.columnes_disponibles')}
-            </h6>
-            {config.seccions.filter((s) => s.camps.some((c) => !editColumnes.includes(c.name))).map((s) => (
-              <div key={s.id} style={{ marginBottom: '0.75rem' }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--pico-muted-color)', marginBottom: '0.3rem' }}>{s.titol}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                  {s.camps.filter((c) => !editColumnes.includes(c.name)).map((c) => (
-                    <button
-                      key={c.name}
-                      type="button"
-                      className="outline"
-                      style={{ padding: '0.2rem 0.6rem', fontSize: '0.85rem', margin: 0, lineHeight: 1.4 }}
-                      onClick={() => afegirColumna(c.name)}
-                    >
-                      + {c.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {config.seccions.every((s) => s.camps.every((c) => editColumnes.includes(c.name))) && (
-              <p style={{ margin: 0 }}><small>{t('llista.columnes_totes_seleccionades')}</small></p>
-            )}
-          </section>
-
-          <div className="cols-dialog-footer">
-            <button
-              type="button"
-              className="outline secondary"
+      <Modal
+        open={colsOpen}
+        onClose={closeColumnesDialog}
+        title={t('llista.columnes_titol', { nom: config.nom })}
+        size="lg"
+        footer={
+          <div className="cols-modal-footer">
+            <Button
+              variant="outline"
               onClick={handleResetColumnes}
               disabled={savingColumnes || !config.columnes_llista_personalitzat}
             >
               {t('llista.columnes_restablir')}
-            </button>
-            <div className="cols-dialog-footer-actions">
-              <button
-                type="button"
-                className="secondary"
-                onClick={closeColumnesDialog}
-                disabled={savingColumnes}
-              >
+            </Button>
+            <div className="cols-modal-footer-actions">
+              <Button variant="ghost" onClick={closeColumnesDialog} disabled={savingColumnes}>
                 {t('common.cancellar')}
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveColumnes}
-                disabled={savingColumnes}
-                aria-busy={savingColumnes}
-              >
+              </Button>
+              <Button variant="primary" onClick={handleSaveColumnes} loading={savingColumnes}>
                 {t('common.desar_canvis')}
-              </button>
+              </Button>
             </div>
           </div>
-        </article>
-      </dialog>
+        }
+      >
+        <p className="cols-desc"><small>{t('llista.columnes_desc')}</small></p>
 
-      <dialog ref={dialogRef}>
-        <article>
-          <header>
-            <button aria-label={t('common.tancar')} rel="prev" onClick={closeExportDialog}></button>
-            <h3>{t('llista.exportar_excel_titol', { nom: config.nom })}</h3>
-          </header>
+        {columnesError && <p className="form-error-text">{columnesError}</p>}
 
+        <section className="cols-section">
+          <h6 className="cols-section-title">{t('llista.columnes_seleccionades')}</h6>
+          {editColumnes.length === 0 ? (
+            <p className="cols-empty"><small>{t('llista.columnes_cap_seleccionada')}</small></p>
+          ) : (
+            <DndContext sensors={colsSensors} collisionDetection={closestCenter} onDragEnd={handleColumnesDragEnd}>
+              <SortableContext items={editColumnes} strategy={verticalListSortingStrategy}>
+                <ul className="cols-list">
+                  {editColumnes.map((name) => {
+                    const c = campsByName[name]
+                    if (!c) return null
+                    return (
+                      <SortableColumnItem
+                        key={name}
+                        id={name}
+                        label={c.label}
+                        onRemove={() => treureColumna(name)}
+                      />
+                    )
+                  })}
+                </ul>
+              </SortableContext>
+            </DndContext>
+          )}
+        </section>
+
+        <section>
+          <h6 className="cols-section-title">{t('llista.columnes_disponibles')}</h6>
+          {config.seccions.filter((s) => s.camps.some((c) => !editColumnes.includes(c.name))).map((s) => (
+            <div key={s.id} className="cols-avail-group">
+              <div className="cols-avail-title">{s.titol}</div>
+              <div className="cols-avail-chips">
+                {s.camps.filter((c) => !editColumnes.includes(c.name)).map((c) => (
+                  <button
+                    key={c.name}
+                    type="button"
+                    className="btn btn-outline btn-sm cols-avail-chip"
+                    onClick={() => afegirColumna(c.name)}
+                  >
+                    <Icon name="Plus" size={12} />
+                    <span>{c.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+          {config.seccions.every((s) => s.camps.every((c) => editColumnes.includes(c.name))) && (
+            <p className="cols-empty"><small>{t('llista.columnes_totes_seleccionades')}</small></p>
+          )}
+        </section>
+      </Modal>
+
+      <Modal
+        open={exportOpen}
+        onClose={closeExportDialog}
+        title={t('llista.exportar_excel_titol', { nom: config.nom })}
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeExportDialog}>{t('common.cancellar')}</Button>
+            <Button
+              variant="primary"
+              icon={<Icon name="Download" size={14} />}
+              onClick={handleExport}
+            >
+              {t('common.exportar')}
+            </Button>
+          </>
+        }
+      >
+        <div className="export-date-row">
           <label>
             {t('common.de')}
             <input
@@ -472,20 +480,19 @@ export default function LlistaPage() {
               onChange={(e) => setExportDateTo(e.target.value)}
             />
           </label>
+        </div>
 
-          {q && (
-            <p><small>{t('llista.filtre_cerca_actiu', { q })}</small></p>
-          )}
-
-          <footer>
-            <button className="secondary" onClick={closeExportDialog}>{t('common.cancellar')}</button>
-            <button onClick={handleExport}>{t('common.exportar')}</button>
-          </footer>
-        </article>
-      </dialog>
+        {q && (
+          <p style={{ marginTop: '0.75rem' }}><small>{t('llista.filtre_cerca_actiu', { q })}</small></p>
+        )}
+      </Modal>
 
       {loading ? (
-        <p aria-busy="true">{t('common.carregant')}</p>
+        <div className="llista-skeleton">
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="llista-skeleton-row"><Skeleton height="0.9rem" /></div>
+          ))}
+        </div>
       ) : (
         <>
           <AnalisisList
@@ -497,6 +504,7 @@ export default function LlistaPage() {
             sortDir={sortDir}
             onSort={handleSort}
             tipusConfig={config}
+            canCreate={!isViewer}
           />
           {data.pages > 1 && (
             <nav className="pagination">
