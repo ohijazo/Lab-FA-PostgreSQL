@@ -392,7 +392,7 @@ def crear(slug):
         data.pop(key, None)
 
     # Validate unique codi within this tipus
-    codi = data.get("codi", "").strip()
+    codi = str(data.get("codi") or "").strip()
     if codi:
         existing = Analisi.query.filter_by(tipus=slug).filter(
             Analisi.dades["codi"].as_string() == codi
@@ -433,7 +433,7 @@ def editar(slug, id):
         data.pop(key, None)
 
     # Validate unique codi within this tipus (excluding current record)
-    codi = data.get("codi", "").strip()
+    codi = str(data.get("codi") or "").strip()
     if codi:
         existing = Analisi.query.filter_by(tipus=slug).filter(
             Analisi.dades["codi"].as_string() == codi,
