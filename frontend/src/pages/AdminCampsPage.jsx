@@ -4,7 +4,7 @@ import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, us
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useTranslation } from 'react-i18next'
-import { llistarCamps, crearCamp, editarCamp, eliminarCamp, reordenarCamps } from '../api/admin'
+import { llistarCamps, crearCamp, editarCamp, eliminarCamp, reordenarCamps, obtenirSeccio, obtenirTipusAdmin } from '../api/admin'
 import { useToast } from '../context/ToastContext'
 
 function SortableRow({ id, children }) {
@@ -28,11 +28,12 @@ export default function AdminCampsPage() {
   const navigate = useNavigate()
   const { addToast } = useToast()
   const [camps, setCamps] = useState([])
+  const [tipus, setTipus] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [form, setForm] = useState({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e', formula: '' })
+  const [form, setForm] = useState({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e', formula: '', rangs_condicionals: {} })
   const [novaOpcio, setNovaOpcio] = useState('')
 
   const sensors = useSensors(
@@ -43,7 +44,15 @@ export default function AdminCampsPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      setCamps(await llistarCamps(seccioId))
+      const [campsData, seccioData] = await Promise.all([
+        llistarCamps(seccioId),
+        obtenirSeccio(seccioId),
+      ])
+      setCamps(campsData)
+      if (seccioData && seccioData.tipus_id) {
+        const tipusData = await obtenirTipusAdmin(seccioData.tipus_id)
+        setTipus(tipusData)
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -51,10 +60,20 @@ export default function AdminCampsPage() {
     }
   }
 
+  const controladorCamp = (() => {
+    if (!tipus || !tipus.camp_controlador) return null
+    for (const s of tipus.seccions || []) {
+      for (const c of s.camps || []) {
+        if (c.name === tipus.camp_controlador) return c
+      }
+    }
+    return null
+  })()
+
   useEffect(() => { fetchData() }, [seccioId])
 
   function resetForm() {
-    setForm({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e', formula: '' })
+    setForm({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e', formula: '', rangs_condicionals: {} })
     setNovaOpcio('')
     setEditingId(null)
     setShowForm(false)
@@ -73,11 +92,30 @@ export default function AdminCampsPage() {
       alerta_color_min: c.alerta_color_min || '#3b82f6',
       alerta_color_max: c.alerta_color_max || '#e53e3e',
       formula: c.formula || '',
+      rangs_condicionals: c.rangs_condicionals || {},
     })
     setNovaOpcio('')
     setEditingId(c.id)
     setShowForm(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function setRangCondicional(valor, camp, val) {
+    setForm(prev => {
+      const rc = { ...(prev.rangs_condicionals || {}) }
+      const actual = { ...(rc[valor] || {}) }
+      if (val === '' || val === null) {
+        delete actual[camp]
+      } else {
+        actual[camp] = parseFloat(val)
+      }
+      if (Object.keys(actual).length === 0) {
+        delete rc[valor]
+      } else {
+        rc[valor] = actual
+      }
+      return { ...prev, rangs_condicionals: rc }
+    })
   }
 
   async function handleSubmit(e) {
@@ -95,6 +133,9 @@ export default function AdminCampsPage() {
       alerta_color_min: form.type === 'number' ? form.alerta_color_min : null,
       alerta_color_max: form.type === 'number' ? form.alerta_color_max : null,
       formula: form.formula || '',
+      rangs_condicionals: form.type === 'number' && form.rangs_condicionals && Object.keys(form.rangs_condicionals).length > 0
+        ? form.rangs_condicionals
+        : null,
     }
     try {
       if (editingId) {
@@ -269,6 +310,55 @@ export default function AdminCampsPage() {
                     }}
                     style={{ whiteSpace: 'nowrap' }}
                   >{t('admin_camps.afegir')}</button>
+                </div>
+              </div>
+            )}
+            {form.type === 'number' && controladorCamp && (controladorCamp.opcions || []).length > 0 && form.name !== controladorCamp.name && (
+              <div style={{ marginBottom: '1rem' }}>
+                <strong>{t('admin_camps.rangs_per_valor', 'Rangs per valor de {{camp}}', { camp: controladorCamp.label })}</strong>
+                <p style={{ color: 'var(--lab-text-muted)', fontSize: '0.85rem', margin: '0.25rem 0 0.5rem 0' }}>
+                  {t('admin_camps.rangs_per_valor_desc', 'Deixa buit per no aplicar rang a aquest valor (sense alerta).')}
+                </p>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ margin: 0 }}>
+                    <thead>
+                      <tr>
+                        <th>{controladorCamp.label}</th>
+                        <th style={{ width: '10rem' }}>{t('admin_camps.minim')}</th>
+                        <th style={{ width: '10rem' }}>{t('admin_camps.maxim')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {controladorCamp.opcions.map((op) => {
+                        const rang = (form.rangs_condicionals || {})[op] || {}
+                        return (
+                          <tr key={op}>
+                            <td><strong>{op}</strong></td>
+                            <td>
+                              <input
+                                type="number"
+                                step="any"
+                                value={rang.min != null ? rang.min : ''}
+                                onChange={e => setRangCondicional(op, 'min', e.target.value)}
+                                placeholder={t('admin_camps.sense_minim')}
+                                style={{ margin: 0 }}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                step="any"
+                                value={rang.max != null ? rang.max : ''}
+                                onChange={e => setRangCondicional(op, 'max', e.target.value)}
+                                placeholder={t('admin_camps.sense_maxim')}
+                                style={{ margin: 0 }}
+                              />
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}

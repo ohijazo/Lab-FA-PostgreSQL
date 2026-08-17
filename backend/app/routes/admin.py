@@ -73,6 +73,7 @@ def crear_tipus():
         nom=nom,
         slug=slug,
         descripcio=data.get("descripcio", ""),
+        camp_controlador=(data.get("camp_controlador") or "").strip() or None,
     )
     if "columnes_llista" in data:
         t.set_columnes_llista(data["columnes_llista"])
@@ -110,6 +111,9 @@ def editar_tipus(id):
         t.descripcio = data["descripcio"]
     if "columnes_llista" in data:
         t.set_columnes_llista(data["columnes_llista"])
+    if "camp_controlador" in data:
+        v = (data.get("camp_controlador") or "").strip()
+        t.camp_controlador = v or None
     db.session.commit()
     return jsonify(t.to_dict())
 
@@ -170,6 +174,15 @@ def reordenar_seccions(tipus_id):
     db.session.commit()
     seccions = Seccio.query.filter_by(tipus_id=tipus_id).order_by(Seccio.ordre).all()
     return jsonify([s.to_dict() for s in seccions])
+
+
+@bp.route("/api/admin/seccions/<int:id>", methods=["GET"])
+@editor_or_admin_required
+def obtenir_seccio(id):
+    s = db.get_or_404(Seccio, id)
+    d = s.to_dict()
+    d["tipus_id"] = s.tipus_id
+    return jsonify(d)
 
 
 @bp.route("/api/admin/seccions/<int:id>", methods=["PUT"])
@@ -235,6 +248,7 @@ def crear_camp(seccio_id):
         alerta_color_min=data.get("alerta_color_min"),
         alerta_color_max=data.get("alerta_color_max"),
         formula=(data.get("formula") or "").strip() or None,
+        rangs_condicionals=(data.get("rangs_condicionals") or None),
     )
     db.session.add(c)
     db.session.commit()
@@ -286,6 +300,9 @@ def editar_camp(id):
     if "formula" in data:
         f = (data["formula"] or "").strip()
         c.formula = f or None
+    if "rangs_condicionals" in data:
+        rc = data.get("rangs_condicionals")
+        c.rangs_condicionals = rc if rc else None
     db.session.commit()
     return jsonify(c.to_dict())
 
@@ -355,6 +372,7 @@ def duplicar_tipus(id):
         slug=slug,
         descripcio=original.descripcio,
         columnes_llista=original.get_columnes_llista(),
+        camp_controlador=original.camp_controlador,
     )
     db.session.add(nou)
     db.session.flush()
@@ -382,6 +400,8 @@ def duplicar_tipus(id):
                 alerta_max=camp.alerta_max,
                 alerta_color_min=camp.alerta_color_min,
                 alerta_color_max=camp.alerta_color_max,
+                formula=camp.formula,
+                rangs_condicionals=camp.rangs_condicionals,
             )
             db.session.add(nou_camp)
 

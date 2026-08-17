@@ -16,7 +16,7 @@ function formatCell(col, value, type) {
   return value
 }
 
-export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort }) {
+export default function AnalisisList({ tipus, analisis, columnes, seccions, sortCol, sortDir, onSort, tipusConfig }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
@@ -92,7 +92,7 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
                   <td
                     key={col}
                     data-col-type={typeMap[col] || 'text'}
-                    style={camp ? alertaStyle(camp, a[col]) : undefined}
+                    style={camp ? alertaStyle(camp, a[col], a, tipusConfig) : undefined}
                     title={titleAttr}
                   >
                     {formatCell(col, a[col], typeMap[col])}

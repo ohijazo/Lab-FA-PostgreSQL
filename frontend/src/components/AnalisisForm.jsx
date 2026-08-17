@@ -6,7 +6,7 @@ import { recomputeFormulas } from '../utils/formula'
 
 const WIDE_THRESHOLD = 4
 
-export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onCancel, submitting }) {
+export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onCancel, submitting, tipusConfig }) {
   const { t } = useTranslation()
   const [form, setForm] = useState(() => {
     const today = new Date().toISOString().slice(0, 10)
@@ -91,7 +91,7 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
     }
     const isCalc = !!(camp.formula && camp.formula.trim())
     const displayValue = isCalc ? (computed[camp.name] ?? '') : (form[camp.name] || '')
-    const alertColor = getAlertaColor(camp, displayValue)
+    const alertColor = getAlertaColor(camp, displayValue, computed, tipusConfig)
     return (
       <label key={camp.name} className={`form-camp${camp.label.length > 30 ? ' form-camp-wide' : ''}${isCalc ? ' form-camp-calc' : ''}`}>
         <span className="form-camp-label">

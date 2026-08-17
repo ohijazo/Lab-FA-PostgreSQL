@@ -51,7 +51,7 @@ export default function NouAnalisiPage() {
           {t('form.duplicar_msg')}
         </p>
       )}
-      <AnalisisForm seccions={config.seccions} initialData={duplicatDe} onSubmit={handleSubmit} onCancel={() => navigate(`/${tipus}`)} submitting={submitting} />
+      <AnalisisForm seccions={config.seccions} initialData={duplicatDe} onSubmit={handleSubmit} onCancel={() => navigate(`/${tipus}`)} submitting={submitting} tipusConfig={config} />
     </>
   )
 }

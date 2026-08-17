@@ -34,6 +34,7 @@ export default function AdminSeccionsPage() {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ titol: '' })
   const [columnesLlista, setColumnesLlista] = useState([])
+  const [campControlador, setCampControlador] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -50,6 +51,7 @@ export default function AdminSeccionsPage() {
       setTipus(t)
       setSeccions(secs)
       setColumnesLlista(t.columnes_llista || [])
+      setCampControlador(t.camp_controlador || '')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -81,6 +83,20 @@ export default function AdminSeccionsPage() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
+
+  async function saveCampControlador() {
+    setError(null)
+    try {
+      await editarTipus(tipusId, { camp_controlador: campControlador })
+      addToast(t('admin_seccions.controlador_desat', 'Controlador desat'))
+      await fetchData()
+    } catch (err) {
+      setError(err.message)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const campsSelect = totsCamps.filter(c => c.type === 'select')
 
   function resetForm() {
     setForm({ titol: '' })
@@ -228,6 +244,42 @@ export default function AdminSeccionsPage() {
               </SortableContext>
             </table>
           </DndContext>
+
+          {campsSelect.length > 0 && (
+            <article>
+              <header><strong>{t('admin_seccions.rangs_condicionals', 'Rangs condicionals')}</strong></header>
+              <p>{t('admin_seccions.rangs_condicionals_desc', 'Selecciona el camp que determina els rangs de min/max per altres camps numèrics.')}</p>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                <label style={{ flex: 1, minWidth: '220px' }}>
+                  {t('admin_seccions.camp_controlador', 'Camp controlador')}
+                  <select
+                    value={campControlador}
+                    onChange={e => setCampControlador(e.target.value)}
+                  >
+                    <option value="">{t('admin_seccions.sense_controlador', '— Sense controlador —')}</option>
+                    {campsSelect.map(c => (
+                      <option key={c.name} value={c.name}>
+                        {c.label} ({c.seccioTitol})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button onClick={saveCampControlador} style={{ margin: 0 }}>
+                  {t('common.desar', 'Desar')}
+                </button>
+                {campControlador && (
+                  <Link
+                    to={`/admin/tipus/${tipusId}/rangs`}
+                    role="button"
+                    className="outline"
+                    style={{ margin: 0 }}
+                  >
+                    {t('admin_seccions.taula_rangs', 'Taula de rangs')}
+                  </Link>
+                )}
+              </div>
+            </article>
+          )}
 
           {totsCamps.length > 0 && (
             <article>

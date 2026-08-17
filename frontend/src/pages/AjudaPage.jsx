@@ -832,6 +832,18 @@ export default function AjudaPage() {
             <TipBox>
               <Trans i18nKey="ajuda.admin_camps_tip"><strong>grup</strong></Trans>
             </TipBox>
+
+            <h3>{t('ajuda.admin_rangs_title')}</h3>
+            <p>{t('ajuda.admin_rangs_intro')}</p>
+            <StepList steps={[
+              <Trans i18nKey="ajuda.admin_rangs_pas1"><strong>Seccions</strong><strong>Camp controlador</strong><code>select</code><strong>Desar</strong></Trans>,
+              <Trans i18nKey="ajuda.admin_rangs_pas2"><strong>Taula de rangs</strong></Trans>,
+              <Trans i18nKey="ajuda.admin_rangs_pas3"><strong>Rangs per valor</strong></Trans>,
+              t('ajuda.admin_rangs_pas4'),
+            ]} />
+            <InfoBox>
+              <Trans i18nKey="ajuda.admin_rangs_info"><strong>min/max</strong><strong>no</strong></Trans>
+            </InfoBox>
           </section>
 
           {/* 13. Admin: Importar */}

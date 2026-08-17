@@ -6,7 +6,7 @@ import { recomputeFormulas } from '../utils/formula'
 
 const WIDE_THRESHOLD = 4
 
-export default function AnalisisDetail({ seccions, analisi }) {
+export default function AnalisisDetail({ seccions, analisi, tipusConfig }) {
   const { t } = useTranslation()
   // Recalcula els camps amb fórmula a partir dels valors desats
   // (sempre actualitzat segons les fórmules actuals)
@@ -36,7 +36,7 @@ export default function AnalisisDetail({ seccions, analisi }) {
           {camp.label}:
           {isCalc && <span className="formula-badge" title={camp.formula}>ƒ</span>}
         </span>
-        <span className="camp-value" style={alertaStyle(camp, val)}>
+        <span className="camp-value" style={alertaStyle(camp, val, data, tipusConfig)}>
           {formatValue(camp, val)}
         </span>
       </div>

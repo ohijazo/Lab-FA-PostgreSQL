@@ -273,7 +273,7 @@ export default function DetallPage() {
           )}
         </div>
       </div>
-      <AnalisisDetail seccions={config.seccions} analisi={analisi} />
+      <AnalisisDetail seccions={config.seccions} analisi={analisi} tipusConfig={config} />
       {emailLogs.length > 0 && (
         <details className="no-print" style={{ marginTop: '1.5rem' }}>
           <summary><strong>{t('detall.historial_enviaments')}</strong> ({emailLogs.length})</summary>

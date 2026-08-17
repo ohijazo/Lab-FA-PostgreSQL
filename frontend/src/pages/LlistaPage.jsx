@@ -496,6 +496,7 @@ export default function LlistaPage() {
             sortCol={sortCol}
             sortDir={sortDir}
             onSort={handleSort}
+            tipusConfig={config}
           />
           {data.pages > 1 && (
             <nav className="pagination">

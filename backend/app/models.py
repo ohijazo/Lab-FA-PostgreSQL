@@ -62,6 +62,7 @@ class TipusAnalisi(db.Model):
     slug = db.Column(db.String(50), nullable=False, unique=True, index=True)
     descripcio = db.Column(db.String(255), default="")
     columnes_llista = db.Column(JSONB, default=list)
+    camp_controlador = db.Column(db.String(100), nullable=True)
 
     seccions = db.relationship("Seccio", backref="tipus", cascade="all, delete-orphan",
                                order_by="Seccio.ordre")
@@ -79,6 +80,7 @@ class TipusAnalisi(db.Model):
             "slug": self.slug,
             "descripcio": self.descripcio,
             "columnes_llista": self.get_columnes_llista(),
+            "camp_controlador": self.camp_controlador or "",
         }
 
     def to_config(self):
@@ -89,6 +91,7 @@ class TipusAnalisi(db.Model):
             "slug": self.slug,
             "descripcio": self.descripcio,
             "columnes_llista": self.get_columnes_llista(),
+            "camp_controlador": self.camp_controlador or "",
             "seccions": [s.to_dict() for s in self.seccions],
         }
 
@@ -133,6 +136,7 @@ class Camp(db.Model):
     alerta_color_min = db.Column(db.String(20), nullable=True)
     alerta_color_max = db.Column(db.String(20), nullable=True)
     formula = db.Column(db.String(500), nullable=True)
+    rangs_condicionals = db.Column(JSONB, nullable=True)
 
     def to_dict(self):
         return {
@@ -149,6 +153,7 @@ class Camp(db.Model):
             "alerta_color_min": self.alerta_color_min,
             "alerta_color_max": self.alerta_color_max,
             "formula": self.formula or "",
+            "rangs_condicionals": self.rangs_condicionals or {},
         }
 
 

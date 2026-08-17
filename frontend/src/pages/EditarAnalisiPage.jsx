@@ -148,6 +148,7 @@ export default function EditarAnalisiPage() {
         onSubmit={handleSubmit}
         onCancel={() => { cleanup(); navigate(`/${tipus}/${id}`) }}
         submitting={submitting}
+        tipusConfig={config}
       />
     </>
   )

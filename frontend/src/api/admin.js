@@ -54,6 +54,12 @@ export async function eliminarTipus(id) {
 
 // ---- Seccions ----
 
+export async function obtenirSeccio(id) {
+  const res = await fetch(`${BASE}/seccions/${id}`, { credentials: 'include', headers: langHeaders() })
+  if (!res.ok) throw new Error(i18n.t('errors.carregant_seccions'))
+  return res.json()
+}
+
 export async function llistarSeccions(tipusId) {
   const res = await fetch(`${BASE}/tipus/${tipusId}/seccions`, { credentials: 'include', headers: langHeaders() })
   if (!res.ok) throw new Error(i18n.t('errors.carregant_seccions'))
