@@ -456,13 +456,24 @@ button.estat-badge { margin-bottom: 0; }
   margin-bottom: 0.5rem;
 }
 .recepcio-card-sep { opacity: 0.5; }
-.recepcio-card-msg {
-  font-size: 1rem;
-  font-weight: 500;
+.recepcio-card-identif {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.35rem 1rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 0.9rem;
 }
-.recepcio-card-apte .recepcio-card-msg { color: #1e40af; }
-.recepcio-card-no_apte .recepcio-card-msg { color: #991b1b; }
-.recepcio-card-pendent .recepcio-card-msg { color: var(--lab-text-muted); }
+.recepcio-card-identif-item { min-width: 0; }
+.recepcio-card-identif-label {
+  color: var(--lab-text-muted);
+  margin-right: 0.35rem;
+}
+.recepcio-card-identif-value {
+  font-weight: 600;
+  word-break: break-word;
+}
 .recepcio-badge-gran {
   display: inline-flex;
   align-items: center;
@@ -482,10 +493,9 @@ button.estat-badge { margin-bottom: 0; }
   border: 2px dashed var(--lab-border);
 }
 /* Dark mode */
-[data-theme="dark"] .recepcio-card-apte { background: #1e3a8a; border-color: #3b82f6; }
-[data-theme="dark"] .recepcio-card-no_apte { background: #450a0a; border-color: #dc2626; }
-[data-theme="dark"] .recepcio-card-apte .recepcio-card-msg { color: #dbeafe; }
-[data-theme="dark"] .recepcio-card-no_apte .recepcio-card-msg { color: #fee2e2; }
+[data-theme="dark"] .recepcio-card-apte { background: #1e3a8a; border-color: #3b82f6; color: #dbeafe; }
+[data-theme="dark"] .recepcio-card-no_apte { background: #450a0a; border-color: #dc2626; color: #fee2e2; }
+[data-theme="dark"] .recepcio-card-identif { border-top-color: rgba(255, 255, 255, 0.15); }
 [data-theme="dark"] .recepcio-badge-gran.is-apte { background: #2563eb; }
 [data-theme="dark"] .recepcio-badge-gran.is-no_apte { background: #dc2626; }
 /* Responsive mòbil */

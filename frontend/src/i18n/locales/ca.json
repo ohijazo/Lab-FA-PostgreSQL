@@ -333,15 +333,12 @@
     "importar_altre": "Importar un altre fitxer"
   },
   "recepcio": {
-    "titol": "Recepció de camions",
+    "titol": "Recepció",
     "subtitol": "Anàlisis d'avui",
     "cercar_codi": "Cercar per codi...",
     "actualitzat": "Actualitzat: {{hora}}",
     "cap_analisi": "Encara no hi ha anàlisis avui",
-    "cap_analisi_desc": "Quan el laboratori registri una anàlisi, apareixerà aquí.",
-    "apte_msg": "Deixar descarregar el camió",
-    "no_apte_msg": "NO deixar descarregar el camió",
-    "pendent_msg": "Esperar valoració del laboratori"
+    "cap_analisi_desc": "Quan el laboratori registri una anàlisi, apareixerà aquí."
   },
   "errors": {
     "carregant_tipus": "Error carregant tipus",

@@ -15,25 +15,20 @@ function formatHora(iso) {
   })
 }
 
+function formatValue(camp, val) {
+  if (val === null || val === undefined || val === '') return ''
+  if (camp.type === 'date' && typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) {
+    const [y, m, d] = val.split('-')
+    return `${d}/${m}/${y}`
+  }
+  if (camp.type === 'checkbox') return val ? '✓' : '—'
+  return String(val)
+}
+
 function stateInfo(apte, t) {
-  if (apte === 'apte') return {
-    cls: 'apte',
-    icon: 'Check',
-    label: t('detall.apte'),
-    msg: t('recepcio.apte_msg'),
-  }
-  if (apte === 'no_apte') return {
-    cls: 'no_apte',
-    icon: 'X',
-    label: t('detall.no_apte'),
-    msg: t('recepcio.no_apte_msg'),
-  }
-  return {
-    cls: 'pendent',
-    icon: 'HelpCircle',
-    label: t('detall.pendent_apte'),
-    msg: t('recepcio.pendent_msg'),
-  }
+  if (apte === 'apte') return { cls: 'apte', icon: 'Check', label: t('detall.apte') }
+  if (apte === 'no_apte') return { cls: 'no_apte', icon: 'X', label: t('detall.no_apte') }
+  return { cls: 'pendent', icon: 'HelpCircle', label: t('detall.pendent_apte') }
 }
 
 export default function RecepcioPage() {
@@ -110,6 +105,7 @@ export default function RecepcioPage() {
         <div className="recepcio-list">
           {data.map((a) => {
             const s = stateInfo(a.apte, t)
+            const identif = a.identificacio || []
             return (
               <div key={a.id} className={`recepcio-card recepcio-card-${s.cls}`}>
                 <div className="recepcio-card-info">
@@ -121,7 +117,16 @@ export default function RecepcioPage() {
                     <span className="recepcio-card-sep">·</span>
                     <span>{formatHora(a.created_at)}</span>
                   </div>
-                  <div className="recepcio-card-msg">{s.msg}</div>
+                  {identif.length > 0 && (
+                    <div className="recepcio-card-identif">
+                      {identif.map((c) => (
+                        <div key={c.name} className="recepcio-card-identif-item">
+                          <span className="recepcio-card-identif-label">{c.label}:</span>
+                          <span className="recepcio-card-identif-value">{formatValue(c, c.value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className={`recepcio-badge-gran is-${s.cls}`}>
                   <Icon name={s.icon} size={22} />

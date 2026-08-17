@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from functools import wraps
 from flask import Blueprint, jsonify, request, session
 from sqlalchemy import func
-from app.models import Analisi, TipusAnalisi
+from sqlalchemy.orm import joinedload
+from app.models import Analisi, TipusAnalisi, Seccio
 
 bp = Blueprint("recepcio", __name__)
 
@@ -38,11 +39,32 @@ def llistar_avui():
         )
 
     analisis = query.order_by(Analisi.created_at.desc()).all()
-    tipus_map = {t.slug: t.nom for t in TipusAnalisi.query.all()}
+
+    # Precomputar camps de la secció "Identificació" per cada tipus
+    tipus_list = TipusAnalisi.query.options(
+        joinedload(TipusAnalisi.seccions).joinedload(Seccio.camps)
+    ).all()
+    tipus_map = {tp.slug: tp.nom for tp in tipus_list}
+    identif_per_tipus = {}
+    for tp in tipus_list:
+        for sec in tp.seccions:
+            if sec.titol == "Identificació":
+                identif_per_tipus[tp.slug] = [
+                    {"name": c.name, "label": c.label, "type": c.type}
+                    for c in sec.camps if c.name != "codi"
+                ]
+                break
 
     result = []
     for a in analisis:
         d = a.get_dades() or {}
+        camps = identif_per_tipus.get(a.tipus, [])
+        identificacio = []
+        for c in camps:
+            v = d.get(c["name"])
+            if v is None or v == "":
+                continue
+            identificacio.append({**c, "value": v})
         result.append({
             "id": a.id,
             "tipus_slug": a.tipus,
@@ -50,5 +72,6 @@ def llistar_avui():
             "codi": d.get("codi") or "",
             "created_at": a.created_at.isoformat() if a.created_at else None,
             "apte": a.apte,
+            "identificacio": identificacio,
         })
     return jsonify(result)

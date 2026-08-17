@@ -333,15 +333,12 @@
     "importar_altre": "Importar otro fichero"
   },
   "recepcio": {
-    "titol": "Recepción de camiones",
+    "titol": "Recepción",
     "subtitol": "Análisis de hoy",
     "cercar_codi": "Buscar por código...",
     "actualitzat": "Actualizado: {{hora}}",
     "cap_analisi": "Todavía no hay análisis hoy",
-    "cap_analisi_desc": "Cuando el laboratorio registre un análisis, aparecerá aquí.",
-    "apte_msg": "Dejar descargar el camión",
-    "no_apte_msg": "NO dejar descargar el camión",
-    "pendent_msg": "Esperar valoración del laboratorio"
+    "cap_analisi_desc": "Cuando el laboratorio registre un análisis, aparecerá aquí."
   },
   "errors": {
     "carregant_tipus": "Error cargando tipos",
