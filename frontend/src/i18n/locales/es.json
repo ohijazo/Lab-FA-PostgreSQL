@@ -336,9 +336,13 @@
     "titol": "Recepción",
     "subtitol": "Análisis de hoy",
     "cercar_codi": "Buscar por código...",
+    "cercar_placeholder": "Buscar por código, proveedor o tiquet...",
     "actualitzat": "Actualizado: {{hora}}",
     "cap_analisi": "Todavía no hay análisis hoy",
-    "cap_analisi_desc": "Cuando el laboratorio registre un análisis, aparecerá aquí."
+    "cap_analisi_desc": "Cuando el laboratorio registre un análisis, aparecerá aquí.",
+    "cap_amb_filtre": "Ningún análisis coincide con el filtro",
+    "cap_amb_filtre_desc": "Prueba a cambiar de pestaña o borrar la búsqueda.",
+    "tab_tots": "Todos"
   },
   "errors": {
     "carregant_tipus": "Error cargando tipos",

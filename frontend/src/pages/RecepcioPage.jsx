@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
 import { llistarAnalisisRecepcio } from '../api/analisis'
@@ -25,10 +25,22 @@ function formatValue(camp, val) {
   return String(val)
 }
 
-function stateInfo(apte, t) {
-  if (apte === 'apte') return { cls: 'apte', icon: 'Check', label: t('detall.apte') }
-  if (apte === 'no_apte') return { cls: 'no_apte', icon: 'X', label: t('detall.no_apte') }
-  return { cls: 'pendent', icon: 'HelpCircle', label: t('detall.pendent_apte') }
+function statusCls(apte) {
+  if (apte === 'apte') return 'apte'
+  if (apte === 'no_apte') return 'no_apte'
+  return 'pendent'
+}
+
+function StatusBadge({ apte, t }) {
+  const cls = statusCls(apte)
+  const icon = apte === 'apte' ? 'Check' : apte === 'no_apte' ? 'X' : 'HelpCircle'
+  const label = apte === 'apte' ? t('detall.apte') : apte === 'no_apte' ? t('detall.no_apte') : t('detall.pendent_apte')
+  return (
+    <span className={`recepcio-badge is-${cls}`}>
+      <Icon name={icon} size={14} />
+      <span>{label}</span>
+    </span>
+  )
 }
 
 export default function RecepcioPage() {
@@ -38,6 +50,8 @@ export default function RecepcioPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdate, setLastUpdate] = useState(null)
+  const [activeTab, setActiveTab] = useState('all')
+  const [expanded, setExpanded] = useState(() => new Set())
 
   const fetchData = useCallback(async () => {
     try {
@@ -59,6 +73,36 @@ export default function RecepcioPage() {
     return () => clearInterval(id)
   }, [fetchData])
 
+  function toggleExpanded(id) {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const counts = useMemo(() => ({
+    all: data.length,
+    pendent: data.filter((a) => !a.apte).length,
+    apte: data.filter((a) => a.apte === 'apte').length,
+    no_apte: data.filter((a) => a.apte === 'no_apte').length,
+  }), [data])
+
+  const filtered = useMemo(() => {
+    if (activeTab === 'pendent') return data.filter((a) => !a.apte)
+    if (activeTab === 'apte') return data.filter((a) => a.apte === 'apte')
+    if (activeTab === 'no_apte') return data.filter((a) => a.apte === 'no_apte')
+    return data
+  }, [data, activeTab])
+
+  const tabs = [
+    { key: 'all', label: t('recepcio.tab_tots'), count: counts.all },
+    { key: 'pendent', label: t('detall.pendent_apte'), count: counts.pendent },
+    { key: 'apte', label: t('detall.apte'), count: counts.apte },
+    { key: 'no_apte', label: t('detall.no_apte'), count: counts.no_apte },
+  ]
+
   return (
     <div className="recepcio-page">
       <div className="recepcio-header">
@@ -74,16 +118,33 @@ export default function RecepcioPage() {
         )}
       </div>
 
-      <div className="recepcio-search-wrap">
-        <Icon name="Search" size={16} className="recepcio-search-icon" />
-        <input
-          type="search"
-          className="recepcio-search"
-          placeholder={t('recepcio.cercar_codi')}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          autoFocus
-        />
+      <div className="recepcio-toolbar">
+        <div className="recepcio-search-wrap">
+          <Icon name="Search" size={16} className="recepcio-search-icon" />
+          <input
+            type="search"
+            className="recepcio-search"
+            placeholder={t('recepcio.cercar_placeholder')}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            autoFocus
+          />
+        </div>
+        <div className="recepcio-tabs" role="tablist">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              className={`recepcio-tab is-${tab.key}${activeTab === tab.key ? ' is-active' : ''}`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              <span>{tab.label}</span>
+              <span className="recepcio-tab-count">{tab.count}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {error && (
@@ -95,47 +156,53 @@ export default function RecepcioPage() {
 
       {loading && data.length === 0 ? (
         <LoadingBlock label={t('common.carregant')} />
-      ) : data.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon={<Icon name="Inbox" size={40} />}
-          title={t('recepcio.cap_analisi')}
-          description={t('recepcio.cap_analisi_desc')}
+          title={data.length === 0 ? t('recepcio.cap_analisi') : t('recepcio.cap_amb_filtre')}
+          description={data.length === 0 ? t('recepcio.cap_analisi_desc') : t('recepcio.cap_amb_filtre_desc')}
         />
       ) : (
-        <div className="recepcio-list">
-          {data.map((a) => {
-            const s = stateInfo(a.apte, t)
-            const identif = a.identificacio || []
+        <ul className="recepcio-rows">
+          {filtered.map((a) => {
+            const cls = statusCls(a.apte)
+            const isOpen = expanded.has(a.id)
+            const hasIdentif = (a.identificacio || []).length > 0
             return (
-              <div key={a.id} className={`recepcio-card recepcio-card-${s.cls}`}>
-                <div className="recepcio-card-info">
-                  <div className="recepcio-card-codi">
-                    {a.codi || `#${a.id}`}
+              <li key={a.id} className={`recepcio-row-item is-${cls}${isOpen ? ' is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="recepcio-row"
+                  onClick={() => hasIdentif && toggleExpanded(a.id)}
+                  aria-expanded={hasIdentif ? isOpen : undefined}
+                  disabled={!hasIdentif}
+                >
+                  <span className="recepcio-row-chevron" aria-hidden="true">
+                    {hasIdentif ? <Icon name={isOpen ? 'ChevronDown' : 'ChevronRight'} size={14} /> : <span style={{ display: 'inline-block', width: 14 }} />}
+                  </span>
+                  <span className="recepcio-row-codi">{a.codi || `#${a.id}`}</span>
+                  <span className="recepcio-row-proveidor" title={a.proveidor}>{a.proveidor || '—'}</span>
+                  <span className="recepcio-row-tiquet">{a.num_tiquet ? `#${a.num_tiquet}` : ''}</span>
+                  <span className="recepcio-row-tipus">{a.tipus_nom}</span>
+                  <span className="recepcio-row-hora">{formatHora(a.created_at)}</span>
+                  <span className="recepcio-row-badge">
+                    <StatusBadge apte={a.apte} t={t} />
+                  </span>
+                </button>
+                {isOpen && hasIdentif && (
+                  <div className="recepcio-row-detall">
+                    {a.identificacio.map((c) => (
+                      <div key={c.name} className="recepcio-row-detall-item">
+                        <span className="recepcio-row-detall-label">{c.label}:</span>
+                        <span className="recepcio-row-detall-value">{formatValue(c, c.value)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="recepcio-card-meta">
-                    <span>{a.tipus_nom}</span>
-                    <span className="recepcio-card-sep">·</span>
-                    <span>{formatHora(a.created_at)}</span>
-                  </div>
-                  {identif.length > 0 && (
-                    <div className="recepcio-card-identif">
-                      {identif.map((c) => (
-                        <div key={c.name} className="recepcio-card-identif-item">
-                          <span className="recepcio-card-identif-label">{c.label}:</span>
-                          <span className="recepcio-card-identif-value">{formatValue(c, c.value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className={`recepcio-badge-gran is-${s.cls}`}>
-                  <Icon name={s.icon} size={22} />
-                  <span>{s.label}</span>
-                </div>
-              </div>
+                )}
+              </li>
             )
           })}
-        </div>
+        </ul>
       )}
     </div>
   )

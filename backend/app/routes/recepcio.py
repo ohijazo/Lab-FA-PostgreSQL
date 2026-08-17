@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import Blueprint, jsonify, request, session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 from app.models import Analisi, TipusAnalisi, Seccio
 
@@ -34,9 +34,12 @@ def llistar_avui():
         Analisi.created_at < fi,
     )
     if q:
-        query = query.filter(
-            func.lower(Analisi.dades["codi"].as_string()).contains(q.lower())
-        )
+        q_lower = q.lower()
+        query = query.filter(or_(
+            func.lower(Analisi.dades["codi"].as_string()).contains(q_lower),
+            func.lower(Analisi.dades["proveidor"].as_string()).contains(q_lower),
+            func.lower(Analisi.dades["num_tiquet"].as_string()).contains(q_lower),
+        ))
 
     analisis = query.order_by(Analisi.created_at.desc()).all()
 
@@ -70,6 +73,8 @@ def llistar_avui():
             "tipus_slug": a.tipus,
             "tipus_nom": tipus_map.get(a.tipus, a.tipus),
             "codi": d.get("codi") or "",
+            "proveidor": d.get("proveidor") or "",
+            "num_tiquet": d.get("num_tiquet") or "",
             "created_at": a.created_at.isoformat() if a.created_at else None,
             "apte": a.apte,
             "identificacio": identificacio,

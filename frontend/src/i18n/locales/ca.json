@@ -336,9 +336,13 @@
     "titol": "Recepció",
     "subtitol": "Anàlisis d'avui",
     "cercar_codi": "Cercar per codi...",
+    "cercar_placeholder": "Cercar per codi, proveïdor o tiquet...",
     "actualitzat": "Actualitzat: {{hora}}",
     "cap_analisi": "Encara no hi ha anàlisis avui",
-    "cap_analisi_desc": "Quan el laboratori registri una anàlisi, apareixerà aquí."
+    "cap_analisi_desc": "Quan el laboratori registri una anàlisi, apareixerà aquí.",
+    "cap_amb_filtre": "Cap anàlisi coincideix amb el filtre",
+    "cap_amb_filtre_desc": "Prova a canviar de pestanya o esborrar la cerca.",
+    "tab_tots": "Tots"
   },
   "errors": {
     "carregant_tipus": "Error carregant tipus",
