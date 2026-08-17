@@ -22,6 +22,39 @@ function SortableRow({ id, children }) {
   )
 }
 
+function SortableOpcio({ id, value, onChange, onRemove, isDup }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem',
+    padding: '0.25rem',
+    background: isDup ? 'var(--pico-del-background-color, #fee2e2)' : 'transparent',
+    borderRadius: '0.25rem',
+  }
+  return (
+    <div ref={setNodeRef} style={style}>
+      <span {...attributes} {...listeners} className="drag-handle" style={{ cursor: 'grab', padding: '0 0.25rem' }}>⠿</span>
+      <input
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{ margin: 0, flex: 1 }}
+      />
+      <button
+        type="button"
+        className="outline secondary"
+        style={{ padding: '0.15rem 0.5rem', margin: 0, fontSize: '0.85rem', lineHeight: 1 }}
+        onClick={onRemove}
+        title="Eliminar"
+      >×</button>
+    </div>
+  )
+}
+
 export default function AdminCampsPage() {
   const { t } = useTranslation()
   const { seccioId } = useParams()
@@ -35,6 +68,7 @@ export default function AdminCampsPage() {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e', formula: '', rangs_condicionals: {} })
   const [novaOpcio, setNovaOpcio] = useState('')
+  const [importText, setImportText] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -75,6 +109,7 @@ export default function AdminCampsPage() {
   function resetForm() {
     setForm({ name: '', label: '', type: 'text', required: false, grup: '', opcions: [], alerta_min: '', alerta_max: '', alerta_color_min: '#3b82f6', alerta_color_max: '#e53e3e', formula: '', rangs_condicionals: {} })
     setNovaOpcio('')
+    setImportText('')
     setEditingId(null)
     setShowForm(false)
   }
@@ -262,26 +297,64 @@ export default function AdminCampsPage() {
             {form.type === 'select' && (
               <div style={{ marginBottom: '1rem' }}>
                 <strong>{t('admin_camps.opcions_llista')}</strong>
+                {' '}
+                <span style={{ color: 'var(--lab-text-muted)', fontSize: '0.85rem' }}>
+                  ({form.opcions.length})
+                </span>
                 {form.opcions.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', margin: '0.5rem 0' }}>
-                    {form.opcions.map((op, i) => (
-                      <span key={i} style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                        background: 'var(--pico-muted-border-color)', borderRadius: '0.3rem',
-                        padding: '0.2rem 0.5rem', fontSize: '0.9rem',
-                      }}>
-                        {op}
-                        <button
-                          type="button"
-                          className="outline secondary"
-                          style={{ padding: '0 0.3rem', margin: 0, fontSize: '0.8rem', lineHeight: 1 }}
-                          onClick={() => setForm({ ...form, opcions: form.opcions.filter((_, j) => j !== i) })}
-                        >×</button>
-                      </span>
-                    ))}
-                  </div>
+                  <>
+                    <div style={{ display: 'flex', gap: '0.5rem', margin: '0.5rem 0', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="outline btn-sm"
+                        onClick={() => {
+                          const ordenades = [...form.opcions].sort((a, b) => a.localeCompare(b, 'ca', { numeric: true, sensitivity: 'base' }))
+                          setForm({ ...form, opcions: ordenades })
+                        }}
+                      >{t('admin_camps.ordenar_az', 'Ordenar A-Z')}</button>
+                      <button
+                        type="button"
+                        className="outline secondary btn-sm"
+                        onClick={() => {
+                          if (confirm(t('admin_camps.confirm_buidar', 'Segur que vols eliminar totes les opcions?'))) {
+                            setForm({ ...form, opcions: [] })
+                          }
+                        }}
+                      >{t('admin_camps.buidar', 'Buidar')}</button>
+                    </div>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={(event) => {
+                        const { active, over } = event
+                        if (!over || active.id === over.id) return
+                        const oldIndex = form.opcions.findIndex(o => o === active.id)
+                        const newIndex = form.opcions.findIndex(o => o === over.id)
+                        setForm({ ...form, opcions: arrayMove(form.opcions, oldIndex, newIndex) })
+                      }}
+                    >
+                      <SortableContext items={form.opcions} strategy={verticalListSortingStrategy}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', margin: '0.5rem 0', maxHeight: '20rem', overflowY: 'auto', border: '1px solid var(--pico-muted-border-color)', borderRadius: '0.3rem', padding: '0.25rem' }}>
+                          {form.opcions.map((op, i) => (
+                            <SortableOpcio
+                              key={op}
+                              id={op}
+                              value={op}
+                              isDup={form.opcions.indexOf(op) !== i}
+                              onChange={(nou) => {
+                                const noves = [...form.opcions]
+                                noves[i] = nou
+                                setForm({ ...form, opcions: noves })
+                              }}
+                              onRemove={() => setForm({ ...form, opcions: form.opcions.filter((_, j) => j !== i) })}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  </>
                 )}
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'end' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'end', marginTop: '0.5rem' }}>
                   <input
                     type="text"
                     value={novaOpcio}
@@ -311,6 +384,51 @@ export default function AdminCampsPage() {
                     style={{ whiteSpace: 'nowrap' }}
                   >{t('admin_camps.afegir')}</button>
                 </div>
+                <details style={{ marginTop: '0.75rem' }}>
+                  <summary style={{ cursor: 'pointer', fontSize: '0.9rem' }}>
+                    {t('admin_camps.import_massiu', 'Import massiu (enganxa una llista)')}
+                  </summary>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <textarea
+                      value={importText}
+                      onChange={e => setImportText(e.target.value)}
+                      rows={5}
+                      placeholder={t('admin_camps.import_placeholder', 'Enganxa aquí una llista, un valor per línia o separats per comes')}
+                      style={{ marginBottom: '0.5rem' }}
+                    />
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const trossos = importText
+                            .split(/[\n,;\t]+/)
+                            .map(s => s.trim())
+                            .filter(s => s.length > 0)
+                          const existents = new Set(form.opcions)
+                          const noves = []
+                          for (const v of trossos) {
+                            if (!existents.has(v)) {
+                              existents.add(v)
+                              noves.push(v)
+                            }
+                          }
+                          if (noves.length > 0) {
+                            setForm({ ...form, opcions: [...form.opcions, ...noves] })
+                          }
+                          addToast(t('admin_camps.import_result', 'Afegides {{n}} opcions noves', { n: noves.length }))
+                          setImportText('')
+                        }}
+                        disabled={!importText.trim()}
+                      >{t('admin_camps.afegir_aquests', 'Afegir aquests')}</button>
+                      <button
+                        type="button"
+                        className="outline secondary"
+                        onClick={() => setImportText('')}
+                        disabled={!importText.trim()}
+                      >{t('common.cancellar')}</button>
+                    </div>
+                  </div>
+                </details>
               </div>
             )}
             {form.type === 'number' && controladorCamp && (controladorCamp.opcions || []).length > 0 && form.name !== controladorCamp.name && (
