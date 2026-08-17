@@ -102,6 +102,7 @@
     "estat_finalitzats": "Finalizados",
     "col_finalitzat": "Finalizado",
     "col_alerta": "Alerta",
+    "col_apte": "Valoración APTO / NO APTO",
     "marcar_finalitzat": "Marcar como finalizado",
     "marcar_pendent": "Marcar como pendiente"
   },
@@ -138,7 +139,14 @@
     "alerta_motiu": "Motivo (opcional)",
     "alerta_motiu_placeholder": "Por ejemplo: bichos detectados",
     "alerta_activada": "Alerta activada",
-    "alerta_desactivada": "Alerta desactivada"
+    "alerta_desactivada": "Alerta desactivada",
+    "apte": "APTO",
+    "no_apte": "NO APTO",
+    "pendent_apte": "Pendiente valoración",
+    "canviar_apte": "Clica para cambiar la valoración (pendiente → APTO → NO APTO)",
+    "marcat_apte": "Marcado como APTO",
+    "marcat_no_apte": "Marcado como NO APTO",
+    "marcat_pendent_apte": "Valoración borrada (pendiente)"
   },
   "form": {
     "nou_analisi": "Nuevo Análisis — {{nom}}",
@@ -334,6 +342,7 @@
     "desant_columnes": "Error guardando las columnas",
     "marcant_finalitzat": "Error cambiando el estado",
     "marcant_alerta": "Error cambiando la alerta",
+    "marcant_apte": "Error cambiando la valoración APTO",
     "enviant_email": "Error enviando el correo",
     "conflicte_concurrencia": "Conflicto de concurrencia",
     "carregant_dashboard_global": "Error cargando dashboard global",

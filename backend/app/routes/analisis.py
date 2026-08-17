@@ -501,6 +501,24 @@ def marcar_alerta(slug, id):
     return jsonify(a.to_dict())
 
 
+# --------------- Marcar apte ---------------
+
+@bp.route("/api/analisis/<slug>/<int:id>/apte", methods=["PATCH"])
+@write_required
+def marcar_apte(slug, id):
+    a = db.get_or_404(Analisi, id)
+    if a.tipus != slug:
+        abort(404)
+    payload = request.get_json(silent=True) or {}
+    val = payload.get("apte")
+    if val not in (None, "apte", "no_apte"):
+        return jsonify({"error": "apte ha de ser null, 'apte' o 'no_apte'"}), 400
+    a.apte = val
+    a.updated_by = session.get("email") or a.updated_by
+    db.session.commit()
+    return jsonify(a.to_dict())
+
+
 # --------------- Edit lock (presence) ---------------
 
 @bp.route("/api/analisis/<slug>/<int:id>/lock", methods=["POST"])

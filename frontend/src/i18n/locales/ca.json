@@ -102,6 +102,7 @@
     "estat_finalitzats": "Finalitzats",
     "col_finalitzat": "Finalitzat",
     "col_alerta": "Alerta",
+    "col_apte": "Valoració APTE / NO APTE",
     "marcar_finalitzat": "Marcar com a finalitzat",
     "marcar_pendent": "Marcar com a pendent"
   },
@@ -138,7 +139,14 @@
     "alerta_motiu": "Motiu (opcional)",
     "alerta_motiu_placeholder": "Per exemple: bitxos detectats",
     "alerta_activada": "Alerta activada",
-    "alerta_desactivada": "Alerta desactivada"
+    "alerta_desactivada": "Alerta desactivada",
+    "apte": "APTE",
+    "no_apte": "NO APTE",
+    "pendent_apte": "Pendent valoració",
+    "canviar_apte": "Clica per canviar la valoració (pendent → APTE → NO APTE)",
+    "marcat_apte": "Marcat com a APTE",
+    "marcat_no_apte": "Marcat com a NO APTE",
+    "marcat_pendent_apte": "Valoració esborrada (pendent)"
   },
   "form": {
     "nou_analisi": "Nou An\u00e0lisi \u2014 {{nom}}",
@@ -334,6 +342,7 @@
     "desant_columnes": "Error desant les columnes",
     "marcant_finalitzat": "Error canviant l'estat",
     "marcant_alerta": "Error canviant l'alerta",
+    "marcant_apte": "Error canviant la valoració APTE",
     "enviant_email": "Error enviant el correu",
     "conflicte_concurrencia": "Conflicte de concurr\u00e8ncia",
     "carregant_dashboard_global": "Error carregant dashboard global",

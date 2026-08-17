@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
-import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat, marcarAlerta } from '../api/analisis'
+import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat, marcarAlerta, marcarApte } from '../api/analisis'
 import AnalisisDetail from '../components/AnalisisDetail'
 import Icon from '../components/Icon'
 import QRCode from '../components/QRCode'
@@ -146,6 +146,24 @@ export default function DetallPage() {
     }
   }
 
+  const [togglingApte, setTogglingApte] = useState(false)
+
+  async function handleToggleApte() {
+    if (togglingApte) return
+    const actual = analisi.apte || null
+    const seguent = actual === null ? 'apte' : actual === 'apte' ? 'no_apte' : null
+    setTogglingApte(true)
+    try {
+      const updated = await marcarApte(tipus, id, seguent)
+      setAnalisi(updated)
+      addToast(t(`detall.marcat_${seguent || 'pendent_apte'}`))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setTogglingApte(false)
+    }
+  }
+
   function openEmailModal() {
     let tv = titleField ? (analisi[titleField] || `#${analisi.id}`) : `#${analisi.id}`
     tv = formatDate(tv) || tv
@@ -256,6 +274,25 @@ export default function DetallPage() {
                 {analisi.alerta
                   ? <><Icon name="AlertTriangle" size={12} /> {t('detall.alerta')}</>
                   : <><Icon name="Plus" size={12} /> {t('detall.alerta')}</>}
+              </button>
+            )}
+            {isViewer ? (
+              <span className={`estat-badge estat-apte-${analisi.apte || 'pendent'}`}>
+                {analisi.apte === 'apte' ? <><Icon name="Check" size={12} /> {t('detall.apte')}</>
+                  : analisi.apte === 'no_apte' ? <><Icon name="X" size={12} /> {t('detall.no_apte')}</>
+                  : <><Icon name="HelpCircle" size={12} /> {t('detall.pendent_apte')}</>}
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={`estat-badge estat-apte-${analisi.apte || 'pendent'}`}
+                onClick={handleToggleApte}
+                disabled={togglingApte}
+                title={t('detall.canviar_apte')}
+              >
+                {analisi.apte === 'apte' ? <><Icon name="Check" size={12} /> {t('detall.apte')}</>
+                  : analisi.apte === 'no_apte' ? <><Icon name="X" size={12} /> {t('detall.no_apte')}</>
+                  : <><Icon name="HelpCircle" size={12} /> {t('detall.pendent_apte')}</>}
               </button>
             )}
           </h2>

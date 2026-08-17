@@ -255,6 +255,28 @@ button.estat-badge { margin-bottom: 0; }
 [data-theme="dark"] .estat-badge.estat-alerta {
   background: #7f1d1d; color: #fee2e2; border-color: #dc2626;
 }
+.estat-badge.estat-apte-apte {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+}
+.estat-badge.estat-apte-no_apte {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+.estat-badge.estat-apte-pendent {
+  background: transparent;
+  color: var(--lab-text-muted);
+  border-color: var(--lab-border);
+  border-style: dashed;
+}
+[data-theme="dark"] .estat-badge.estat-apte-apte {
+  background: #1e3a8a; color: #dbeafe; border-color: #2563eb;
+}
+[data-theme="dark"] .estat-badge.estat-apte-no_apte {
+  background: #7f1d1d; color: #fee2e2; border-color: #dc2626;
+}
 
 /* Segmented control a LlistaPage */
 .estat-segmented {
@@ -349,6 +371,14 @@ button.estat-badge { margin-bottom: 0; }
 [data-theme="dark"] .row-alerta-icon {
   color: #f87171;
 }
+.row-apte-icon {
+  display: inline-block;
+  line-height: 1;
+}
+.row-apte-icon.is-apte { color: #1e40af; }
+.row-apte-icon.is-no-apte { color: #dc2626; }
+[data-theme="dark"] .row-apte-icon.is-apte { color: #60a5fa; }
+[data-theme="dark"] .row-apte-icon.is-no-apte { color: #f87171; }
 
 /* --- Taula de la llista d'anàlisis: compacta i auto-fit per columnes --- */
 .analisis-list-table {

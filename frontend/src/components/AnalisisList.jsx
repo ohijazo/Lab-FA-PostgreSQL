@@ -63,6 +63,7 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
           <tr>
             <th className="col-check" title={t('llista.col_finalitzat')}><Icon name="Check" size={14} /></th>
             <th className="col-check" title={t('llista.col_alerta')}><Icon name="AlertTriangle" size={14} /></th>
+            <th className="col-check" title={t('llista.col_apte')}><Icon name="ShieldCheck" size={14} /></th>
             {columnes.map((col) => (
               <th
                 key={col}
@@ -99,6 +100,13 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
                 title={a.alerta ? (a.alerta_motiu || t('detall.alerta')) : ''}
               >
                 {a.alerta && <span className="row-alerta-icon"><Icon name="AlertTriangle" size={14} /></span>}
+              </td>
+              <td
+                className="col-check"
+                title={a.apte === 'apte' ? t('detall.apte') : a.apte === 'no_apte' ? t('detall.no_apte') : t('detall.pendent_apte')}
+              >
+                {a.apte === 'apte' && <span className="row-apte-icon is-apte"><Icon name="Check" size={14} /></span>}
+                {a.apte === 'no_apte' && <span className="row-apte-icon is-no-apte"><Icon name="X" size={14} /></span>}
               </td>
               {columnes.map((col) => {
                 const camp = campMap[col]

@@ -62,6 +62,20 @@ export async function marcarAlerta(tipus, id, alerta, motiu = '') {
   return res.json()
 }
 
+export async function marcarApte(tipus, id, apte) {
+  const res = await fetch(`/api/analisis/${tipus}/${id}/apte`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...langHeaders() },
+    credentials: 'include',
+    body: JSON.stringify({ apte }),
+  })
+  if (!res.ok) {
+    const info = await res.json().catch(() => null)
+    throw new Error(info?.error || i18n.t('errors.marcant_apte'))
+  }
+  return res.json()
+}
+
 export async function obtenirAnalisi(tipus, id) {
   const res = await fetch(`/api/analisis/${tipus}/${id}`, { credentials: 'include', headers: langHeaders() })
   if (!res.ok) throw new Error(i18n.t('errors.carregant_analisi'))

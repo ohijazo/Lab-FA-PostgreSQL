@@ -172,6 +172,7 @@ class Analisi(db.Model):
     finalitzat = db.Column(db.Boolean, nullable=False, default=False, server_default="false", index=True)
     alerta = db.Column(db.Boolean, nullable=False, default=False, server_default="false", index=True)
     alerta_motiu = db.Column(db.String(500), nullable=True)
+    apte = db.Column(db.String(10), nullable=True, default=None, index=True)
 
     def get_dades(self):
         return self.dades or {}
@@ -190,6 +191,7 @@ class Analisi(db.Model):
         d["finalitzat"] = bool(self.finalitzat)
         d["alerta"] = bool(self.alerta)
         d["alerta_motiu"] = self.alerta_motiu or ""
+        d["apte"] = self.apte
         return d
 
 
