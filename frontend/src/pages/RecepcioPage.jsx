@@ -1,7 +1,6 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
-import { llistarAnalisisRecepcio } from '../api/analisis'
 import Icon from '../components/Icon'
 import LoadingBlock from '../components/ui/LoadingBlock'
 import EmptyState from '../components/ui/EmptyState'
@@ -46,11 +45,13 @@ function StatusBadge({ apte, t }) {
 
 export default function RecepcioPage() {
   const { t } = useTranslation()
+  const [qInput, setQInput] = useState('')
   const [q, setQ] = useState('')
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdate, setLastUpdate] = useState(null)
+  const [connected, setConnected] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
   const [expanded, setExpanded] = useState(() => new Set())
   const [avisosOn, setAvisosOn] = useState(false)
@@ -135,25 +136,47 @@ export default function RecepcioPage() {
     }
   }
 
-  const fetchData = useCallback(async () => {
-    try {
-      const res = await llistarAnalisisRecepcio(q)
-      setData(res)
-      setError(null)
-      setLastUpdate(new Date())
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }, [q])
-
-  useEffect(() => { fetchData() }, [fetchData])
-
+  // Debounce del camp de cerca (evita obrir un stream nou per cada tecla)
   useEffect(() => {
-    const id = setInterval(fetchData, 30000)
-    return () => clearInterval(id)
-  }, [fetchData])
+    if (qInput === q) return
+    const timeout = setTimeout(() => setQ(qInput), 300)
+    return () => clearTimeout(timeout)
+  }, [qInput, q])
+
+  // Stream SSE: connexió persistent que rep snapshots quan hi ha canvis
+  useEffect(() => {
+    const url = q ? `/api/recepcio/stream?q=${encodeURIComponent(q)}` : '/api/recepcio/stream'
+    const es = new EventSource(url, { withCredentials: true })
+
+    es.onopen = () => {
+      setConnected(true)
+      setError(null)
+    }
+    es.onmessage = (e) => {
+      try {
+        const snap = JSON.parse(e.data)
+        setData(snap)
+        setLastUpdate(new Date())
+        setLoading(false)
+        setError(null)
+      } catch {
+        // Ignora payloads malformats (per exemple, keepalive amb ':' que EventSource ja filtra)
+      }
+    }
+    es.addEventListener('error', (e) => {
+      // EventSource intenta reconnectar automàticament en background
+      setConnected(false)
+      // Si el servidor va tornar 401/403 (auth), aturem retries
+      if (es.readyState === EventSource.CLOSED) {
+        setError(t('recepcio.stream_desconnectat'))
+      }
+    })
+
+    return () => {
+      es.close()
+      setConnected(false)
+    }
+  }, [q, t])
 
   // Detecció de canvis per notificar (salta la primera càrrega)
   useEffect(() => {
@@ -248,8 +271,9 @@ export default function RecepcioPage() {
             </button>
           )}
           {lastUpdate && (
-            <span className="recepcio-updated">
-              <Icon name="RefreshCw" size={14} />
+            <span className={`recepcio-updated ${connected ? 'is-live' : 'is-offline'}`}
+              title={connected ? t('recepcio.stream_en_directe') : t('recepcio.stream_reconnectant')}>
+              <span className={`recepcio-live-dot ${connected ? 'is-on' : 'is-off'}`} aria-hidden="true" />
               {t('recepcio.actualitzat', { hora: formatHora(lastUpdate.toISOString()) })}
             </span>
           )}
@@ -264,8 +288,8 @@ export default function RecepcioPage() {
             type="search"
             className="recepcio-search"
             placeholder={t('recepcio.cercar_placeholder')}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
+            value={qInput}
+            onChange={(e) => setQInput(e.target.value)}
             autoFocus
           />
         </div>

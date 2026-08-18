@@ -353,6 +353,9 @@
     "notif_actius_full": "Avisos activos (sonidos + notificaciones)",
     "notif_actius_only_so": "Avisos activos (solo sonidos — el navegador bloquea las notificaciones)",
     "notif_only_so_warn": "Las notificaciones del sistema están bloqueadas por el navegador; los sonidos siguen activos",
+    "stream_en_directe": "En directo (los cambios aparecen instantáneamente)",
+    "stream_reconnectant": "Sin conexión — reconectando automáticamente...",
+    "stream_desconnectat": "Sin conexión con el servidor. Recarga la página si el problema continúa.",
     "notif_titol_nova": "Nuevo análisis",
     "notif_titol_apte": "APTO",
     "notif_titol_no_apte": "NO APTO"
