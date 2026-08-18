@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import i18n from '../i18n/index.js'
 import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat, marcarAlerta, marcarApte } from '../api/analisis'
 import useShortcut from '../hooks/useShortcut'
@@ -83,9 +83,10 @@ export default function DetallPage() {
   }, [config])
 
   async function handleDelete() {
+    const codi = analisi?.codi || `#${analisi?.id ?? ''}`
     const ok = await confirm({
       title: t('common.eliminar'),
-      message: t('detall.confirm_eliminar'),
+      message: <Trans i18nKey="detall.confirm_eliminar" values={{ codi }} components={{ 1: <strong /> }} />,
       confirmLabel: t('common.eliminar'),
       cancelLabel: t('common.cancellar'),
       variant: 'danger',

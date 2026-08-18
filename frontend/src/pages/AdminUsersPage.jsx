@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { llistarUsers, crearUser, editarUser, eliminarUser } from '../api/admin'
 import { useToast } from '../context/ToastContext'
 import { useConfirm } from '../context/ConfirmContext'
@@ -73,7 +73,7 @@ export default function AdminUsersPage() {
   async function handleDelete(id, email) {
     const ok = await confirm({
       title: t('common.eliminar'),
-      message: t('admin_users.confirm_eliminar', { email }),
+      message: <Trans i18nKey="admin_users.confirm_eliminar" values={{ email }} components={{ 1: <strong /> }} />,
       confirmLabel: t('common.eliminar'),
       cancelLabel: t('common.cancellar'),
       variant: 'danger',

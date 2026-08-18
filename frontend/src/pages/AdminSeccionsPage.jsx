@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { obtenirTipusAdmin, llistarSeccions, crearSeccio, editarSeccio, eliminarSeccio, editarTipus, reordenarSeccions } from '../api/admin'
 import { useToast } from '../context/ToastContext'
 import { useConfirm } from '../context/ConfirmContext'
@@ -141,7 +141,7 @@ export default function AdminSeccionsPage() {
   async function handleDelete(id, titol) {
     const ok = await confirm({
       title: t('common.eliminar'),
-      message: t('admin_seccions.confirm_eliminar', { titol }),
+      message: <Trans i18nKey="admin_seccions.confirm_eliminar" values={{ titol }} components={{ 1: <strong /> }} />,
       confirmLabel: t('common.eliminar'),
       cancelLabel: t('common.cancellar'),
       variant: 'danger',

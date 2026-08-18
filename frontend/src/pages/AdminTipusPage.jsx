@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { llistarTipusAdmin, crearTipus, editarTipus, eliminarTipus, descarregarPlantilla, duplicarTipus, obtenirEstadistiques } from '../api/admin'
 import { useToast } from '../context/ToastContext'
 import { useConfirm } from '../context/ConfirmContext'
@@ -102,7 +102,7 @@ export default function AdminTipusPage() {
   async function handleDelete(id, nom) {
     const ok = await confirm({
       title: t('common.eliminar'),
-      message: t('admin_tipus.confirm_eliminar', { nom }),
+      message: <Trans i18nKey="admin_tipus.confirm_eliminar" values={{ nom }} components={{ 1: <strong /> }} />,
       confirmLabel: t('common.eliminar'),
       cancelLabel: t('common.cancellar'),
       variant: 'danger',
