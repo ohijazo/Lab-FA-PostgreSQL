@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
 import { llistarAnalisisRecepcio } from '../api/analisis'
 import Icon from '../components/Icon'
 import LoadingBlock from '../components/ui/LoadingBlock'
 import EmptyState from '../components/ui/EmptyState'
+import useShortcut from '../hooks/useShortcut'
 
 function formatHora(iso) {
   if (!iso) return ''
@@ -52,6 +53,9 @@ export default function RecepcioPage() {
   const [lastUpdate, setLastUpdate] = useState(null)
   const [activeTab, setActiveTab] = useState('all')
   const [expanded, setExpanded] = useState(() => new Set())
+  const searchInputRef = useRef(null)
+
+  useShortcut('/', () => searchInputRef.current?.focus())
 
   const fetchData = useCallback(async () => {
     try {
@@ -122,6 +126,7 @@ export default function RecepcioPage() {
         <div className="recepcio-search-wrap">
           <Icon name="Search" size={16} className="recepcio-search-icon" />
           <input
+            ref={searchInputRef}
             type="search"
             className="recepcio-search"
             placeholder={t('recepcio.cercar_placeholder')}

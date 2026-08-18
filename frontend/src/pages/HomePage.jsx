@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { fetchDashboardGlobal } from '../api/dashboard'
 import { useAuth } from '../context/AuthContext'
@@ -8,6 +8,7 @@ import Icon from '../components/Icon'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import Skeleton from '../components/ui/Skeleton'
+import useShortcut from '../hooks/useShortcut'
 
 export default function HomePage() {
   const { t } = useTranslation()
@@ -21,6 +22,9 @@ export default function HomePage() {
   const [exportSlugs, setExportSlugs] = useState([])
   const [exportFrom, setExportFrom] = useState('')
   const [exportTo, setExportTo] = useState('')
+  const searchInputRef = useRef(null)
+
+  useShortcut('/', () => searchInputRef.current?.focus())
 
   useEffect(() => {
     fetchDashboardGlobal()
@@ -110,6 +114,7 @@ export default function HomePage() {
         <div className="search-input-wrap">
           <Icon name="Search" size={14} className="search-input-icon" />
           <input
+            ref={searchInputRef}
             type="search"
             placeholder={t('home.cercar_tipus')}
             value={cerca}

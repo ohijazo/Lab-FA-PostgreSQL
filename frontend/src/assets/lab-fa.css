@@ -112,6 +112,31 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* --- Focus visible sistemàtic per accessibilitat de teclat ---
+   Nomès es dispara amb navegació per teclat (Tab), no amb click.
+   .btn ja té la seva regla pròpia (línia ~1393) amb box-shadow ring. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--lab-primary);
+  outline-offset: 1px;
+  border-color: var(--lab-primary);
+}
+a:focus-visible,
+[role="button"]:not(.btn):focus-visible,
+[role="tab"]:focus-visible,
+button:not(.btn):focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--lab-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Files clicables de taules */
+tr.clickable-row:focus-visible {
+  outline: 2px solid var(--lab-primary);
+  outline-offset: -2px;
+}
+
 /* --- Capçalera de pàgines admin --- */
 .admin-header {
   display: flex;
@@ -2118,6 +2143,16 @@ button.estat-badge { margin-bottom: 0; }
   gap: var(--lab-space-2);
   grid-column: 1 / -1;
   margin-top: var(--lab-space-3);
+  position: sticky;
+  bottom: 0;
+  background: var(--lab-bg-card);
+  padding: var(--lab-space-3) 0;
+  border-top: 1px solid var(--lab-border);
+  z-index: 5;
+  backdrop-filter: blur(4px);
+}
+@media print {
+  .form-submit-row { position: static; }
 }
 
 /* AdminSeccionsPage: inline row (camp controlador) */

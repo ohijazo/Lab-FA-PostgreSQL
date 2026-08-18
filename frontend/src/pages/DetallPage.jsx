@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
 import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat, marcarAlerta, marcarApte } from '../api/analisis'
+import useShortcut from '../hooks/useShortcut'
 import AnalisisDetail from '../components/AnalisisDetail'
 import Icon from '../components/Icon'
 import QRCode from '../components/QRCode'
@@ -99,6 +100,9 @@ export default function DetallPage() {
   }
 
   const [togglingFinalitzat, setTogglingFinalitzat] = useState(false)
+
+  // Shortcut: 'e' obre edició (només editors)
+  useShortcut(['e', 'E'], () => { if (!isViewer) navigate(`/${tipus}/${id}/editar`) })
 
   async function handleToggleFinalitzat() {
     if (togglingFinalitzat) return

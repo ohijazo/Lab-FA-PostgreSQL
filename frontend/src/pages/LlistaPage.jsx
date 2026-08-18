@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -12,6 +12,7 @@ import Skeleton from '../components/ui/Skeleton'
 import LoadingBlock from '../components/ui/LoadingBlock'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import useShortcut from '../hooks/useShortcut'
 
 function SortableColumnItem({ id, label, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
@@ -37,8 +38,10 @@ function SortableColumnItem({ id, label, onRemove }) {
 export default function LlistaPage() {
   const { t } = useTranslation()
   const { tipus } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const isViewer = user?.role === 'viewer'
+  const searchInputRef = useRef(null)
   const [config, setConfig] = useState(null)
   const [data, setData] = useState({ items: [], total: 0, page: 1, pages: 1 })
   const [loading, setLoading] = useState(true)
@@ -117,6 +120,10 @@ export default function LlistaPage() {
     }, 300)
     return () => clearTimeout(timeout)
   }, [searchInput, q])
+
+  // Shortcuts: '/' focus cerca, 'n' nova anàlisi (si té permís)
+  useShortcut('/', () => searchInputRef.current?.focus())
+  useShortcut(['n', 'N'], () => { if (!isViewer) navigate(`/${tipus}/nou`) })
 
   function handleSort(col) {
     setPage(1)
@@ -256,6 +263,7 @@ export default function LlistaPage() {
           <div className="search-input-wrap">
             <Icon name="Search" size={14} className="search-input-icon" />
             <input
+              ref={searchInputRef}
               type="search"
               placeholder={t('llista.cercar')}
               value={searchInput}
