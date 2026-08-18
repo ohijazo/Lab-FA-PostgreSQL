@@ -1,6 +1,6 @@
 import {
   AlertCircle, AlertTriangle, ArrowDown, ArrowLeft, ArrowUp,
-  BarChart3, CalendarClock, CalendarDays, Check, ChevronDown,
+  BarChart3, Bell, BellOff, CalendarClock, CalendarDays, Check, ChevronDown,
   ChevronRight, ChevronsUpDown, Circle, Clock, Columns3, Copy,
   Download, Eye, EyeOff, FileDown, Filter, FlaskConical, GripVertical,
   HelpCircle, Inbox, Languages, Layers, LayoutList, List, Loader2,
@@ -14,7 +14,7 @@ import {
 // el nom aquí i al mapa `icons`.
 const icons = {
   AlertCircle, AlertTriangle, ArrowDown, ArrowLeft, ArrowUp,
-  BarChart3, CalendarClock, CalendarDays, Check, ChevronDown,
+  BarChart3, Bell, BellOff, CalendarClock, CalendarDays, Check, ChevronDown,
   ChevronRight, ChevronsUpDown, Circle, Clock, Columns3, Copy,
   Download, Eye, EyeOff, FileDown, Filter, FlaskConical, GripVertical,
   HelpCircle, Inbox, Languages, Layers, LayoutList, List, Loader2,

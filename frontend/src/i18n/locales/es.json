@@ -346,7 +346,13 @@
     "cap_analisi_desc": "Cuando el laboratorio registre un análisis, aparecerá aquí.",
     "cap_amb_filtre": "Ningún análisis coincide con el filtro",
     "cap_amb_filtre_desc": "Prueba a cambiar de pestaña o borrar la búsqueda.",
-    "tab_tots": "Todos"
+    "tab_tots": "Todos",
+    "notif_activar": "Activar avisos",
+    "notif_activats": "Avisos activados",
+    "notif_bloquejats": "Avisos bloqueados por el navegador",
+    "notif_titol_nova": "Nuevo análisis",
+    "notif_titol_apte": "APTO",
+    "notif_titol_no_apte": "NO APTO"
   },
   "errors": {
     "carregant_tipus": "Error cargando tipos",

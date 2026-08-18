@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/index.js'
 import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEmailsAnalisi, marcarFinalitzat, marcarAlerta, marcarApte } from '../api/analisis'
 import useShortcut from '../hooks/useShortcut'
+import Skeleton from '../components/ui/Skeleton'
 import AnalisisDetail from '../components/AnalisisDetail'
 import Icon from '../components/Icon'
 import QRCode from '../components/QRCode'
@@ -197,7 +198,31 @@ export default function DetallPage() {
     setEmailModalOpen(false)
   }
 
-  if (loading) return <LoadingBlock label={t('common.carregant')} />
+  if (loading) return (
+    <div className="detall-skeleton">
+      <div className="detall-skeleton-header">
+        <Skeleton width="40%" height="1.75rem" />
+        <div className="detall-skeleton-badges">
+          <Skeleton width="90px" height="1.6rem" radius="999px" />
+          <Skeleton width="90px" height="1.6rem" radius="999px" />
+          <Skeleton width="110px" height="1.6rem" radius="999px" />
+        </div>
+      </div>
+      {[0, 1, 2].map(i => (
+        <div key={i} className="detall-skeleton-section">
+          <Skeleton width="25%" height="1.1rem" />
+          <div className="detall-skeleton-fields">
+            {[0, 1, 2, 3, 4, 5].map(j => (
+              <div key={j} className="detall-skeleton-field">
+                <Skeleton width="60%" height="0.75rem" />
+                <Skeleton height="1.4rem" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
   if (error) return <p>Error: {error}</p>
   if (!analisi) return <p>{t('common.no_trobat')}</p>
 

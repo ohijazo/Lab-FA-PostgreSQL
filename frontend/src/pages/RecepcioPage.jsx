@@ -53,9 +53,72 @@ export default function RecepcioPage() {
   const [lastUpdate, setLastUpdate] = useState(null)
   const [activeTab, setActiveTab] = useState('all')
   const [expanded, setExpanded] = useState(() => new Set())
+  const [notifState, setNotifState] = useState('default')  // 'default'|'granted'|'denied'|'unsupported'
   const searchInputRef = useRef(null)
+  const prevDataMapRef = useRef(null)
+  const audioCtxRef = useRef(null)
 
   useShortcut('/', () => searchInputRef.current?.focus())
+
+  // Detectar suport i estat de Notification API
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof Notification === 'undefined') {
+      setNotifState('unsupported')
+      return
+    }
+    setNotifState(Notification.permission)
+  }, [])
+
+  function initAudio() {
+    if (audioCtxRef.current) return
+    const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)
+    if (!AC) return
+    audioCtxRef.current = new AC()
+  }
+
+  function playBeep(pattern = 'new') {
+    const ctx = audioCtxRef.current
+    if (!ctx) return
+    // Patrons: new = 1 beep neutre; apte = 2 puges (positives); no_apte = 3 baixes (alerta)
+    const patterns = {
+      new:     [{ f: 660, at: 0.00, dur: 0.15 }],
+      apte:    [{ f: 660, at: 0.00, dur: 0.14 }, { f: 880, at: 0.18, dur: 0.20 }],
+      no_apte: [{ f: 880, at: 0.00, dur: 0.10 }, { f: 660, at: 0.14, dur: 0.10 }, { f: 440, at: 0.28, dur: 0.20 }],
+    }
+    const notes = patterns[pattern] || patterns.new
+    const now = ctx.currentTime
+    for (const n of notes) {
+      const osc = ctx.createOscillator()
+      const g = ctx.createGain()
+      osc.connect(g); g.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.value = n.f
+      g.gain.setValueAtTime(0.001, now + n.at)
+      g.gain.exponentialRampToValueAtTime(0.18, now + n.at + 0.02)
+      g.gain.exponentialRampToValueAtTime(0.001, now + n.at + n.dur)
+      osc.start(now + n.at)
+      osc.stop(now + n.at + n.dur + 0.02)
+    }
+  }
+
+  function notify(title, body, tag) {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+    try {
+      new Notification(title, { body, tag, icon: '/favicon.svg' })
+    } catch {
+      // Silenci — algunes plataformes bloquegen des de tab sense HTTPS
+    }
+  }
+
+  async function enableNotifs() {
+    initAudio()
+    if (typeof Notification === 'undefined') {
+      setNotifState('unsupported')
+      return
+    }
+    const result = await Notification.requestPermission()
+    setNotifState(result)
+  }
 
   const fetchData = useCallback(async () => {
     try {
@@ -76,6 +139,38 @@ export default function RecepcioPage() {
     const id = setInterval(fetchData, 30000)
     return () => clearInterval(id)
   }, [fetchData])
+
+  // Detecció de canvis per notificar (salta la primera càrrega)
+  useEffect(() => {
+    if (prevDataMapRef.current === null) {
+      // Primera càrrega: només guardem el snapshot, no notifiquem
+      prevDataMapRef.current = new Map(data.map(a => [a.id, a]))
+      return
+    }
+    if (notifState !== 'granted') {
+      prevDataMapRef.current = new Map(data.map(a => [a.id, a]))
+      return
+    }
+    const prev = prevDataMapRef.current
+    for (const a of data) {
+      const p = prev.get(a.id)
+      const label = a.codi || `#${a.id}`
+      const body = [a.tipus_nom, a.proveidor].filter(Boolean).join(' · ')
+      if (!p) {
+        notify(t('recepcio.notif_titol_nova'), `${label} · ${body}`, `nova-${a.id}`)
+        playBeep('new')
+      } else if (p.apte !== a.apte) {
+        if (a.apte === 'apte') {
+          notify(t('recepcio.notif_titol_apte'), `${label} · ${body}`, `apte-${a.id}`)
+          playBeep('apte')
+        } else if (a.apte === 'no_apte') {
+          notify(t('recepcio.notif_titol_no_apte'), `${label} · ${body}`, `noapte-${a.id}`)
+          playBeep('no_apte')
+        }
+      }
+    }
+    prevDataMapRef.current = new Map(data.map(a => [a.id, a]))
+  }, [data, notifState, t])
 
   function toggleExpanded(id) {
     setExpanded((prev) => {
@@ -114,12 +209,30 @@ export default function RecepcioPage() {
           <h1>{t('recepcio.titol')}</h1>
           <p>{t('recepcio.subtitol')}</p>
         </hgroup>
-        {lastUpdate && (
-          <span className="recepcio-updated">
-            <Icon name="RefreshCw" size={14} />
-            {t('recepcio.actualitzat', { hora: formatHora(lastUpdate.toISOString()) })}
-          </span>
-        )}
+        <div className="recepcio-header-actions">
+          {notifState === 'default' && (
+            <button type="button" className="recepcio-notif-btn" onClick={enableNotifs}>
+              <Icon name="Bell" size={14} />
+              <span>{t('recepcio.notif_activar')}</span>
+            </button>
+          )}
+          {notifState === 'granted' && (
+            <span className="recepcio-notif-status is-on" title={t('recepcio.notif_activats')}>
+              <Icon name="Bell" size={14} />
+            </span>
+          )}
+          {notifState === 'denied' && (
+            <span className="recepcio-notif-status is-off" title={t('recepcio.notif_bloquejats')}>
+              <Icon name="BellOff" size={14} />
+            </span>
+          )}
+          {lastUpdate && (
+            <span className="recepcio-updated">
+              <Icon name="RefreshCw" size={14} />
+              {t('recepcio.actualitzat', { hora: formatHora(lastUpdate.toISOString()) })}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="recepcio-toolbar">

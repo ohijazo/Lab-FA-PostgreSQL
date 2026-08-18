@@ -260,6 +260,7 @@ export default function AdminCampsPage() {
   if (loading) return <LoadingBlock label={t('common.carregant')} />
 
   const hasRangsCondicionals = form.type === 'number' && controladorCamp && (controladorCamp.opcions || []).length > 0 && form.name !== controladorCamp.name
+  const showRightPanel = camps.length > 0 || formOpen
 
   return (
     <>
@@ -295,7 +296,7 @@ export default function AdminCampsPage() {
         </div>
       )}
 
-      <div className="admin-camps-layout">
+      <div className={`admin-camps-layout${!showRightPanel ? ' admin-camps-layout-solo' : ''}`}>
         {/* --- PANEL ESQUERRA: llista sortable de camps --- */}
         <aside className="admin-camps-list-panel">
           {camps.length === 0 ? (
@@ -332,6 +333,7 @@ export default function AdminCampsPage() {
         </aside>
 
         {/* --- PANEL DRETA: editor amb tabs (sticky) --- */}
+        {showRightPanel && (
         <section className="admin-camps-editor-panel">
           {!formOpen ? (
             <EmptyState
@@ -703,6 +705,7 @@ export default function AdminCampsPage() {
             </form>
           )}
         </section>
+        )}
       </div>
     </>
   )
