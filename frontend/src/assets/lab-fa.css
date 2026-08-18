@@ -2238,6 +2238,73 @@ button.estat-badge { margin-bottom: 0; }
 }
 .detall-email-history-table { margin-top: var(--lab-space-2); }
 
+/* Bloc de valoració al final del detall */
+.detall-valoracio {
+  margin-top: var(--lab-space-6);
+  padding: var(--lab-space-4);
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  background: var(--lab-bg-subtle);
+}
+.detall-valoracio-title {
+  margin: 0 0 var(--lab-space-3);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--lab-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.detall-valoracio-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--lab-space-3);
+}
+.detall-valoracio-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.1rem 0.75rem;
+  border: 2px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  background: var(--lab-bg-card);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+}
+.detall-valoracio-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.detall-valoracio-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.detall-valoracio-btn-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+/* Estats Finalitzat */
+.detall-valoracio-btn.is-finalitzat-on { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+.detall-valoracio-btn.is-finalitzat-off { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+/* Estats Alerta */
+.detall-valoracio-btn.is-alerta-on { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+.detall-valoracio-btn.is-alerta-off { border-style: dashed; color: var(--lab-text-muted); }
+/* Estats APTE */
+.detall-valoracio-btn.is-apte-apte { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+.detall-valoracio-btn.is-apte-no_apte { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+.detall-valoracio-btn.is-apte-pendent { border-style: dashed; color: var(--lab-text-muted); }
+/* Dark mode */
+[data-theme="dark"] .detall-valoracio-btn.is-finalitzat-on { background: #064e3b; border-color: #047857; color: #d1fae5; }
+[data-theme="dark"] .detall-valoracio-btn.is-finalitzat-off { background: #78350f; border-color: #b45309; color: #fef3c7; }
+[data-theme="dark"] .detall-valoracio-btn.is-alerta-on { background: #7f1d1d; border-color: #dc2626; color: #fee2e2; }
+[data-theme="dark"] .detall-valoracio-btn.is-apte-apte { background: #1e3a8a; border-color: #2563eb; color: #dbeafe; }
+[data-theme="dark"] .detall-valoracio-btn.is-apte-no_apte { background: #7f1d1d; border-color: #dc2626; color: #fee2e2; }
+@media (max-width: 640px) {
+  .detall-valoracio-buttons { grid-template-columns: 1fr; }
+}
+
 /* Export modal helpers */
 .export-date-row {
   display: flex;

@@ -146,7 +146,8 @@
     "canviar_apte": "Clica para cambiar la valoración (pendiente → APTO → NO APTO)",
     "marcat_apte": "Marcado como APTO",
     "marcat_no_apte": "Marcado como NO APTO",
-    "marcat_pendent_apte": "Valoración borrada (pendiente)"
+    "marcat_pendent_apte": "Valoración borrada (pendiente)",
+    "valoracio_titol": "Valoración"
   },
   "form": {
     "nou_analisi": "Nuevo Análisis — {{nom}}",

@@ -343,6 +343,55 @@ export default function DetallPage() {
         </div>
       </div>
       <AnalisisDetail seccions={config.seccions} analisi={analisi} tipusConfig={config} />
+      {!isViewer && (
+        <div className="detall-valoracio no-print">
+          <h3 className="detall-valoracio-title">{t('detall.valoracio_titol')}</h3>
+          <div className="detall-valoracio-buttons">
+            <button
+              type="button"
+              className={`detall-valoracio-btn is-finalitzat-${analisi.finalitzat ? 'on' : 'off'}`}
+              onClick={handleToggleFinalitzat}
+              disabled={togglingFinalitzat}
+              title={analisi.finalitzat ? t('detall.marcar_pendent') : t('detall.marcar_finalitzat')}
+            >
+              <Icon name={analisi.finalitzat ? 'Check' : 'Circle'} size={22} />
+              <span className="detall-valoracio-btn-label">
+                {analisi.finalitzat ? t('detall.finalitzat') : t('detall.pendent')}
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`detall-valoracio-btn is-alerta-${analisi.alerta ? 'on' : 'off'}`}
+              onClick={openAlertaModal}
+              title={analisi.alerta ? (analisi.alerta_motiu || t('detall.alerta')) : t('detall.afegir_alerta')}
+            >
+              <Icon name={analisi.alerta ? 'AlertTriangle' : 'Plus'} size={22} />
+              <span className="detall-valoracio-btn-label">
+                {analisi.alerta ? t('detall.alerta') : t('detall.afegir_alerta')}
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`detall-valoracio-btn is-apte-${analisi.apte || 'pendent'}`}
+              onClick={handleToggleApte}
+              disabled={togglingApte}
+              title={t('detall.canviar_apte')}
+            >
+              <Icon
+                name={analisi.apte === 'apte' ? 'Check' : analisi.apte === 'no_apte' ? 'X' : 'HelpCircle'}
+                size={22}
+              />
+              <span className="detall-valoracio-btn-label">
+                {analisi.apte === 'apte'
+                  ? t('detall.apte')
+                  : analisi.apte === 'no_apte'
+                    ? t('detall.no_apte')
+                    : t('detall.pendent_apte')}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
       {emailLogs.length > 0 && (
         <details className="no-print detall-email-history">
           <summary><strong>{t('detall.historial_enviaments')}</strong> ({emailLogs.length})</summary>

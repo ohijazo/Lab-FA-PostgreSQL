@@ -146,7 +146,8 @@
     "canviar_apte": "Clica per canviar la valoració (pendent → APTE → NO APTE)",
     "marcat_apte": "Marcat com a APTE",
     "marcat_no_apte": "Marcat com a NO APTE",
-    "marcat_pendent_apte": "Valoració esborrada (pendent)"
+    "marcat_pendent_apte": "Valoració esborrada (pendent)",
+    "valoracio_titol": "Valoració"
   },
   "form": {
     "nou_analisi": "Nou An\u00e0lisi \u2014 {{nom}}",
