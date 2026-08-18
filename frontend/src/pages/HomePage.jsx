@@ -8,6 +8,7 @@ import Icon from '../components/Icon'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import Skeleton from '../components/ui/Skeleton'
+import EmptyState from '../components/ui/EmptyState'
 import useShortcut from '../hooks/useShortcut'
 
 export default function HomePage() {
@@ -81,6 +82,25 @@ export default function HomePage() {
     )
   }
   if (!data) return <p>{t('common.error_carregant')}</p>
+
+  // Empty state global: encara no hi ha cap tipus creat al sistema
+  if (data.per_tipus.length === 0) {
+    return (
+      <EmptyState
+        icon={<Icon name="FlaskConical" size={48} />}
+        title={t('home.no_tipus_creats')}
+        description={t('home.no_tipus_creats_desc')}
+        action={
+          (user?.role === 'admin' || user?.role === 'user') && (
+            <Link to="/admin/tipus" className="btn btn-primary">
+              <Icon name="Plus" size={14} />
+              <span>{t('home.crear_primer_tipus')}</span>
+            </Link>
+          )
+        }
+      />
+    )
+  }
 
   const filtrats = data.per_tipus.filter((tip) => {
     const query = cerca.toLowerCase()

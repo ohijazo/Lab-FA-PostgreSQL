@@ -8,6 +8,7 @@ import Icon from '../components/Icon'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingBlock from '../components/ui/LoadingBlock'
+import TableSkeleton from '../components/ui/TableSkeleton'
 
 export default function AdminTipusPage() {
   const { t, i18n } = useTranslation()
@@ -118,7 +119,7 @@ export default function AdminTipusPage() {
     }
   }
 
-  if (loading) return <LoadingBlock label={t('common.carregant')} />
+  if (loading) return <TableSkeleton rows={6} />
 
   return (
     <>

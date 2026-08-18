@@ -12,6 +12,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingBlock from '../components/ui/LoadingBlock'
+import TableSkeleton from '../components/ui/TableSkeleton'
 import { Tabs, Tab } from '../components/ui/Tabs'
 
 // --- Fila d'un camp a la llista esquerra ---
@@ -257,7 +258,7 @@ export default function AdminCampsPage() {
     }
   }
 
-  if (loading) return <LoadingBlock label={t('common.carregant')} />
+  if (loading) return <TableSkeleton rows={6} />
 
   const hasRangsCondicionals = form.type === 'number' && controladorCamp && (controladorCamp.opcions || []).length > 0 && form.name !== controladorCamp.name
   const showRightPanel = camps.length > 0 || formOpen

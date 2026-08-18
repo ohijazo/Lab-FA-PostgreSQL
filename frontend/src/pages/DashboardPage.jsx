@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { fetchDashboard } from '../api/dashboard'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import LoadingBlock from '../components/ui/LoadingBlock'
+import EmptyState from '../components/ui/EmptyState'
+import Icon from '../components/Icon'
 import KpiCards from '../components/dashboard/KpiCards'
 import GraficLinia from '../components/dashboard/GraficLinia'
 import GraficBarres from '../components/dashboard/GraficBarres'
@@ -103,7 +105,21 @@ export default function DashboardPage() {
       {loading && <LoadingBlock label={t('dashboard_page.carregant')} />}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {data && !loading && (
+      {data && !loading && data.total_registres === 0 && (
+        <EmptyState
+          icon={<Icon name="BarChart3" size={48} />}
+          title={t('dashboard_page.no_dades')}
+          description={t('dashboard_page.no_dades_desc')}
+          action={
+            <Link to={`/${tipus}/nou`} className="btn btn-primary">
+              <Icon name="Plus" size={14} />
+              <span>{t('dashboard_page.crear_analisi')}</span>
+            </Link>
+          }
+        />
+      )}
+
+      {data && !loading && data.total_registres > 0 && (
         <>
           <p>
             <strong>{data.total_registres}</strong> {t('dashboard_page.registres')}

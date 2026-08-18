@@ -12,6 +12,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingBlock from '../components/ui/LoadingBlock'
+import TableSkeleton from '../components/ui/TableSkeleton'
 
 function SortableRow({ id, children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
@@ -174,7 +175,7 @@ export default function AdminSeccionsPage() {
     }
   }
 
-  if (loading) return <LoadingBlock label={t('common.carregant')} />
+  if (loading) return <TableSkeleton rows={5} />
   if (!tipus) return <p>{t('common.tipus_no_trobat')}</p>
 
   return (

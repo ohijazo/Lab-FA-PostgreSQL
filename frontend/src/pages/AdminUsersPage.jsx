@@ -9,6 +9,7 @@ import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import LoadingBlock from '../components/ui/LoadingBlock'
+import TableSkeleton from '../components/ui/TableSkeleton'
 
 export default function AdminUsersPage() {
   const { t } = useTranslation()
@@ -89,7 +90,7 @@ export default function AdminUsersPage() {
     }
   }
 
-  if (loading) return <LoadingBlock label={t('common.carregant')} />
+  if (loading) return <TableSkeleton rows={4} />
 
   return (
     <>

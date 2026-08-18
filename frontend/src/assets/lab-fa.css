@@ -2395,6 +2395,37 @@ button.estat-badge { margin-bottom: 0; }
 }
 .detall-email-history-table { margin-top: var(--lab-space-2); }
 
+/* Skeleton per pàgines admin (Tipus/Seccions/Camps/Usuaris/Import) */
+.admin-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lab-space-4);
+}
+.admin-skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--lab-space-3);
+  flex-wrap: wrap;
+}
+.admin-skeleton-header > div:first-child { flex: 1; min-width: 200px; }
+.admin-skeleton-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  background: var(--lab-bg-card);
+  overflow: hidden;
+}
+.admin-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lab-border);
+}
+.admin-skeleton-row:last-child { border-bottom: none; }
+
 /* Skeleton per DetallPage mentre carrega */
 .detall-skeleton {
   display: flex;
