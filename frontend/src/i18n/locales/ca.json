@@ -348,8 +348,11 @@
     "cap_amb_filtre_desc": "Prova a canviar de pestanya o esborrar la cerca.",
     "tab_tots": "Tots",
     "notif_activar": "Activar avisos",
-    "notif_activats": "Avisos activats",
-    "notif_bloquejats": "Avisos bloquejats pel navegador",
+    "notif_desactivar": "Avisos actius",
+    "notif_activar_help": "Activa avisos sonors i, si el navegador ho permet, notificacions del sistema",
+    "notif_actius_full": "Avisos actius (sons + notificacions)",
+    "notif_actius_only_so": "Avisos actius (només sons — el navegador bloqueja les notificacions)",
+    "notif_only_so_warn": "Les notificacions del sistema estan bloquejades pel navegador; els sons segueixen actius",
     "notif_titol_nova": "Nova anàlisi",
     "notif_titol_apte": "APTE",
     "notif_titol_no_apte": "NO APTE"

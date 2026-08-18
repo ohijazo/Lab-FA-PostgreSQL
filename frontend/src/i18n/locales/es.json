@@ -348,8 +348,11 @@
     "cap_amb_filtre_desc": "Prueba a cambiar de pestaña o borrar la búsqueda.",
     "tab_tots": "Todos",
     "notif_activar": "Activar avisos",
-    "notif_activats": "Avisos activados",
-    "notif_bloquejats": "Avisos bloqueados por el navegador",
+    "notif_desactivar": "Avisos activos",
+    "notif_activar_help": "Activa avisos sonoros y, si el navegador lo permite, notificaciones del sistema",
+    "notif_actius_full": "Avisos activos (sonidos + notificaciones)",
+    "notif_actius_only_so": "Avisos activos (solo sonidos — el navegador bloquea las notificaciones)",
+    "notif_only_so_warn": "Las notificaciones del sistema están bloqueadas por el navegador; los sonidos siguen activos",
     "notif_titol_nova": "Nuevo análisis",
     "notif_titol_apte": "APTO",
     "notif_titol_no_apte": "NO APTO"

@@ -53,6 +53,7 @@ export default function RecepcioPage() {
   const [lastUpdate, setLastUpdate] = useState(null)
   const [activeTab, setActiveTab] = useState('all')
   const [expanded, setExpanded] = useState(() => new Set())
+  const [avisosOn, setAvisosOn] = useState(false)
   const [notifState, setNotifState] = useState('default')  // 'default'|'granted'|'denied'|'unsupported'
   const searchInputRef = useRef(null)
   const prevDataMapRef = useRef(null)
@@ -60,13 +61,17 @@ export default function RecepcioPage() {
 
   useShortcut('/', () => searchInputRef.current?.focus())
 
-  // Detectar suport i estat de Notification API
+  // Detectar suport i estat inicial de Notification API
   useEffect(() => {
     if (typeof window === 'undefined' || typeof Notification === 'undefined') {
       setNotifState('unsupported')
       return
     }
     setNotifState(Notification.permission)
+    // Restaurar preferència de sessió
+    if (localStorage.getItem('recepcio_avisos') === '1') {
+      setAvisosOn(true)
+    }
   }, [])
 
   function initAudio() {
@@ -110,14 +115,24 @@ export default function RecepcioPage() {
     }
   }
 
-  async function enableNotifs() {
-    initAudio()
-    if (typeof Notification === 'undefined') {
-      setNotifState('unsupported')
+  async function toggleAvisos() {
+    if (avisosOn) {
+      setAvisosOn(false)
+      localStorage.removeItem('recepcio_avisos')
       return
     }
-    const result = await Notification.requestPermission()
-    setNotifState(result)
+    initAudio()
+    setAvisosOn(true)
+    localStorage.setItem('recepcio_avisos', '1')
+    // Prova a demanar permís de notificacions (a HTTP silenciosament denega, però els sons segueixen actius)
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      try {
+        const result = await Notification.requestPermission()
+        setNotifState(result)
+      } catch {
+        // Alguns navegadors llancen en context insegur
+      }
+    }
   }
 
   const fetchData = useCallback(async () => {
@@ -147,7 +162,7 @@ export default function RecepcioPage() {
       prevDataMapRef.current = new Map(data.map(a => [a.id, a]))
       return
     }
-    if (notifState !== 'granted') {
+    if (!avisosOn) {
       prevDataMapRef.current = new Map(data.map(a => [a.id, a]))
       return
     }
@@ -170,7 +185,7 @@ export default function RecepcioPage() {
       }
     }
     prevDataMapRef.current = new Map(data.map(a => [a.id, a]))
-  }, [data, notifState, t])
+  }, [data, avisosOn, t])
 
   function toggleExpanded(id) {
     setExpanded((prev) => {
@@ -210,21 +225,27 @@ export default function RecepcioPage() {
           <p>{t('recepcio.subtitol')}</p>
         </hgroup>
         <div className="recepcio-header-actions">
-          {notifState === 'default' && (
-            <button type="button" className="recepcio-notif-btn" onClick={enableNotifs}>
-              <Icon name="Bell" size={14} />
-              <span>{t('recepcio.notif_activar')}</span>
+          {notifState !== 'unsupported' && (
+            <button
+              type="button"
+              className={`recepcio-notif-btn${avisosOn ? ' is-on' : ''}`}
+              onClick={toggleAvisos}
+              title={
+                avisosOn
+                  ? (notifState === 'granted'
+                      ? t('recepcio.notif_actius_full')
+                      : t('recepcio.notif_actius_only_so'))
+                  : t('recepcio.notif_activar_help')
+              }
+            >
+              <Icon name={avisosOn ? 'Bell' : 'BellOff'} size={14} />
+              <span>
+                {avisosOn ? t('recepcio.notif_desactivar') : t('recepcio.notif_activar')}
+              </span>
+              {avisosOn && notifState !== 'granted' && (
+                <span className="recepcio-notif-warn" title={t('recepcio.notif_only_so_warn')}>!</span>
+              )}
             </button>
-          )}
-          {notifState === 'granted' && (
-            <span className="recepcio-notif-status is-on" title={t('recepcio.notif_activats')}>
-              <Icon name="Bell" size={14} />
-            </span>
-          )}
-          {notifState === 'denied' && (
-            <span className="recepcio-notif-status is-off" title={t('recepcio.notif_bloquejats')}>
-              <Icon name="BellOff" size={14} />
-            </span>
           )}
           {lastUpdate && (
             <span className="recepcio-updated">
