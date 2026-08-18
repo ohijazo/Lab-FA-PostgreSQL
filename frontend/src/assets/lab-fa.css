@@ -3382,3 +3382,295 @@ button.estat-badge { margin-bottom: 0; }
     grid-template-columns: 1fr;
   }
 }
+
+/* --- AdminCampsPage: layout 2 panels (llista + editor) --- */
+.admin-camps-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: var(--lab-space-4);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .admin-camps-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Panel esquerra (llista) */
+.admin-camps-list-panel {
+  min-width: 0;
+}
+.admin-camps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  background: var(--lab-bg-card);
+  overflow: hidden;
+}
+.admin-camps-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.2rem;
+  border-bottom: 1px solid var(--lab-border);
+}
+.admin-camps-row:last-child { border-bottom: none; }
+.admin-camps-row.is-selected {
+  background: color-mix(in srgb, var(--lab-primary) 8%, transparent);
+  box-shadow: inset 3px 0 0 var(--lab-primary);
+}
+.admin-camps-row-drag {
+  display: flex;
+  align-items: center;
+  padding: 0 0.35rem;
+  color: var(--lab-text-muted);
+  cursor: grab;
+}
+.admin-camps-row-drag:active { cursor: grabbing; }
+.admin-camps-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.6rem 0.75rem 0.6rem 0.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.admin-camps-row-body:hover { background: var(--lab-bg-subtle); }
+.admin-camps-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: var(--lab-text);
+}
+.admin-camps-row-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-camps-row-req {
+  color: #dc2626;
+  font-weight: 700;
+}
+.admin-camps-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--lab-text-muted);
+}
+.admin-camps-row-name {
+  font-family: var(--lab-font-mono, monospace);
+  font-size: 0.75rem;
+  padding: 0.05rem 0.3rem;
+  background: var(--lab-bg-subtle);
+  border-radius: 3px;
+}
+.admin-camps-row-type {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding: 0.05rem 0.3rem;
+  background: var(--lab-bg-subtle);
+  border-radius: 3px;
+}
+.admin-camps-row-grup { font-style: italic; }
+
+/* Panel dreta (editor sticky) */
+.admin-camps-editor-panel {
+  min-width: 0;
+  position: sticky;
+  top: 0.5rem;
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  background: var(--lab-bg-card);
+  max-height: calc(100vh - 1rem);
+  overflow-y: auto;
+}
+@media (max-width: 900px) {
+  .admin-camps-editor-panel {
+    position: static;
+    max-height: none;
+  }
+}
+.admin-camps-editor-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.admin-camps-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lab-border);
+}
+.admin-camps-editor-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.admin-camps-editor-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem;
+  color: var(--lab-text-muted);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+.admin-camps-editor-close:hover {
+  background: var(--lab-bg-subtle);
+  color: var(--lab-text);
+}
+.admin-camps-editor-form .lab-tabs-list {
+  padding: 0 1rem;
+}
+.admin-camps-editor-form .lab-tabs-panel {
+  flex: 1;
+}
+.admin-camps-panel {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.admin-camps-panel-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+@media (max-width: 640px) {
+  .admin-camps-panel-row { grid-template-columns: 1fr; }
+}
+.admin-camps-help {
+  color: var(--lab-text-muted);
+  font-size: 0.85rem;
+  display: block;
+}
+.admin-camps-required-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Opcions dins tab */
+.admin-camps-opcio {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+.admin-camps-opcio.is-dup { background: #fee2e2; }
+.admin-camps-opcio-drag {
+  cursor: grab;
+  padding: 0 0.25rem;
+  color: var(--lab-text-muted);
+}
+.admin-camps-opcio-input { margin: 0; flex: 1; }
+.admin-camps-opcio-remove {
+  padding: 0.15rem 0.4rem;
+  margin: 0;
+  border: 1px solid var(--lab-border);
+  background: transparent;
+  color: var(--lab-text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.admin-camps-opcio-remove:hover {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+.admin-camps-opcions-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.admin-camps-opcions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  border: 1px solid var(--lab-border);
+  border-radius: 4px;
+  padding: 0.25rem;
+}
+.admin-camps-opcions-add {
+  display: flex;
+  gap: 0.5rem;
+  align-items: end;
+}
+.admin-camps-opcions-add input {
+  flex: 1;
+  margin: 0;
+}
+.admin-camps-import summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.35rem 0;
+  color: var(--lab-text-muted);
+}
+.admin-camps-import-body {
+  margin-top: 0.5rem;
+}
+.admin-camps-import-body textarea {
+  margin-bottom: 0.5rem;
+}
+.admin-camps-import-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Rangs */
+.admin-camps-rangs-static {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  gap: 0.5rem;
+  align-items: end;
+}
+.admin-camps-color-label input[type="color"] {
+  height: 2.5rem;
+  width: 3rem;
+  padding: 0.2rem;
+  cursor: pointer;
+  margin: 0;
+}
+.admin-camps-rangs-cond {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--lab-border);
+}
+.admin-camps-rangs-cond-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+@media (max-width: 640px) {
+  .admin-camps-rangs-static { grid-template-columns: 1fr 1fr; }
+}
+
+/* Footer d'accions */
+.admin-camps-editor-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--lab-border);
+  background: var(--lab-bg-subtle);
+  flex-wrap: wrap;
+  position: sticky;
+  bottom: 0;
+}

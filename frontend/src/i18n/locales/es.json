@@ -284,7 +284,10 @@
     "confirm_eliminar": "¿Eliminar campo \"{{label}}\"?",
     "camp_creat": "Campo creado",
     "camp_actualitzat": "Campo actualizado",
-    "camp_eliminat": "Campo eliminado"
+    "camp_eliminat": "Campo eliminado",
+    "tab_general": "General",
+    "editor_buit_titol": "Selecciona un campo",
+    "editor_buit_desc": "Elige un campo de la lista para editarlo, o crea uno nuevo con el botón de arriba."
   },
   "admin_users": {
     "breadcrumb_config": "Configuración",
