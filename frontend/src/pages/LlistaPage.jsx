@@ -108,6 +108,16 @@ export default function LlistaPage() {
     setQ(searchInput)
   }
 
+  // Cerca live amb debounce de 300ms — Intro segueix funcionant per cerca instantània
+  useEffect(() => {
+    if (searchInput === q) return
+    const timeout = setTimeout(() => {
+      setPage(1)
+      setQ(searchInput)
+    }, 300)
+    return () => clearTimeout(timeout)
+  }, [searchInput, q])
+
   function handleSort(col) {
     setPage(1)
     if (sortCol === col) {
