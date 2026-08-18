@@ -3303,3 +3303,82 @@ button.estat-badge { margin-bottom: 0; }
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Responsive tablet + mòbil ---
+   Objectiu: iPad portrait (768) i landscape (1024) usables sense
+   overflow ni botons tallats. Mòbil (<640) com a bonus. */
+
+/* Tablet (fins 1024px): nav i toolbars comencen a comprimir-se */
+@media (max-width: 1024px) {
+  .nav-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+  .nav-actions {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    row-gap: 0.5rem;
+  }
+  .nav-link, .nav-link-logout {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.9rem;
+  }
+  .nav-brand-sub { display: none; }
+
+  .llista-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .llista-toolbar-actions {
+    flex-wrap: wrap;
+  }
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .admin-header-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .detall-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .detall-toolbar-actions {
+    flex-wrap: wrap;
+  }
+
+  .home-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Tablet portrait (fins 900px): tab counts + valoració a 1 col */
+@media (max-width: 900px) {
+  .detall-valoracio-buttons {
+    grid-template-columns: 1fr;
+  }
+  .recepcio-tabs {
+    justify-content: flex-start;
+  }
+  .recepcio-tab-count {
+    min-width: 1.25rem;
+    padding: 0 0.3rem;
+  }
+}
+
+/* Mòbil (fins 640px): amagar detalls d'usuari, escurçar nav */
+@media (max-width: 640px) {
+  .nav-user-name { display: none; }
+  .nav-brand-name { font-size: 1rem; }
+}
+
+/* Mòbil xicotet (fins 480px): KPIs una sola columna */
+@media (max-width: 480px) {
+  .home-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
