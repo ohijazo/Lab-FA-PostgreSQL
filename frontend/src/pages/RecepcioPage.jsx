@@ -53,6 +53,8 @@ export default function RecepcioPage() {
   const [lastUpdate, setLastUpdate] = useState(null)
   const [connected, setConnected] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
+  const [filterTipus, setFilterTipus] = useState('')  // '' = tots
+  const [filterHora, setFilterHora] = useState('all')  // 'all' | '4h' | '1h'
   const [expanded, setExpanded] = useState(() => new Set())
   const [avisosOn, setAvisosOn] = useState(false)
   const [notifState, setNotifState] = useState('default')  // 'default'|'granted'|'denied'|'unsupported'
@@ -226,12 +228,45 @@ export default function RecepcioPage() {
     no_apte: data.filter((a) => a.apte === 'no_apte').length,
   }), [data])
 
+  const tipusDisponibles = useMemo(() => {
+    const map = new Map()
+    for (const a of data) {
+      if (a.tipus_slug && !map.has(a.tipus_slug)) {
+        map.set(a.tipus_slug, a.tipus_nom || a.tipus_slug)
+      }
+    }
+    return Array.from(map.entries())
+      .map(([slug, nom]) => ({ slug, nom }))
+      .sort((a, b) => a.nom.localeCompare(b.nom))
+  }, [data])
+
   const filtered = useMemo(() => {
-    if (activeTab === 'pendent') return data.filter((a) => !a.apte)
-    if (activeTab === 'apte') return data.filter((a) => a.apte === 'apte')
-    if (activeTab === 'no_apte') return data.filter((a) => a.apte === 'no_apte')
-    return data
-  }, [data, activeTab])
+    let res = data
+    if (activeTab === 'pendent') res = res.filter((a) => !a.apte)
+    else if (activeTab === 'apte') res = res.filter((a) => a.apte === 'apte')
+    else if (activeTab === 'no_apte') res = res.filter((a) => a.apte === 'no_apte')
+    if (filterTipus) res = res.filter((a) => a.tipus_slug === filterTipus)
+    if (filterHora !== 'all') {
+      const hores = filterHora === '1h' ? 1 : 4
+      const cutoff = Date.now() - hores * 3600 * 1000
+      res = res.filter((a) => a.created_at && new Date(a.created_at).getTime() >= cutoff)
+    }
+    return res
+  }, [data, activeTab, filterTipus, filterHora])
+
+  // Si el tipus seleccionat ja no existeix a la llista (per exemple les seves anàlisis
+  // han desaparegut del filtre temporal), esborrar la selecció perquè no quedi orfe
+  useEffect(() => {
+    if (filterTipus && !tipusDisponibles.some((tp) => tp.slug === filterTipus)) {
+      setFilterTipus('')
+    }
+  }, [filterTipus, tipusDisponibles])
+
+  const horaOptions = [
+    { key: 'all', label: t('recepcio.filtre_hora_tots') },
+    { key: '4h', label: t('recepcio.filtre_hora_4h') },
+    { key: '1h', label: t('recepcio.filtre_hora_1h') },
+  ]
 
   const tabs = [
     { key: 'all', label: t('recepcio.tab_tots'), count: counts.all },
@@ -308,6 +343,39 @@ export default function RecepcioPage() {
             </button>
           ))}
         </div>
+        {(tipusDisponibles.length > 1 || filterHora !== 'all') && (
+          <div className="recepcio-filters-secondary">
+            {tipusDisponibles.length > 1 && (
+              <label className="recepcio-filter-tipus">
+                <Icon name="Filter" size={12} />
+                <select
+                  value={filterTipus}
+                  onChange={(e) => setFilterTipus(e.target.value)}
+                  aria-label={t('recepcio.filtre_tipus')}
+                >
+                  <option value="">{t('recepcio.filtre_tipus')}</option>
+                  {tipusDisponibles.map((tp) => (
+                    <option key={tp.slug} value={tp.slug}>{tp.nom}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <div className="recepcio-filter-hora" role="tablist">
+              {horaOptions.map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={filterHora === opt.key}
+                  className={`recepcio-filter-chip${filterHora === opt.key ? ' is-active' : ''}`}
+                  onClick={() => setFilterHora(opt.key)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {error && (

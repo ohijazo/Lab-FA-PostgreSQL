@@ -529,6 +529,61 @@ button.estat-badge { margin-bottom: 0; }
   gap: 0.35rem;
   flex-wrap: wrap;
 }
+.recepcio-filters-secondary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--lab-border);
+}
+.recepcio-filter-tipus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--lab-border);
+  border-radius: 999px;
+  color: var(--lab-text-muted);
+  font-size: 0.85rem;
+}
+.recepcio-filter-tipus select {
+  border: none;
+  background: transparent;
+  padding: 0.15rem 1.2rem 0.15rem 0.1rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--lab-text);
+  cursor: pointer;
+  min-height: unset;
+  height: auto;
+}
+.recepcio-filter-hora {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+.recepcio-filter-chip {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--lab-border);
+  background: transparent;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: var(--lab-text-muted);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.recepcio-filter-chip:hover { background: var(--lab-bg-subtle); }
+.recepcio-filter-chip.is-active {
+  background: var(--lab-text);
+  color: var(--lab-bg-card);
+  border-color: var(--lab-text);
+}
+[data-theme="dark"] .recepcio-filter-chip.is-active {
+  background: var(--lab-slate-200);
+  color: var(--lab-slate-800);
+  border-color: var(--lab-slate-200);
+}
 .recepcio-tab {
   display: inline-flex;
   align-items: center;
