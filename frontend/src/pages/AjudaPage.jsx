@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { obtenirVersio, actualitzarApp } from '../api/admin'
+import Icon from '../components/Icon'
 
 /* ── Inline SVG mockups ── */
 
@@ -440,6 +441,28 @@ export default function AjudaPage() {
     obtenirVersio().then(d => setVersio(d.versio)).catch(() => setVersio(t('ajuda.versio_no_disponible')))
   }, [])
 
+  // Cerca dins la TOC
+  const [tocQuery, setTocQuery] = useState('')
+
+  // Highlight de la secció activa via IntersectionObserver
+  const [activeSection, setActiveSection] = useState('')
+  useEffect(() => {
+    const sectionEls = document.querySelectorAll('.ajuda-section[id]')
+    if (!sectionEls.length) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Agafa la primera secció visible
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.target.offsetTop - b.target.offsetTop)
+        if (visible[0]) setActiveSection(visible[0].target.id)
+      },
+      { rootMargin: '-30% 0px -60% 0px', threshold: 0 }
+    )
+    sectionEls.forEach(el => observer.observe(el))
+    return () => observer.disconnect()
+  }, [isAdmin])
+
   const sections = [
     { id: 'introduccio', title: t('ajuda.seccio_introduccio') },
     { id: 'navegacio', title: t('ajuda.seccio_navegacio') },
@@ -461,26 +484,54 @@ export default function AjudaPage() {
     { id: 'versio', title: t('ajuda.seccio_versio') },
   ]
 
+  const filteredSections = tocQuery.trim()
+    ? sections.filter(s => s.title.toLowerCase().includes(tocQuery.toLowerCase()))
+    : sections
+
   return (
-    <div className="ajuda-page">
+    <div className="ajuda-page ajuda-page-sidebar">
       {/* Hero */}
       <div className="ajuda-hero">
         <h1>{t('ajuda.manual_usuari')}</h1>
         <p>{t('ajuda.guia_completa')}</p>
       </div>
 
-      {/* Table of contents */}
-      <nav className="ajuda-toc">
-        <div className="ajuda-toc-title">{t('ajuda.contingut')}</div>
-        <div className="ajuda-toc-grid">
-          {sections.map((s, i) => (
-            <a key={s.id} href={`#${s.id}`} className="ajuda-toc-item">
-              <span className="ajuda-toc-num">{i + 1}</span>
-              {s.title}
-            </a>
-          ))}
-        </div>
-      </nav>
+      <div className="ajuda-layout">
+        {/* Sidebar TOC (sticky en desktop) */}
+        <aside className="ajuda-sidebar">
+          <div className="ajuda-toc-title">{t('ajuda.contingut')}</div>
+          <div className="ajuda-toc-search-wrap">
+            <Icon name="Search" size={14} className="ajuda-toc-search-icon" />
+            <input
+              type="search"
+              className="ajuda-toc-search"
+              placeholder={t('ajuda.cercar_toc', 'Cercar secció...')}
+              value={tocQuery}
+              onChange={(e) => setTocQuery(e.target.value)}
+            />
+          </div>
+          <nav className="ajuda-sidebar-nav">
+            {filteredSections.map((s) => {
+              const originalIndex = sections.findIndex(x => x.id === s.id)
+              return (
+                <a
+                  key={s.id}
+                  href={`#${s.id}`}
+                  className={`ajuda-toc-item${activeSection === s.id ? ' is-active' : ''}`}
+                >
+                  <span className="ajuda-toc-num">{originalIndex + 1}</span>
+                  <span className="ajuda-toc-label">{s.title}</span>
+                </a>
+              )
+            })}
+            {filteredSections.length === 0 && (
+              <p className="ajuda-toc-empty"><small>{t('ajuda.toc_cap_resultat', 'Cap secció coincideix')}</small></p>
+            )}
+          </nav>
+        </aside>
+
+        {/* Contingut principal */}
+        <div className="ajuda-content">
 
       {/* 1. Introducció */}
       <section id="introduccio" className="ajuda-section">
@@ -1015,6 +1066,8 @@ export default function AjudaPage() {
       <div className="ajuda-footer">
         <p>{t('ajuda.footer_dubtes')}</p>
         <p><Link to="/">{t('ajuda.footer_tornar')}</Link></p>
+      </div>
+        </div>
       </div>
     </div>
   )

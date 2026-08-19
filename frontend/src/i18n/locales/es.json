@@ -427,6 +427,8 @@
     "manual_usuari": "Manual de usuario",
     "guia_completa": "Guía completa de funcionamiento de la aplicación Lab FC",
     "contingut": "Contenido",
+    "cercar_toc": "Buscar sección...",
+    "toc_cap_resultat": "Ninguna sección coincide",
     "seccio_introduccio": "Introducción",
     "seccio_navegacio": "Navegación",
     "seccio_inici": "Página de inicio",
