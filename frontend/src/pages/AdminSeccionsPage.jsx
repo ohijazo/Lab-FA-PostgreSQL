@@ -282,37 +282,181 @@ export default function AdminSeccionsPage() {
             </table>
           </DndContext>
 
-          {campsSelect.length > 0 && (
-            <article>
-              <header><strong>{t('admin_seccions.rangs_condicionals', 'Rangs condicionals')}</strong></header>
-              <p>{t('admin_seccions.rangs_condicionals_desc', 'Selecciona el camp que determina els rangs de min/max per altres camps numèrics.')}</p>
-              <div className="admin-inline-row">
-                <label className="admin-inline-field">
-                  {t('admin_seccions.camp_controlador', 'Camp controlador')}
-                  <select
-                    value={campControlador}
-                    onChange={e => setCampControlador(e.target.value)}
-                  >
-                    <option value="">{t('admin_seccions.sense_controlador', '— Sense controlador —')}</option>
-                    {campsSelect.map(c => (
-                      <option key={c.name} value={c.name}>
-                        {c.label} ({c.seccioTitol})
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <Button variant="primary" size="sm" icon={<Icon name="Save" size={12} />} onClick={saveCampControlador}>
-                  {t('common.desar', 'Desar')}
-                </Button>
-                {campControlador && (
-                  <Link to={`/admin/tipus/${tipusId}/rangs`} className="btn btn-outline btn-sm">
-                    <Icon name="Table2" size={12} />
-                    <span>{t('admin_seccions.taula_rangs', 'Taula de rangs')}</span>
-                  </Link>
+          {(() => {
+            // Estat del sub-sistema de rangs
+            const controladorField = campsSelect.find(c => c.name === (tipus?.camp_controlador || ''))
+            const opcionsController = controladorField?.opcions || []
+            // Comptar camps numèrics amb almenys un rang configurat
+            const campsNumWithRang = totsCamps.filter(c => c.type === 'number' && c.rangs_condicionals && Object.keys(c.rangs_condicionals).length > 0)
+            const campsNumTotal = totsCamps.filter(c => c.type === 'number' && c.name !== tipus?.camp_controlador).length
+            const hasSelects = campsSelect.length > 0
+            const hasController = !!tipus?.camp_controlador
+            const hasRangs = campsNumWithRang.length > 0
+            const controladorSaved = tipus?.camp_controlador === campControlador
+            const state = !hasSelects ? 'no-selects'
+              : !controladorSaved ? 'unsaved'
+              : !hasController ? 'no-controller'
+              : !hasRangs ? 'no-rangs'
+              : 'configured'
+
+            return (
+              <article className={`rangs-card is-${state}`}>
+                <header className="rangs-card-header">
+                  <div className="rangs-card-icon"><Icon name="SlidersHorizontal" size={22} /></div>
+                  <div className="rangs-card-header-info">
+                    <h3 className="rangs-card-title">{t('admin_seccions.rangs_condicionals', 'Rangs condicionals per valor')}</h3>
+                    <p className="rangs-card-desc">
+                      {t('admin_seccions.rangs_condicionals_intro', 'Els camps numèrics poden tenir rangs vàlids diferents segons el valor d\'un camp de tipus llista (ex: humitat esperada canvia segons el tipus de blat).')}
+                    </p>
+                  </div>
+                  {state === 'configured' && (
+                    <span className="rangs-card-badge is-ok">
+                      <Icon name="Check" size={12} /> {t('admin_seccions.rangs_configurats', 'Configurat')}
+                    </span>
+                  )}
+                </header>
+
+                {state === 'no-selects' && (
+                  <div className="rangs-card-body">
+                    <div className="rangs-card-empty">
+                      <Icon name="AlertCircle" size={16} />
+                      <div>
+                        <strong>{t('admin_seccions.rangs_no_selects', 'Necessites un camp de tipus «Llista»')}</strong>
+                        <p>{t('admin_seccions.rangs_no_selects_desc', 'Per activar rangs condicionals, primer has de crear un camp de tipus llista (ex: tipus_blat, varietat) a alguna secció. Serà el camp «controlador» que determinarà els rangs.')}</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </div>
-            </article>
-          )}
+
+                {(state === 'no-controller' || state === 'unsaved') && (
+                  <div className="rangs-card-body">
+                    <div className="rangs-card-step">
+                      <span className="rangs-card-step-num">1</span>
+                      <div className="rangs-card-step-content">
+                        <strong>{t('admin_seccions.rangs_paso1', 'Selecciona el camp controlador')}</strong>
+                        <div className="rangs-card-form">
+                          <select
+                            value={campControlador}
+                            onChange={e => setCampControlador(e.target.value)}
+                            className="rangs-card-select"
+                          >
+                            <option value="">{t('admin_seccions.sense_controlador', '— Sense controlador —')}</option>
+                            {campsSelect.map(c => (
+                              <option key={c.name} value={c.name}>{c.label} ({c.seccioTitol})</option>
+                            ))}
+                          </select>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            icon={<Icon name="Save" size={12} />}
+                            onClick={saveCampControlador}
+                            disabled={controladorSaved}
+                          >
+                            {t('common.desar', 'Desar')}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rangs-card-step is-disabled">
+                      <span className="rangs-card-step-num">2</span>
+                      <div className="rangs-card-step-content">
+                        <strong>{t('admin_seccions.rangs_paso2', 'Configura els rangs per cada valor')}</strong>
+                        <p className="rangs-card-hint">{t('admin_seccions.rangs_paso2_disabled', 'Disponible un cop desat el controlador.')}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {state === 'no-rangs' && (
+                  <div className="rangs-card-body">
+                    <div className="rangs-card-step is-done">
+                      <span className="rangs-card-step-num"><Icon name="Check" size={12} /></span>
+                      <div className="rangs-card-step-content">
+                        <strong>{t('admin_seccions.rangs_ctrl_configurat', 'Controlador: {{camp}}', { camp: controladorField?.label || tipus.camp_controlador })}</strong>
+                        <div className="rangs-card-form">
+                          <select
+                            value={campControlador}
+                            onChange={e => setCampControlador(e.target.value)}
+                            className="rangs-card-select"
+                          >
+                            <option value="">{t('admin_seccions.sense_controlador', '— Sense controlador —')}</option>
+                            {campsSelect.map(c => (
+                              <option key={c.name} value={c.name}>{c.label} ({c.seccioTitol})</option>
+                            ))}
+                          </select>
+                          {!controladorSaved && (
+                            <Button variant="primary" size="sm" icon={<Icon name="Save" size={12} />} onClick={saveCampControlador}>
+                              {t('common.desar', 'Desar')}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rangs-card-step is-active">
+                      <span className="rangs-card-step-num">2</span>
+                      <div className="rangs-card-step-content">
+                        <strong>{t('admin_seccions.rangs_paso2', 'Configura els rangs per cada valor')}</strong>
+                        <p className="rangs-card-hint">
+                          {t('admin_seccions.rangs_paso2_desc', 'Tens {{n}} valors a «{{camp}}» i {{c}} camps numèrics per configurar.', {
+                            n: opcionsController.length,
+                            camp: controladorField?.label,
+                            c: campsNumTotal,
+                          })}
+                        </p>
+                        <Link to={`/admin/tipus/${tipusId}/rangs`} className="btn btn-primary btn-sm">
+                          <Icon name="Table2" size={12} />
+                          <span>{t('admin_seccions.configurar_rangs', 'Configurar rangs')}</span>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {state === 'configured' && (
+                  <div className="rangs-card-body">
+                    <div className="rangs-card-stats">
+                      <div className="rangs-card-stat">
+                        <span className="rangs-card-stat-value">{controladorField?.label}</span>
+                        <span className="rangs-card-stat-label">{t('admin_seccions.rangs_stat_ctrl', 'Camp controlador')}</span>
+                      </div>
+                      <div className="rangs-card-stat">
+                        <span className="rangs-card-stat-value">{opcionsController.length}</span>
+                        <span className="rangs-card-stat-label">{t('admin_seccions.rangs_stat_valors', 'valors')}</span>
+                      </div>
+                      <div className="rangs-card-stat">
+                        <span className="rangs-card-stat-value">{campsNumWithRang.length}/{campsNumTotal}</span>
+                        <span className="rangs-card-stat-label">{t('admin_seccions.rangs_stat_camps', 'camps configurats')}</span>
+                      </div>
+                    </div>
+                    <div className="rangs-card-actions">
+                      <Link to={`/admin/tipus/${tipusId}/rangs`} className="btn btn-primary btn-sm">
+                        <Icon name="Table2" size={12} />
+                        <span>{t('admin_seccions.editar_rangs', 'Editar rangs')}</span>
+                      </Link>
+                      <details className="rangs-card-change-ctrl">
+                        <summary>{t('admin_seccions.canviar_ctrl', 'Canviar controlador')}</summary>
+                        <div className="rangs-card-form" style={{ marginTop: '0.5rem' }}>
+                          <select
+                            value={campControlador}
+                            onChange={e => setCampControlador(e.target.value)}
+                            className="rangs-card-select"
+                          >
+                            <option value="">{t('admin_seccions.sense_controlador', '— Sense controlador —')}</option>
+                            {campsSelect.map(c => (
+                              <option key={c.name} value={c.name}>{c.label} ({c.seccioTitol})</option>
+                            ))}
+                          </select>
+                          <Button variant="primary" size="sm" icon={<Icon name="Save" size={12} />} onClick={saveCampControlador} disabled={controladorSaved}>
+                            {t('common.desar', 'Desar')}
+                          </Button>
+                        </div>
+                      </details>
+                    </div>
+                  </div>
+                )}
+              </article>
+            )
+          })()}
 
           {totsCamps.length > 0 && (
             <article>
