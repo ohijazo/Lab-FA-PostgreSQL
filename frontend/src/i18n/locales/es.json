@@ -324,6 +324,25 @@
     "title_eliminar": "Eliminar este usuario",
     "placeholder_email": "email@ejemplo.com"
   },
+  "admin_rangs": {
+    "titol": "Rangos",
+    "subtitol_wizard": "Selecciona un valor de «{{camp}}» y configura los rangos mín/máx para ese valor. Los cambios se guardan automáticamente.",
+    "no_controlador": "Este tipo no tiene campo controlador configurado.",
+    "no_controlador_desc": "El campo controlador (de tipo 'select') determina los rangos válidos según el valor elegido. Configúralo desde la página de secciones.",
+    "no_camps_numerics": "No hay campos numéricos para configurar.",
+    "no_camps_numerics_desc": "Añade campos de tipo 'número' a alguna sección para poder configurarlos aquí.",
+    "anar_a_seccions": "Configurar secciones",
+    "progres": "{{n}} de {{total}} campos configurados",
+    "copiar_de": "Copiar de…",
+    "copiar": "Copiar",
+    "confirm_copiar": "Los rangos del valor «{{destVal}}» serán sobrescritos con los de «{{fromVal}}». ¿Continuar?",
+    "copiat": "Rangos copiados",
+    "netejar": "Limpiar",
+    "confirm_netejar": "¿Borrar todos los rangos del valor «{{valor}}»?",
+    "netejats": "Rangos borrados",
+    "fallback": "usa estático",
+    "fallback_hint": "Usará los rangos estáticos del campo si no se configura aquí"
+  },
   "admin_import": {
     "breadcrumb_tipus": "Tipos",
     "breadcrumb_importar": "Importar Excel",

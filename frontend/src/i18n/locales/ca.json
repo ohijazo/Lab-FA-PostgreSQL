@@ -324,6 +324,25 @@
     "title_eliminar": "Eliminar aquest usuari",
     "placeholder_email": "email@exemple.com"
   },
+  "admin_rangs": {
+    "titol": "Rangs",
+    "subtitol_wizard": "Selecciona un valor de «{{camp}}» i configura els rangs mín/màx per aquest valor. Els canvis es desen automàticament.",
+    "no_controlador": "Aquest tipus no té camp controlador configurat.",
+    "no_controlador_desc": "El camp controlador (de tipus 'select') determina els rangs vàlids segons el valor triat. Configura'l des de la pàgina de seccions.",
+    "no_camps_numerics": "No hi ha camps numèrics per configurar.",
+    "no_camps_numerics_desc": "Afegeix camps de tipus 'número' a alguna secció per poder-los configurar aquí.",
+    "anar_a_seccions": "Configurar seccions",
+    "progres": "{{n}} de {{total}} camps configurats",
+    "copiar_de": "Copiar de…",
+    "copiar": "Copiar",
+    "confirm_copiar": "Els rangs del valor «{{destVal}}» seran sobreescrits amb els de «{{fromVal}}». Continuar?",
+    "copiat": "Rangs copiats",
+    "netejar": "Netejar",
+    "confirm_netejar": "Esborrar tots els rangs del valor «{{valor}}»?",
+    "netejats": "Rangs esborrats",
+    "fallback": "usa estàtic",
+    "fallback_hint": "Usarà els rangs estàtics del camp si no es configura aquí"
+  },
   "admin_import": {
     "breadcrumb_tipus": "Tipus",
     "breadcrumb_importar": "Importar Excel",

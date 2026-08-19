@@ -2342,67 +2342,197 @@ button.estat-badge { margin-bottom: 0; }
   margin-top: var(--lab-space-4);
 }
 
-/* AdminRangsPage — matrix table */
-.rangs-matrix-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--lab-border);
-  border-radius: var(--lab-radius-md);
-}
-.rangs-matrix {
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-bottom: 0;
-}
-.rangs-matrix thead th {
-  background: var(--lab-slate-100);
+/* AdminRangsPage — wizard per valor amb autosave */
+.rangs-wizard-tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 0;
   position: sticky;
   top: 0;
-  z-index: 1;
+  background: var(--lab-bg-card);
+  z-index: 10;
+  border-bottom: 1px solid var(--lab-border);
+  margin-bottom: var(--lab-space-3);
 }
-[data-theme="dark"] .rangs-matrix thead th {
-  background: var(--lab-slate-700);
+.rangs-wizard-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--lab-border);
+  background: var(--lab-bg-card);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--lab-text);
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
 }
-.rangs-col-header {
-  vertical-align: bottom;
-  min-width: 8rem;
+.rangs-wizard-tab:hover { background: var(--lab-bg-subtle); }
+.rangs-wizard-tab.is-active {
+  background: var(--lab-primary);
+  color: #fff;
+  border-color: var(--lab-primary);
 }
-.rangs-camp-header {
-  text-align: center;
-  border-left: 1px solid var(--lab-border);
-}
-.rangs-camp-header-sub {
-  font-size: var(--lab-text-xs);
-  font-weight: normal;
+.rangs-wizard-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--lab-bg-subtle);
+  border-radius: 999px;
   color: var(--lab-text-muted);
 }
-.rangs-minmax-header {
-  text-align: center;
-  font-size: var(--lab-text-sm);
-  font-weight: 500;
+.rangs-wizard-tab.is-active .rangs-wizard-tab-count {
+  background: rgba(255,255,255,0.2);
+  color: inherit;
+}
+.rangs-wizard-tab.is-full { border-color: #10b981; }
+.rangs-wizard-tab.is-full .rangs-wizard-tab-count { background: #10b981; color: #fff; }
+.rangs-wizard-tab.is-full.is-active { background: #10b981; border-color: #10b981; }
+.rangs-wizard-tab.is-empty .rangs-wizard-tab-count { opacity: 0.55; }
+
+.rangs-wizard-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--lab-bg-subtle);
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  margin-bottom: var(--lab-space-3);
+  gap: var(--lab-space-3);
+  flex-wrap: wrap;
+}
+.rangs-wizard-toolbar-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+.rangs-wizard-toolbar-info strong {
+  font-size: 1.05rem;
+  color: var(--lab-text);
+}
+.rangs-wizard-toolbar-count {
   color: var(--lab-text-muted);
+  font-size: 0.85rem;
 }
-.rangs-minmax-header-min {
-  border-left: 1px solid var(--lab-border);
+.rangs-wizard-toolbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
 }
-.rangs-cell {
-  padding: 0.25rem;
-}
-.rangs-cell-min {
-  border-left: 1px solid var(--lab-border);
-}
-.rangs-cell-filled {
-  background: var(--lab-blue-50);
-}
-[data-theme="dark"] .rangs-cell-filled {
-  background: color-mix(in srgb, var(--lab-primary) 12%, transparent);
-}
-.rangs-input {
+.rangs-copy-select {
   margin: 0;
-  min-width: 5rem;
-  font-variant-numeric: tabular-nums;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--lab-border);
+  border-radius: 4px;
+  background: var(--lab-bg-card);
 }
-.rangs-footer {
-  margin-top: var(--lab-space-3);
+
+.rangs-wizard-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lab-space-4);
+}
+.rangs-wizard-section {
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius);
+  background: var(--lab-bg-card);
+  overflow: hidden;
+}
+.rangs-wizard-section-title {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  background: var(--lab-bg-subtle);
+  border-bottom: 1px solid var(--lab-border);
+  color: var(--lab-text);
+}
+.rangs-wizard-camp-list {
+  display: flex;
+  flex-direction: column;
+}
+.rangs-wizard-camp-header {
+  display: grid;
+  grid-template-columns: 1fr 6rem 6rem 5rem;
+  gap: 0.75rem;
+  padding: 0.35rem 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--lab-text-muted);
+  border-bottom: 1px solid var(--lab-border);
+}
+.rangs-wizard-camp-header-label {
+  text-align: center;
+}
+.rangs-wizard-camp-row {
+  display: grid;
+  grid-template-columns: 1fr 6rem 6rem 5rem;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-bottom: 1px solid var(--lab-border);
+  transition: background 0.1s;
+}
+.rangs-wizard-camp-row:last-child { border-bottom: none; }
+.rangs-wizard-camp-row.is-configured {
+  background: color-mix(in srgb, #10b981 6%, transparent);
+}
+.rangs-wizard-camp-label {
+  font-size: 0.9rem;
+  color: var(--lab-text);
+  margin: 0;
+}
+.rangs-wizard-camp-fallback {
+  font-size: 0.7rem;
+  color: var(--lab-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.rang-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.rang-input {
+  margin: 0;
+  width: 100%;
+  padding: 0.35rem 1.6rem 0.35rem 0.5rem;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.rang-cell-state {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.rang-check { color: #10b981; }
+.rang-err { color: #dc2626; }
+.rang-spin { color: var(--lab-text-muted); animation: rangSpin 0.8s linear infinite; }
+@keyframes rangSpin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .rangs-wizard-camp-header,
+  .rangs-wizard-camp-row {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .rangs-wizard-camp-header > :last-child,
+  .rangs-wizard-camp-row > :last-child { display: none; }
+  .rangs-wizard-camp-label { grid-column: 1 / -1; padding-bottom: 0.2rem; font-weight: 600; }
 }
 
 /* DetallPage helpers */
