@@ -162,7 +162,9 @@
     "conflicte": "Conflicte:",
     "registre_modificat": "Registre modificat per {{user}} des que l'has obert.",
     "recarregar_dades": "Recarregar dades actuals",
-    "canvis_desats": "Canvis desats correctament"
+    "canvis_desats": "Canvis desats correctament",
+    "rang_esperat": "Esperat: {{rang}}",
+    "rang_requereix_ctrl": "Requereix «{{camp}}» per calcular el rang"
   },
   "login": {
     "iniciar_sessio": "Iniciar sessi\u00f3",

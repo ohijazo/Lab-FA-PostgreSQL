@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { groupCamps } from '../utils/groupCamps'
-import { getAlertaColor } from '../utils/alertes'
+import { getAlertaColor, getRangInfo } from '../utils/alertes'
 import { recomputeFormulas } from '../utils/formula'
 import Icon from './Icon'
 import Button from './ui/Button'
@@ -30,6 +30,18 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
   // Recalcula tots els camps amb fórmula a partir dels valors actuals.
   // Així si l'usuari canvia un input, els calculats s'actualitzen.
   const computed = useMemo(() => recomputeFormulas(seccions, form), [seccions, form])
+
+  // Label del camp controlador (per mostrar en missatges de rang si cal)
+  const controladorLabel = useMemo(() => {
+    const name = tipusConfig?.camp_controlador
+    if (!name) return null
+    for (const s of seccions) {
+      for (const c of s.camps) {
+        if (c.name === name) return c.label
+      }
+    }
+    return name
+  }, [seccions, tipusConfig])
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target
@@ -100,6 +112,7 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
     const isCalc = !!(camp.formula && camp.formula.trim())
     const displayValue = isCalc ? (computed[camp.name] ?? '') : (form[camp.name] || '')
     const alertColor = getAlertaColor(camp, displayValue, computed, tipusConfig)
+    const rangInfo = camp.type === 'number' ? getRangInfo(camp, displayValue, computed, tipusConfig, controladorLabel) : null
     return (
       <label key={camp.name} className={`form-camp${camp.label.length > 30 ? ' form-camp-wide' : ''}${isCalc ? ' form-camp-calc' : ''}`}>
         <span className="form-camp-label">
@@ -118,6 +131,16 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
           step={camp.type === 'number' && !isCalc ? 'any' : undefined}
           style={alertColor ? { color: alertColor, borderColor: alertColor, fontWeight: 700 } : undefined}
         />
+        {rangInfo && rangInfo.kind === 'needs_ctrl' && (
+          <small className="form-camp-rang is-hint">
+            {t('form.rang_requereix_ctrl', { camp: rangInfo.controladorLabel })}
+          </small>
+        )}
+        {rangInfo && rangInfo.kind !== 'needs_ctrl' && (
+          <small className={`form-camp-rang${rangInfo.status === 'below' || rangInfo.status === 'above' ? ' is-alert' : ''}`}>
+            {t('form.rang_esperat', { rang: rangInfo.label })}
+          </small>
+        )}
       </label>
     )
   }

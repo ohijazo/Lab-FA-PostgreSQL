@@ -1309,6 +1309,30 @@ button.estat-badge { margin-bottom: 0; }
   height: auto;
 }
 
+.form-camp-rang {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: var(--lab-text-muted);
+  font-weight: 500;
+}
+.form-camp-rang.is-alert {
+  color: #dc2626;
+  font-weight: 700;
+}
+.form-camp-rang.is-hint {
+  font-style: italic;
+  opacity: 0.75;
+}
+[data-theme="dark"] .form-camp-rang.is-alert { color: #f87171; }
+
+.camp-rang-hint {
+  font-weight: 500;
+  opacity: 0.75;
+  margin-left: 0.15rem;
+}
+
 .form-camp textarea {
   min-height: 5rem;
   resize: vertical;

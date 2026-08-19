@@ -162,7 +162,9 @@
     "conflicte": "Conflicto:",
     "registre_modificat": "Registro modificado por {{user}} desde que lo abriste.",
     "recarregar_dades": "Recargar datos actuales",
-    "canvis_desats": "Cambios guardados correctamente"
+    "canvis_desats": "Cambios guardados correctamente",
+    "rang_esperat": "Esperado: {{rang}}",
+    "rang_requereix_ctrl": "Requiere «{{camp}}» para calcular el rango"
   },
   "login": {
     "iniciar_sessio": "Iniciar sesión",

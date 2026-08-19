@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { groupCamps } from '../utils/groupCamps'
-import { alertaStyle } from '../utils/alertes'
+import { alertaStyle, getRangInfo } from '../utils/alertes'
 import { recomputeFormulas } from '../utils/formula'
 import Icon from './Icon'
 
@@ -31,14 +31,20 @@ export default function AnalisisDetail({ seccions, analisi, tipusConfig }) {
     const isWideItem = camp.label.length > 30 || camp.type === 'textarea'
     const isCalc = !!(camp.formula && camp.formula.trim())
     const val = data[camp.name]
+    const style = alertaStyle(camp, val, data, tipusConfig)
+    const rangInfo = camp.type === 'number' ? getRangInfo(camp, val, data, tipusConfig) : null
+    const showRang = style && rangInfo && rangInfo.kind !== 'needs_ctrl'
     return (
       <div key={camp.name} className={`camp-item${isWideItem ? ' camp-item-wide' : ''}${camp.type === 'textarea' ? ' camp-item-textarea' : ''}`}>
         <span className="camp-label">
           {camp.label}:
           {isCalc && <span className="formula-badge" title={camp.formula}><Icon name="Sigma" size={11} /></span>}
         </span>
-        <span className="camp-value" style={alertaStyle(camp, val, data, tipusConfig)}>
+        <span className="camp-value" style={style}>
           {formatValue(camp, val)}
+          {showRang && (
+            <small className="camp-rang-hint"> ({t('form.rang_esperat', { rang: rangInfo.label })})</small>
+          )}
         </span>
       </div>
     )
