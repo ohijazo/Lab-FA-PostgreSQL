@@ -317,7 +317,13 @@ def eliminar_camp(id):
     c = db.get_or_404(Camp, id)
     s = db.get_or_404(Seccio, c.seccio_id)
     t = db.get_or_404(TipusAnalisi, s.tipus_id)
-    n = Analisi.query.filter_by(tipus=t.slug).count()
+    # Nomes bloquejar si aquest camp concret te valor a alguna analisi.
+    # Si cap analisi te dades[c.name] amb valor, esborrar-lo no perd res.
+    n = Analisi.query.filter(
+        Analisi.tipus == t.slug,
+        Analisi.dades[c.name].astext.isnot(None),
+        Analisi.dades[c.name].astext != ''
+    ).count()
     if n > 0:
         return jsonify({"error": tr('no_eliminar_camp', n=n, nom=t.nom)}), 400
     db.session.delete(c)
