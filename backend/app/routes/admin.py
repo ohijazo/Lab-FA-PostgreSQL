@@ -203,9 +203,13 @@ def editar_seccio(id):
 def eliminar_seccio(id):
     s = db.get_or_404(Seccio, id)
     t = db.get_or_404(TipusAnalisi, s.tipus_id)
-    n = Analisi.query.filter_by(tipus=t.slug).count()
-    if n > 0:
-        return jsonify({"error": tr('no_eliminar_seccio', n=n, nom=t.nom)}), 400
+    # Nomes bloquejar si la seccio te camps: si es buida, esborrar-la mai afecta
+    # dades existents (les analisis referencien camps per 'name', no per seccio_id).
+    n_camps = Camp.query.filter_by(seccio_id=id).count()
+    if n_camps > 0:
+        n = Analisi.query.filter_by(tipus=t.slug).count()
+        if n > 0:
+            return jsonify({"error": tr('no_eliminar_seccio', n=n, nom=t.nom)}), 400
     db.session.delete(s)
     db.session.commit()
     return jsonify({"ok": True})
