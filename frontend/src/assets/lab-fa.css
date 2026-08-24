@@ -798,7 +798,7 @@ button.estat-badge { margin-bottom: 0; }
 [data-theme="dark"] .recepcio-badge.is-no_apte { background: #dc2626; }
 
 /* Responsive mòbil */
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .recepcio-row {
     grid-template-columns: 24px 1fr auto;
     row-gap: 0.2rem;
@@ -1079,6 +1079,37 @@ button.estat-badge { margin-bottom: 0; }
 [data-theme="dark"] .nav-dropdown-item.is-active {
   background: color-mix(in srgb, var(--lab-primary) 20%, transparent);
   color: var(--lab-primary-on-dark);
+}
+
+/* Menú de desbordament — contenidor transparent per damunt de 768px.
+   El plegat viu al bloc responsive del final del full. */
+.nav-collapse {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.nav-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius-md);
+  /* Pico pinta els <button> de blanc sobre blanc; cal ser explícit. */
+  background: transparent;
+  color: var(--lab-text-secondary);
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-menu-toggle:hover {
+  background: var(--lab-bg-subtle);
+  color: var(--lab-primary);
 }
 
 /* Home toolbar */
@@ -1967,9 +1998,6 @@ input.btn {
   margin-top: var(--lab-space-4);
   margin-bottom: var(--lab-space-4);
 }
-@media (max-width: 720px) {
-  .home-kpi-grid { grid-template-columns: repeat(2, 1fr); }
-}
 .kpi-card-lab {
   border: 1px solid var(--lab-border);
   border-radius: var(--lab-radius-lg);
@@ -2826,7 +2854,7 @@ input.btn {
   to { transform: translateY(-50%) rotate(360deg); }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .rangs-wizard-camp-header,
   .rangs-wizard-camp-row {
     grid-template-columns: 1fr 1fr 1fr;
@@ -3056,7 +3084,7 @@ input.btn {
   flex-direction: column;
   gap: 0.25rem;
 }
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .detall-skeleton-fields { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 560px) {
@@ -3125,9 +3153,6 @@ input.btn {
 [data-theme="dark"] .detall-valoracio-btn.is-finalitzat-off { background: #78350f; border-color: #b45309; color: #fef3c7; }
 [data-theme="dark"] .detall-valoracio-btn.is-alerta-on { background: #7f1d1d; border-color: #dc2626; color: #fee2e2; }
 [data-theme="dark"] .detall-valoracio-btn.is-apte-no_apte { background: #7f1d1d; border-color: #dc2626; color: #fee2e2; }
-@media (max-width: 640px) {
-  .detall-valoracio-buttons { grid-template-columns: 1fr; }
-}
 
 /* Export modal helpers */
 .export-date-row {
@@ -3554,7 +3579,7 @@ input.btn {
   color: var(--lab-text-muted);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .ajuda-layout { grid-template-columns: 1fr; }
   .ajuda-sidebar {
     position: static;
@@ -4175,27 +4200,87 @@ input.btn {
   }
 }
 
-/* --- Responsive tablet + mòbil ---
-   Objectiu: iPad portrait (768) i landscape (1024) usables sense
-   overflow ni botons tallats. Mòbil (<640) com a bonus. */
+/* --- Responsive: tres punts de tall i prou ---
+   1024 = tauleta apaïsada · 768 = tauleta vertical · 560 = mòbil.
+   Abans n'hi havia sis (1024/900/768/720/640/560/480) amb regles que es
+   repetien entre elles; qualsevol regla nova ha d'anar a un d'aquests tres. */
 
-/* Tablet (fins 1024px): nav i toolbars comencen a comprimir-se */
+/* Tauleta apaïsada (fins 1024px): nav i toolbars comencen a comprimir-se */
 @media (max-width: 1024px) {
+  /* La nav es plega darrere el botó de menú. El llindar és 1024 i no 768
+     perquè és aquí on deixa de cabre de veritat: la marca fa ~200px i les
+     accions ~590px, i en aquesta franja el contenidor de Pico només en fa
+     ~700, així que abans es partia en dues files. */
   .nav-bar {
-    flex-wrap: wrap;
+    position: relative;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
   }
-  .nav-actions {
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    row-gap: 0.5rem;
-  }
+  .nav-brand-sub { display: none; }
   .nav-link, .nav-link-logout {
     padding: 0.35rem 0.55rem;
     font-size: 0.9rem;
   }
-  .nav-brand-sub { display: none; }
+  .nav-menu-toggle {
+    display: inline-flex;
+  }
+  .nav-actions {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0.75rem;
+    z-index: 200;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 13rem;
+    padding: 0.4rem;
+    gap: 0.15rem;
+    background: var(--lab-bg-card);
+    border: 1px solid var(--lab-border);
+    border-radius: var(--lab-radius-lg);
+    box-shadow: var(--lab-shadow-lg);
+  }
+  .nav-actions.is-open {
+    display: flex;
+  }
+  /* Dins del panell tot ocupa la fila sencera i el separador de l'usuari
+     passa de vora esquerra a vora superior. */
+  .nav-actions > *,
+  .nav-actions .nav-link {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  /* Els dos botons d'icona no són flex per defecte, així que sense això
+     el contingut els queda centrat enmig d'una fila estirada. */
+  .nav-actions .theme-toggle,
+  .nav-actions .lang-switcher {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: 0.4rem 0.65rem;
+    /* dins del panell són files de menú, no controls solts */
+    border-color: transparent;
+  }
+  .nav-user {
+    margin-left: 0;
+    padding-left: 0;
+    padding-top: 0.4rem;
+    border-left: none;
+    border-top: 1px solid var(--lab-border);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+  }
+  .nav-dropdown-menu {
+    position: static;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    margin-top: 0;
+    padding: 0 0 0 0.6rem;
+    min-width: 0;
+  }
 
   .llista-toolbar {
     flex-wrap: wrap;
@@ -4225,10 +4310,23 @@ input.btn {
   .home-kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* Les accions per fila de la taula de tipus són sis: per sota de 1024
+     es queden amb la icona i el títol com a text accessible. Els <Link>
+     porten l'etiqueta en un <span> nu; <Button> la porta en .btn-label
+     (i la icona en .btn-icon, que no s'ha de tocar). */
+  .admin-actions-row .btn-label,
+  .admin-actions-row a.btn > span {
+    display: none;
+  }
+  .admin-actions-row .btn,
+  .admin-actions-row .btn-sm {
+    padding-inline: 0.5rem;
+  }
 }
 
-/* Tablet portrait (fins 900px): tab counts + valoració a 1 col */
-@media (max-width: 900px) {
+/* Tauleta vertical (fins 768px) */
+@media (max-width: 768px) {
   .detall-valoracio-buttons {
     grid-template-columns: 1fr;
   }
@@ -4241,16 +4339,45 @@ input.btn {
   }
 }
 
-/* Mòbil (fins 640px): amagar detalls d'usuari, escurçar nav */
-@media (max-width: 640px) {
-  .nav-user-name { display: none; }
+/* Mòbil (fins 560px) */
+@media (max-width: 560px) {
   .nav-brand-name { font-size: 1rem; }
-}
-
-/* Mòbil xicotet (fins 480px): KPIs una sola columna */
-@media (max-width: 480px) {
   .home-kpi-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* --- Objectius tàctils ---
+   Es fa per tipus de punter i no per amplada: una tauleta apaïsada fa
+   1024px i segueix sent un dit, mentre que un portàtil de 1024px és un
+   ratolí. Amb ratolí la densitat d'escriptori no es toca. */
+@media (pointer: coarse) {
+  .form-camp input,
+  .form-camp textarea,
+  .form-camp select {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.6rem;
+    /* 16px: per sota d'això Safari a iOS fa zoom en enfocar el camp. */
+    font-size: 1rem;
+  }
+  .form-camp-check input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .btn-sm,
+  .btn-sm[role="button"],
+  .btn-xs,
+  .btn-xs[role="button"] {
+    min-height: 2.5rem;
+  }
+  .nav-link {
+    min-height: 2.5rem;
+  }
+  .nav-dropdown-item {
+    /* és display:block per defecte; cal flex perquè centri verticalment */
+    display: flex;
+    align-items: center;
+    min-height: 2.5rem;
   }
 }
 
@@ -4264,7 +4391,7 @@ input.btn {
 .admin-camps-layout.admin-camps-layout-solo {
   grid-template-columns: 1fr;
 }
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .admin-camps-layout {
     grid-template-columns: 1fr;
   }
@@ -4371,7 +4498,7 @@ input.btn {
   max-height: calc(100vh - 1rem);
   overflow-y: auto;
 }
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .admin-camps-editor-panel {
     position: static;
     max-height: none;
@@ -4424,7 +4551,7 @@ input.btn {
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .admin-camps-panel-row { grid-template-columns: 1fr; }
 }
 .admin-camps-help {
@@ -4533,7 +4660,7 @@ input.btn {
   margin: 0 0 0.35rem;
   font-size: 0.95rem;
 }
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .admin-camps-rangs-static { grid-template-columns: 1fr 1fr; }
 }
 

@@ -12,10 +12,12 @@ export default function Layout({ children }) {
   const isHome = location.pathname === '/'
   const isAdminRoute = location.pathname.startsWith('/admin')
   const [configOpen, setConfigOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [theme, setTheme] = useState(() => {
     return document.documentElement.getAttribute('data-theme') || 'light'
   })
   const dropdownRef = useRef(null)
+  const menuRef = useRef(null)
   const lang = i18n.language?.startsWith('es') ? 'es' : 'ca'
 
   function toggleTheme() {
@@ -25,22 +27,26 @@ export default function Layout({ children }) {
     localStorage.setItem('theme', next)
   }
 
-  // Close dropdown on click outside
+  // Close dropdown / overflow menu on click outside
   useEffect(() => {
     function handleClick(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (configOpen && dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setConfigOpen(false)
       }
+      if (menuOpen && menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
     }
-    if (configOpen) {
+    if (configOpen || menuOpen) {
       document.addEventListener('mousedown', handleClick)
       return () => document.removeEventListener('mousedown', handleClick)
     }
-  }, [configOpen])
+  }, [configOpen, menuOpen])
 
-  // Close dropdown on route change
+  // Close dropdown / overflow menu on route change
   useEffect(() => {
     setConfigOpen(false)
+    setMenuOpen(false)
   }, [location.pathname])
 
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`
@@ -90,62 +96,78 @@ export default function Layout({ children }) {
               <span className="nav-brand-sub">{t('nav.gestio_analisis')}</span>
             </div>
           </Link>
-          <div className="nav-actions">
-            {isHome && (
-              <a href="#" className="nav-link" onClick={(e) => {
-                e.preventDefault()
-                window.dispatchEvent(new CustomEvent('open-export-dialog'))
-              }}>{t('nav.exportar_excel')}</a>
-            )}
-            {(user?.role === 'admin' || user?.role === 'user') && (
-              <div className="nav-dropdown" ref={dropdownRef}>
-                <a
-                  href="#"
-                  className={`nav-link${isAdminRoute ? ' is-active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); setConfigOpen((v) => !v) }}
-                >
-                  {t('nav.configuracio')}
-                </a>
-                {configOpen && (
-                  <div className="nav-dropdown-menu">
-                    <NavLink
-                      to="/admin/tipus"
-                      className={({ isActive }) => `nav-dropdown-item${isActive ? ' is-active' : ''}`}
-                      onClick={() => setConfigOpen(false)}
-                    >
-                      {t('nav.tipus_analisi')}
-                    </NavLink>
-                    {user?.role === 'admin' && (
+          {/* Per sota de 768px les accions es pleguen darrere el botó de menú;
+              per sobre, .nav-collapse és un simple contenidor sense efecte. */}
+          <div className="nav-collapse" ref={menuRef}>
+            <button
+              type="button"
+              className="nav-menu-toggle"
+              aria-expanded={menuOpen}
+              aria-controls="nav-menu"
+              aria-label={t('nav.menu')}
+              title={t('nav.menu')}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <Icon name={menuOpen ? 'X' : 'Menu'} size={18} />
+            </button>
+            <div className={`nav-actions${menuOpen ? ' is-open' : ''}`} id="nav-menu">
+              {isHome && (
+                <a href="#" className="nav-link" onClick={(e) => {
+                  e.preventDefault()
+                  setMenuOpen(false)
+                  window.dispatchEvent(new CustomEvent('open-export-dialog'))
+                }}>{t('nav.exportar_excel')}</a>
+              )}
+              {(user?.role === 'admin' || user?.role === 'user') && (
+                <div className="nav-dropdown" ref={dropdownRef}>
+                  <a
+                    href="#"
+                    className={`nav-link${isAdminRoute ? ' is-active' : ''}`}
+                    onClick={(e) => { e.preventDefault(); setConfigOpen((v) => !v) }}
+                  >
+                    {t('nav.configuracio')}
+                  </a>
+                  {configOpen && (
+                    <div className="nav-dropdown-menu">
                       <NavLink
-                        to="/admin/users"
+                        to="/admin/tipus"
                         className={({ isActive }) => `nav-dropdown-item${isActive ? ' is-active' : ''}`}
                         onClick={() => setConfigOpen(false)}
                       >
-                        {t('nav.gestio_usuaris')}
+                        {t('nav.tipus_analisi')}
                       </NavLink>
-                    )}
-                  </div>
-                )}
+                      {user?.role === 'admin' && (
+                        <NavLink
+                          to="/admin/users"
+                          className={({ isActive }) => `nav-dropdown-item${isActive ? ' is-active' : ''}`}
+                          onClick={() => setConfigOpen(false)}
+                        >
+                          {t('nav.gestio_usuaris')}
+                        </NavLink>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              <NavLink to="/ajuda" className={navLinkClass}>{t('nav.ajuda')}</NavLink>
+              <button className="theme-toggle" onClick={toggleTheme} title={t('nav.tema')} aria-label={t('nav.tema')}>
+                <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={16} />
+              </button>
+              <button
+                className="nav-link lang-switcher"
+                onClick={() => i18n.changeLanguage(lang === 'ca' ? 'es' : 'ca')}
+                title={t('nav.tema')}
+              >
+                <Icon name="Languages" size={14} />
+                <span>{lang === 'ca' ? 'ES' : 'CA'}</span>
+              </button>
+              <div className="nav-user">
+                <a href="#" className="nav-link nav-link-logout" onClick={(e) => { e.preventDefault(); logout() }}>
+                  <Icon name="LogOut" size={14} />
+                  <span>{t('nav.sortir')}</span>
+                </a>
+                <span className="nav-user-name">{user?.nom || user?.email}</span>
               </div>
-            )}
-            <NavLink to="/ajuda" className={navLinkClass}>{t('nav.ajuda')}</NavLink>
-            <button className="theme-toggle" onClick={toggleTheme} title={t('nav.tema')} aria-label={t('nav.tema')}>
-              <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={16} />
-            </button>
-            <button
-              className="nav-link lang-switcher"
-              onClick={() => i18n.changeLanguage(lang === 'ca' ? 'es' : 'ca')}
-              title={t('nav.tema')}
-            >
-              <Icon name="Languages" size={14} />
-              <span>{lang === 'ca' ? 'ES' : 'CA'}</span>
-            </button>
-            <div className="nav-user">
-              <a href="#" className="nav-link nav-link-logout" onClick={(e) => { e.preventDefault(); logout() }}>
-                <Icon name="LogOut" size={14} />
-                <span>{t('nav.sortir')}</span>
-              </a>
-              <span className="nav-user-name">{user?.nom || user?.email}</span>
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@ import {
   ChevronRight, ChevronsUpDown, Circle, Clock, Columns3, Copy,
   Download, Eye, EyeOff, FileDown, Filter, FlaskConical, GripVertical,
   HelpCircle, Inbox, Info, Languages, Layers, LayoutList, List, Loader2,
-  Lock, LogIn, LogOut, Mail, Moon, Pencil, Plus, Printer, RefreshCw,
+  Lock, LogIn, LogOut, Mail, Menu, Moon, Pencil, Plus, Printer, RefreshCw,
   Ruler, Save, Search, ShieldCheck, Sigma, SlidersHorizontal, Sun,
   Table2, Trash2, Upload, UserPlus, Users, X,
 } from 'lucide-react'
@@ -18,7 +18,7 @@ const icons = {
   ChevronRight, ChevronsUpDown, Circle, Clock, Columns3, Copy,
   Download, Eye, EyeOff, FileDown, Filter, FlaskConical, GripVertical,
   HelpCircle, Inbox, Info, Languages, Layers, LayoutList, List, Loader2,
-  Lock, LogIn, LogOut, Mail, Moon, Pencil, Plus, Printer, RefreshCw,
+  Lock, LogIn, LogOut, Mail, Menu, Moon, Pencil, Plus, Printer, RefreshCw,
   Ruler, Save, Search, ShieldCheck, Sigma, SlidersHorizontal, Sun,
   Table2, Trash2, Upload, UserPlus, Users, X,
 }
