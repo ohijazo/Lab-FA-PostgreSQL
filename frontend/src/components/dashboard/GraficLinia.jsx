@@ -10,13 +10,13 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
+import { useColorsGrafic, ambAlfa } from '../../utils/tema'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
-const COLORS = ['#2563eb', '#dc2626', '#16a34a', '#d97706']
-
 export default function GraficLinia({ serieTemporal, metricKeys, metricLabels }) {
   const { t } = useTranslation()
+  const { series: COLORS, text: colorText, grid: colorGrid } = useColorsGrafic()
   if (!serieTemporal || Object.keys(serieTemporal).length === 0) {
     return <p>{t('dashboard.no_dades_temporals')}</p>
   }
@@ -29,7 +29,7 @@ export default function GraficLinia({ serieTemporal, metricKeys, metricLabels })
       label: metricLabels?.[mk] || mk,
       data: mesos.map((mes) => serieTemporal[mes]?.[mk] ?? null),
       borderColor: COLORS[i % COLORS.length],
-      backgroundColor: COLORS[i % COLORS.length] + '33',
+      backgroundColor: ambAlfa(COLORS[i % COLORS.length], 0.2),
       tension: 0.3,
       spanGaps: true,
       pointRadius: 2,
@@ -41,12 +41,12 @@ export default function GraficLinia({ serieTemporal, metricKeys, metricLabels })
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      title: { display: true, text: t('dashboard.evolucio_mensual'), font: { size: 13 } },
-      legend: { labels: { boxWidth: 10, font: { size: 10 } } },
+      title: { display: true, text: t('dashboard.evolucio_mensual'), font: { size: 13 }, color: colorText },
+      legend: { labels: { boxWidth: 10, font: { size: 10 }, color: colorText } },
     },
     scales: {
-      x: { ticks: { font: { size: 9 }, maxRotation: 45 } },
-      y: { beginAtZero: false, ticks: { font: { size: 9 } } },
+      x: { ticks: { font: { size: 9 }, maxRotation: 45, color: colorText }, grid: { color: colorGrid } },
+      y: { beginAtZero: false, ticks: { font: { size: 9 }, color: colorText }, grid: { color: colorGrid } },
     },
   }
 

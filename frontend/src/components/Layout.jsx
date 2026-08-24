@@ -55,7 +55,8 @@ export default function Layout({ children }) {
   if (isRecepcio) {
     return (
       <>
-        <nav className="nav-sticky">
+        <a href="#contingut" className="skip-link">{t('nav.salta_contingut')}</a>
+        <nav className="nav-sticky" aria-label={t('nav.navegacio_principal')}>
           <div className="container nav-bar">
             <div className="nav-brand">
               <img src={logoApp} alt="Lab FC" style={{ height: 36, width: 'auto' }} />
@@ -69,16 +70,16 @@ export default function Layout({ children }) {
                 <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={16} />
               </button>
               <div className="nav-user">
-                <a href="#" className="nav-link nav-link-logout" onClick={(e) => { e.preventDefault(); logout() }}>
+                <button type="button" className="nav-link nav-link-logout" onClick={logout}>
                   <Icon name="LogOut" size={14} />
                   <span>{t('nav.sortir')}</span>
-                </a>
+                </button>
                 <span className="nav-user-name">{user?.nom || user?.email}</span>
               </div>
             </div>
           </div>
         </nav>
-        <main className="container">
+        <main className="container" id="contingut">
           {children}
         </main>
       </>
@@ -87,7 +88,8 @@ export default function Layout({ children }) {
 
   return (
     <>
-      <nav className="nav-sticky">
+      <a href="#contingut" className="skip-link">{t('nav.salta_contingut')}</a>
+      <nav className="nav-sticky" aria-label={t('nav.navegacio_principal')}>
         <div className="container nav-bar">
           <Link to="/" className="nav-brand">
             <img src={logoApp} alt="Lab FC" style={{ height: 36, width: 'auto' }} />
@@ -112,25 +114,27 @@ export default function Layout({ children }) {
             </button>
             <div className={`nav-actions${menuOpen ? ' is-open' : ''}`} id="nav-menu">
               {isHome && (
-                <a href="#" className="nav-link" onClick={(e) => {
-                  e.preventDefault()
+                <button type="button" className="nav-link" onClick={() => {
                   setMenuOpen(false)
                   window.dispatchEvent(new CustomEvent('open-export-dialog'))
-                }}>{t('nav.exportar_excel')}</a>
+                }}>{t('nav.exportar_excel')}</button>
               )}
               {(user?.role === 'admin' || user?.role === 'user') && (
                 <div className="nav-dropdown" ref={dropdownRef}>
-                  <a
-                    href="#"
+                  <button
+                    type="button"
                     className={`nav-link${isAdminRoute ? ' is-active' : ''}`}
-                    onClick={(e) => { e.preventDefault(); setConfigOpen((v) => !v) }}
+                    aria-haspopup="menu"
+                    aria-expanded={configOpen}
+                    onClick={() => setConfigOpen((v) => !v)}
                   >
                     {t('nav.configuracio')}
-                  </a>
+                  </button>
                   {configOpen && (
-                    <div className="nav-dropdown-menu">
+                    <div className="nav-dropdown-menu" role="menu">
                       <NavLink
                         to="/admin/tipus"
+                        role="menuitem"
                         className={({ isActive }) => `nav-dropdown-item${isActive ? ' is-active' : ''}`}
                         onClick={() => setConfigOpen(false)}
                       >
@@ -139,6 +143,7 @@ export default function Layout({ children }) {
                       {user?.role === 'admin' && (
                         <NavLink
                           to="/admin/users"
+                          role="menuitem"
                           className={({ isActive }) => `nav-dropdown-item${isActive ? ' is-active' : ''}`}
                           onClick={() => setConfigOpen(false)}
                         >
@@ -154,25 +159,27 @@ export default function Layout({ children }) {
                 <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={16} />
               </button>
               <button
+                type="button"
                 className="nav-link lang-switcher"
                 onClick={() => i18n.changeLanguage(lang === 'ca' ? 'es' : 'ca')}
-                title={t('nav.tema')}
+                title={t('nav.idioma')}
+                aria-label={t('nav.idioma')}
               >
                 <Icon name="Languages" size={14} />
                 <span>{lang === 'ca' ? 'ES' : 'CA'}</span>
               </button>
               <div className="nav-user">
-                <a href="#" className="nav-link nav-link-logout" onClick={(e) => { e.preventDefault(); logout() }}>
+                <button type="button" className="nav-link nav-link-logout" onClick={logout}>
                   <Icon name="LogOut" size={14} />
                   <span>{t('nav.sortir')}</span>
-                </a>
+                </button>
                 <span className="nav-user-name">{user?.nom || user?.email}</span>
               </div>
             </div>
           </div>
         </div>
       </nav>
-      <main className="container">
+      <main className="container" id="contingut">
         {children}
       </main>
     </>

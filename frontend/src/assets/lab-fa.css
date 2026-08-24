@@ -216,8 +216,11 @@ summary:focus-visible {
   outline-offset: 2px;
   border-radius: 4px;
 }
-/* Files clicables de taules */
-tr.clickable-row:focus-visible {
+/* Files clicables de taules. Les de la llista d'anàlisis no porten
+   .clickable-row: la classe la fixen l'estat de l'anàlisi (alerta,
+   finalitzat), així que s'hi arriba per la taula. */
+tr.clickable-row:focus-visible,
+.analisis-list-table tbody tr:focus-visible {
   outline: 2px solid var(--lab-focus-ring);
   outline-offset: -2px;
 }
@@ -1109,6 +1112,57 @@ button.estat-badge { margin-bottom: 0; }
 
 .nav-menu-toggle:hover {
   background: var(--lab-bg-subtle);
+  color: var(--lab-primary);
+}
+
+/* Els enllaços de la nav que no naveguen enlloc són <button>. Pico els
+   pinta com a botons plens i els estira, així que cal desfer-ho. El
+   commutador d'idioma en queda fora perquè sí que porta vora pròpia. */
+button.nav-link:not(.lang-switcher) {
+  background: transparent;
+  border: none;
+  width: auto;
+  margin: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Enllaç de salt: fora de pantalla fins que rep el focus amb el tabulador */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 300;
+  padding: 0.6rem 1rem;
+  background: var(--lab-primary);
+  color: var(--lab-on-primary);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 var(--lab-radius-md) 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* Capçalera ordenable: el control és el botó, no la cel·la sencera */
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  user-select: none;
+}
+.th-sort:hover {
   color: var(--lab-primary);
 }
 
@@ -4347,6 +4401,18 @@ input.btn {
   }
 }
 
+/* --- Moviment reduït ---
+   Hi ha set animacions infinites al full (polsos de recepció, giradors,
+   shimmer dels esquelets). Per a qui ho demana al sistema, es paren. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* --- Objectius tàctils ---
    Es fa per tipus de punter i no per amplada: una tauleta apaïsada fa
    1024px i segueix sent un dit, mentre que un portàtil de 1024px és un
@@ -4357,8 +4423,10 @@ input.btn {
   .form-camp select {
     min-height: 2.5rem;
     padding: 0.5rem 0.6rem;
-    /* 16px: per sota d'això Safari a iOS fa zoom en enfocar el camp. */
-    font-size: 1rem;
+    /* Les tauletes del laboratori són Android: Chrome no fa zoom en
+       enfocar un camp petit, així que no cal pujar a 16px i es manté la
+       densitat. Si algun dia s'hi posen iPads, això ha de ser 1rem. */
+    font-size: 0.9rem;
   }
   .form-camp-check input[type="checkbox"] {
     width: 1.25rem;

@@ -8,10 +8,12 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
+import { useColorsGrafic, ambAlfa } from '../../utils/tema'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 export default function GraficRendiment({ groupData, groupLabel, metricKey, metricLabel }) {
+  const { series, text: colorText, grid: colorGrid } = useColorsGrafic()
   if (!groupData || Object.keys(groupData).length === 0 || !metricKey) {
     return null
   }
@@ -28,8 +30,8 @@ export default function GraficRendiment({ groupData, groupLabel, metricKey, metr
       {
         label: metricLabel || metricKey,
         data: entries.map(([, info]) => info[metricKey]),
-        backgroundColor: '#16a34a99',
-        borderColor: '#16a34a',
+        backgroundColor: ambAlfa(series[2], 0.6),
+        borderColor: series[2],
         borderWidth: 1,
       },
     ],
@@ -39,12 +41,12 @@ export default function GraficRendiment({ groupData, groupLabel, metricKey, metr
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      title: { display: true, text: `${metricLabel || metricKey} per ${groupLabel || 'grup'}`, font: { size: 13 } },
+      title: { display: true, text: `${metricLabel || metricKey} per ${groupLabel || 'grup'}`, font: { size: 13 }, color: colorText },
       legend: { display: false },
     },
     scales: {
-      x: { ticks: { font: { size: 9 }, maxRotation: 45 } },
-      y: { beginAtZero: true, ticks: { font: { size: 9 } } },
+      x: { ticks: { font: { size: 9 }, maxRotation: 45, color: colorText }, grid: { color: colorGrid } },
+      y: { beginAtZero: true, ticks: { font: { size: 9 }, color: colorText }, grid: { color: colorGrid } },
     },
   }
 

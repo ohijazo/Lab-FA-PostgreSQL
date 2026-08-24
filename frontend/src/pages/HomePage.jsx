@@ -209,7 +209,14 @@ export default function HomePage() {
                 {data.activitat_recent.map((a) => (
                   <tr
                     key={a.id}
+                    tabIndex={0}
                     onClick={() => navigate(`/${a.tipus_slug}/${a.id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        navigate(`/${a.tipus_slug}/${a.id}`)
+                      }
+                    }}
                     className="clickable-row"
                   >
                     <td>{a.tipus_nom}</td>

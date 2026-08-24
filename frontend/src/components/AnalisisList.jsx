@@ -67,11 +67,15 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
             {columnes.map((col) => (
               <th
                 key={col}
-                onClick={() => onSort(col)}
                 data-col-type={typeMap[col] || 'text'}
-                style={{ cursor: 'pointer', userSelect: 'none' }}
+                aria-sort={sortCol !== col ? 'none' : sortDir === 'asc' ? 'ascending' : 'descending'}
               >
-                {labelMap[col] || col}{sortIndicator(col)}
+                {/* El control ha de ser un <button> i no la <th> sencera:
+                    així s'hi arriba amb el tabulador i els lectors de
+                    pantalla n'anuncien l'ordre via aria-sort. */}
+                <button type="button" className="th-sort" onClick={() => onSort(col)}>
+                  {labelMap[col] || col}{sortIndicator(col)}
+                </button>
               </th>
             ))}
           </tr>
@@ -84,7 +88,14 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
             return (
             <tr
               key={a.id}
+              tabIndex={0}
               onClick={() => navigate(`/${tipus}/${a.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  navigate(`/${tipus}/${a.id}`)
+                }
+              }}
               className={rowClasses.join(' ')}
             >
               <td

@@ -273,18 +273,26 @@ export default function LlistaPage() {
           </div>
         </form>
         <div className="estat-segmented" role="tablist" aria-label={t('llista.filtre_estat')}>
+          {/* El contenidor ja era role="tablist" però els botons no eren
+              pestanyes: mateix patró que RecepcioPage. */}
           <button
             type="button"
+            role="tab"
+            aria-selected={estat === ''}
             className={estat === '' ? 'active' : ''}
             onClick={() => changeEstat('')}
           >{t('llista.estat_tots')}</button>
           <button
             type="button"
+            role="tab"
+            aria-selected={estat === 'pendent'}
             className={estat === 'pendent' ? 'active' : ''}
             onClick={() => changeEstat('pendent')}
           >{t('llista.estat_pendents')}</button>
           <button
             type="button"
+            role="tab"
+            aria-selected={estat === 'finalitzat'}
             className={estat === 'finalitzat' ? 'active' : ''}
             onClick={() => changeEstat('finalitzat')}
           >{t('llista.estat_finalitzats')}</button>
