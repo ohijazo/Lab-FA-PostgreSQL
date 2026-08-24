@@ -1,9 +1,9 @@
 import {
   AlertCircle, AlertTriangle, ArrowDown, ArrowLeft, ArrowUp,
-  BarChart3, Bell, BellOff, CalendarClock, CalendarDays, Check, ChevronDown,
+  BarChart3, Bell, BellOff, CalendarClock, CalendarDays, Check, CheckCircle2, ChevronDown,
   ChevronRight, ChevronsUpDown, Circle, Clock, Columns3, Copy,
   Download, Eye, EyeOff, FileDown, Filter, FlaskConical, GripVertical,
-  HelpCircle, Inbox, Languages, Layers, LayoutList, List, Loader2,
+  HelpCircle, Inbox, Info, Languages, Layers, LayoutList, List, Loader2,
   Lock, LogIn, LogOut, Mail, Moon, Pencil, Plus, Printer, RefreshCw,
   Ruler, Save, Search, ShieldCheck, Sigma, SlidersHorizontal, Sun,
   Table2, Trash2, Upload, UserPlus, Users, X,
@@ -14,10 +14,10 @@ import {
 // el nom aquí i al mapa `icons`.
 const icons = {
   AlertCircle, AlertTriangle, ArrowDown, ArrowLeft, ArrowUp,
-  BarChart3, Bell, BellOff, CalendarClock, CalendarDays, Check, ChevronDown,
+  BarChart3, Bell, BellOff, CalendarClock, CalendarDays, Check, CheckCircle2, ChevronDown,
   ChevronRight, ChevronsUpDown, Circle, Clock, Columns3, Copy,
   Download, Eye, EyeOff, FileDown, Filter, FlaskConical, GripVertical,
-  HelpCircle, Inbox, Languages, Layers, LayoutList, List, Loader2,
+  HelpCircle, Inbox, Info, Languages, Layers, LayoutList, List, Loader2,
   Lock, LogIn, LogOut, Mail, Moon, Pencil, Plus, Printer, RefreshCw,
   Ruler, Save, Search, ShieldCheck, Sigma, SlidersHorizontal, Sun,
   Table2, Trash2, Upload, UserPlus, Users, X,

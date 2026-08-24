@@ -1,25 +1,19 @@
 import { createContext, useContext, useState, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 
 const ConfirmContext = createContext(null)
 
-const DEFAULTS = {
-  title: 'Confirmar',
-  message: 'Estàs segur?',
-  confirmLabel: 'Confirmar',
-  cancelLabel: 'Cancel·lar',
-  variant: 'primary',
-}
-
 export function ConfirmProvider({ children }) {
-  const [state, setState] = useState({ open: false, opts: DEFAULTS })
+  const { t } = useTranslation()
+  const [state, setState] = useState({ open: false, opts: {} })
   const resolverRef = useRef(null)
 
   const confirm = useCallback((opts = {}) => {
     return new Promise((resolve) => {
       resolverRef.current = resolve
-      setState({ open: true, opts: { ...DEFAULTS, ...opts } })
+      setState({ open: true, opts })
     })
   }, [])
 
@@ -31,7 +25,16 @@ export function ConfirmProvider({ children }) {
     }
   }
 
-  const { open, opts } = state
+  // Els valors per defecte es resolen al renderitzat perquè segueixin l'idioma actiu.
+  const { open } = state
+  const opts = {
+    title: t('common.confirmar'),
+    message: t('common.estas_segur'),
+    confirmLabel: t('common.confirmar'),
+    cancelLabel: t('common.cancellar'),
+    variant: 'primary',
+    ...state.opts,
+  }
 
   return (
     <ConfirmContext.Provider value={confirm}>

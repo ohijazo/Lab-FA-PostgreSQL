@@ -440,17 +440,19 @@ export default function AdminCampsPage() {
                             onDragEnd={(event) => {
                               const { active, over } = event
                               if (!over || active.id === over.id) return
-                              const oldIndex = form.opcions.findIndex(o => o === active.id)
-                              const newIndex = form.opcions.findIndex(o => o === over.id)
+                              // Els ids són posicionals ('opcio-N'): amb opcions duplicades
+                              // buscar per valor reordenava la fila equivocada.
+                              const oldIndex = Number(String(active.id).slice(6))
+                              const newIndex = Number(String(over.id).slice(6))
                               setForm({ ...form, opcions: arrayMove(form.opcions, oldIndex, newIndex) })
                             }}
                           >
-                            <SortableContext items={form.opcions} strategy={verticalListSortingStrategy}>
+                            <SortableContext items={form.opcions.map((_, i) => `opcio-${i}`)} strategy={verticalListSortingStrategy}>
                               <div className="admin-camps-opcions-list">
                                 {form.opcions.map((op, i) => (
                                   <SortableOpcio
-                                    key={op}
-                                    id={op}
+                                    key={`opcio-${i}`}
+                                    id={`opcio-${i}`}
                                     value={op}
                                     isDup={form.opcions.indexOf(op) !== i}
                                     onChange={(nou) => {

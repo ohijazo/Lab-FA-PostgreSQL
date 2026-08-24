@@ -71,6 +71,7 @@ export default function LlistaPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const [cfg, result] = await Promise.all([
         obtenirConfig(tipus),

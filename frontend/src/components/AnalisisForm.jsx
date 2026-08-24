@@ -104,6 +104,7 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
             name={camp.name}
             value={form[camp.name] || ''}
             onChange={handleChange}
+            required={camp.required}
             rows={4}
           />
         </label>

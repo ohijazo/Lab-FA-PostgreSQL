@@ -457,7 +457,7 @@ export default function DetallPage() {
             <Button variant="ghost" onClick={closeAlertaModal} disabled={savingAlerta}>
               {t('common.cancellar')}
             </Button>
-            <Button variant="primary" onClick={handleSaveAlerta} loading={savingAlerta}>
+            <Button variant="primary" type="submit" form="alerta-form" loading={savingAlerta}>
               {t('common.desar_canvis')}
             </Button>
           </>
@@ -500,8 +500,9 @@ export default function DetallPage() {
             <Button variant="ghost" onClick={closeEmailModal}>{t('common.cancellar')}</Button>
             <Button
               variant="primary"
+              type="submit"
+              form="email-form"
               icon={<Icon name="Mail" size={14} />}
-              onClick={handleSendEmail}
               loading={emailSending}
             >
               {emailSending ? t('detall.enviant') : t('detall.enviar')}
@@ -509,7 +510,7 @@ export default function DetallPage() {
           </>
         }
       >
-        <form onSubmit={handleSendEmail}>
+        <form onSubmit={handleSendEmail} id="email-form">
           <label>
             {t('detall.destinatari')}
             <input

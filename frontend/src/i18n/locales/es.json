@@ -30,7 +30,9 @@
     "reg": "reg.",
     "aplicar": "Aplicar",
     "seleccionar_tots": "Seleccionar todos",
-    "desseleccionar": "Deseleccionar"
+    "desseleccionar": "Deseleccionar",
+    "confirmar": "Confirmar",
+    "estas_segur": "¿Seguro que quieres continuar?"
   },
   "nav": {
     "gestio_analisis": "Gestión de análisis de laboratorio",

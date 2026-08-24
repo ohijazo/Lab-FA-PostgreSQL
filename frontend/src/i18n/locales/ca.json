@@ -30,7 +30,9 @@
     "reg": "reg.",
     "aplicar": "Aplicar",
     "seleccionar_tots": "Seleccionar tots",
-    "desseleccionar": "Desseleccionar"
+    "desseleccionar": "Desseleccionar",
+    "confirmar": "Confirmar",
+    "estas_segur": "Segur que vols continuar?"
   },
   "nav": {
     "gestio_analisis": "Gesti\u00f3 d'an\u00e0lisis de laboratori",

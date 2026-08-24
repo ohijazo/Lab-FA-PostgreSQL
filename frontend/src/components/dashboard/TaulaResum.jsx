@@ -1,11 +1,13 @@
 import { useTranslation } from 'react-i18next'
 
 export default function TaulaResum({ titol, dades, metricKeys, metricLabels }) {
+  // Els hooks s'han de cridar sempre, abans de qualsevol retorn condicional.
+  const { t } = useTranslation()
+
   if (!dades || Object.keys(dades).length === 0) {
     return null
   }
 
-  const { t } = useTranslation()
   const entries = Object.entries(dades).sort((a, b) => b[1].count - a[1].count)
   const keys = metricKeys || []
 
