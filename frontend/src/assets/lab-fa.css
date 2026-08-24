@@ -1000,6 +1000,10 @@ button.estat-badge { margin-bottom: 0; }
 .lang-switcher {
   font-size: 0.75rem;
   font-weight: 700;
+  /* Pico posa margin-bottom als <button>. La nav els centra amb flex, i
+     el centrat compta els marges, així que el botó quedava mig marge més
+     amunt que la resta. La resta de .nav-link ja porten margin:0. */
+  margin: 0;
   padding: 0.2rem 0.5rem;
   border: 1px solid var(--lab-border);
   border-radius: 0.25rem;
