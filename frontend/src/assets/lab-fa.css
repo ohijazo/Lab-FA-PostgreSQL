@@ -1,17 +1,44 @@
 /* Lab FC - Custom styles over PicoCSS */
 
 :root {
-  /* --- Escala primària (blau) --- */
-  --lab-blue-50:  #eff6ff;
-  --lab-blue-100: #dbeafe;
-  --lab-blue-200: #bfdbfe;
-  --lab-blue-300: #93c5fd;
-  --lab-blue-400: #60a5fa;
-  --lab-blue-500: #3b82f6;
-  --lab-blue-600: #2563eb;
-  --lab-blue-700: #1d4ed8;
-  --lab-blue-800: #1e40af;
-  --lab-blue-900: #1e3a8a;
+  /* --- Escala primària (petroli) ---
+     Presa del logo: el navy dels eixos, la corba i el logotip és
+     #15435b, aquí ancorat al graó 700. */
+  --lab-petrol-50:  #f0f6f9;
+  --lab-petrol-100: #dbe9f0;
+  --lab-petrol-200: #b9d3e0;
+  --lab-petrol-300: #8bb5cb;
+  --lab-petrol-400: #558fae;
+  --lab-petrol-500: #2f6d8f;
+  --lab-petrol-600: #1d5878;
+  --lab-petrol-700: #15435b;
+  --lab-petrol-800: #133748;
+  --lab-petrol-900: #112c39;
+
+  /* --- Escala d'accent (menta) ---
+     Els nodes de la corba del logo són #43b19d, aquí al graó 500.
+     Reservada per a l'estat "apte" i per a senyalar què està actiu. */
+  --lab-teal-50:  #edfaf5;
+  --lab-teal-100: #d2f3e9;
+  --lab-teal-200: #a6e6d6;
+  --lab-teal-300: #6fd2bd;
+  --lab-teal-400: #57c2ac;
+  --lab-teal-500: #43b19d;
+  --lab-teal-600: #2f9184;
+  --lab-teal-700: #26746b;
+  --lab-teal-800: #225c56;
+  --lab-teal-900: #1e4c47;
+
+  /* Sàlvia: l'àrea omplerta sota la corba del logo. Per a il·lustracions. */
+  --lab-sage: #94c8bc;
+
+  /* --- Sèries de gràfics --- */
+  --lab-chart-1: var(--lab-petrol-600);
+  --lab-chart-2: #dc2626;
+  --lab-chart-3: var(--lab-teal-600);
+  --lab-chart-4: #d97706;
+  --lab-chart-text: var(--lab-text-secondary);
+  --lab-chart-grid: var(--lab-line);
 
   /* --- Escala neutre (slate) --- */
   --lab-slate-50:  #f8fafc;
@@ -35,13 +62,19 @@
   --lab-danger-50:   #fef2f2;
   --lab-danger-500:  #ef4444;
   --lab-danger-700:  #b91c1c;
-  --lab-info-50:     #eff6ff;
-  --lab-info-500:    #3b82f6;
-  --lab-info-700:    #1d4ed8;
+  --lab-info-50:     var(--lab-petrol-50);
+  --lab-info-500:    var(--lab-petrol-500);
+  --lab-info-700:    var(--lab-petrol-700);
 
   /* --- Tipografia --- */
   --lab-font-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --lab-font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  /* IBM Plex es va dissenyar per a documentació tècnica; la variant
+     condensada compra amplada, que és el que necessita una taula de 15
+     columnes. Només per a titulars: les dades segueixen amb Inter. */
+  --lab-font-display: 'IBM Plex Sans Condensed', var(--lab-font-sans);
+  /* Abans hi deia 'JetBrains Mono', que no està instal·lada enlloc: sempre
+     queia al fallback. Aquesta pila resol de veritat a Windows i a Ubuntu. */
+  --lab-font-mono: 'SF Mono', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', 'Liberation Mono', 'Courier New', monospace;
   --lab-text-xs:   0.75rem;    /* 12 */
   --lab-text-sm:   0.875rem;   /* 14 */
   --lab-text-base: 1rem;       /* 16 */
@@ -68,16 +101,18 @@
   --lab-radius-md: 6px;
   --lab-radius-lg: 8px;
   --lab-radius-xl: 12px;
+  /* Àlies per defecte: s'usa a recepció, rangs, importació, ajuda i admin-camps. */
+  --lab-radius: var(--lab-radius-md);
 
   /* --- Shadows --- */
-  --lab-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --lab-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
-  --lab-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.10), 0 4px 6px -4px rgba(15, 23, 42, 0.06);
-  --lab-shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
+  --lab-shadow-sm: 0 1px 2px 0 rgba(17, 44, 57, 0.05);
+  --lab-shadow-md: 0 4px 6px -1px rgba(17, 44, 57, 0.08), 0 2px 4px -2px rgba(17, 44, 57, 0.05);
+  --lab-shadow-lg: 0 10px 15px -3px rgba(17, 44, 57, 0.10), 0 4px 6px -4px rgba(17, 44, 57, 0.06);
+  --lab-shadow-xl: 0 20px 25px -5px rgba(17, 44, 57, 0.12), 0 8px 10px -6px rgba(17, 44, 57, 0.06);
 
   /* --- Àlies llegat (mantenir compatibilitat) --- */
-  --lab-primary: var(--lab-blue-600);
-  --lab-primary-hover: var(--lab-blue-700);
+  --lab-primary: var(--lab-petrol-600);
+  --lab-primary-hover: var(--lab-petrol-700);
   --lab-bg-subtle: var(--lab-slate-50);
   --lab-border: var(--lab-slate-200);
   --lab-text: var(--lab-slate-800);
@@ -86,11 +121,32 @@
   --lab-text-faint: var(--lab-slate-400);
   --lab-bg-card: #fff;
   --lab-line: var(--lab-slate-100);
+
+  /* --- Rols de marca --- */
+  --lab-primary-subtle:        var(--lab-petrol-50);
+  --lab-primary-subtle-border: var(--lab-petrol-200);
+  --lab-primary-strong:        var(--lab-petrol-800);
+  --lab-primary-on-dark:       var(--lab-petrol-300);
+  --lab-on-primary:            #fff;
+  --lab-focus-ring:            var(--lab-primary);
+
+  /* --- Estat "apte" ---
+     "Apte" és un ESTAT, no la marca. Fins ara compartia el blau del
+     primari i per això era indistingible de la navegació. Aquí queda
+     desacoblat: canviar la marca ja no arrossega el significat. */
+  --lab-apte-bg:     var(--lab-teal-100);
+  --lab-apte-fg:     var(--lab-teal-800);
+  --lab-apte-border: var(--lab-teal-300);
+  --lab-apte-icon:   var(--lab-teal-700);
+  --lab-apte-solid:  var(--lab-teal-700);
+  --lab-on-apte:     #fff;
 }
 
 [data-theme="dark"] {
-  --lab-primary: var(--lab-blue-500);
-  --lab-primary-hover: var(--lab-blue-400);
+  --lab-primary: var(--lab-petrol-300);
+  --lab-primary-hover: var(--lab-petrol-200);
+  /* En fosc el primari és clar, així que el text a sobre ha de ser fosc. */
+  --lab-on-primary: var(--lab-slate-900);
   --lab-bg-subtle: var(--lab-slate-800);
   --lab-border: var(--lab-slate-700);
   --lab-text: var(--lab-slate-200);
@@ -100,10 +156,39 @@
   --lab-bg-card: var(--lab-slate-800);
   --lab-line: var(--lab-slate-700);
 
+  --lab-chart-1: var(--lab-petrol-300);
+  --lab-chart-2: #f87171;
+  --lab-chart-3: var(--lab-teal-300);
+  --lab-chart-4: #fbbf24;
+
+  /* petrol-200 i no -300: el -300 deixava l'enllaç actiu just al llindar AA. */
+  --lab-primary-on-dark: var(--lab-petrol-200);
+  --lab-apte-bg:     var(--lab-teal-900);
+  --lab-apte-fg:     var(--lab-teal-100);
+  --lab-apte-border: var(--lab-teal-600);
+  --lab-apte-icon:   var(--lab-teal-300);
+
   --lab-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.30);
   --lab-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.25);
   --lab-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.30);
   --lab-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.55), 0 8px 10px -6px rgba(0, 0, 0, 0.30);
+}
+
+:root {
+  /* PicoCSS escala la mida d'arrel del 100% al 125% segons l'amplada, de
+     manera que --lab-space-4 valia 20px en un monitor i 16px en un portàtil.
+     Fixant-la, els tokens tornen a valer el que diuen. */
+  font-size: 100%;
+}
+
+h1, h2, h3,
+.nav-brand-name,
+.seccio-titol,
+.form-seccio-legend,
+.analisis-list-table thead th,
+.tipus-table thead th,
+.admin-header hgroup > :first-child {
+  font-family: var(--lab-font-display);
 }
 
 html, body {
@@ -118,7 +203,7 @@ html, body {
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--lab-primary);
+  outline: 2px solid var(--lab-focus-ring);
   outline-offset: 1px;
   border-color: var(--lab-primary);
 }
@@ -127,13 +212,13 @@ a:focus-visible,
 [role="tab"]:focus-visible,
 button:not(.btn):focus-visible,
 summary:focus-visible {
-  outline: 2px solid var(--lab-primary);
+  outline: 2px solid var(--lab-focus-ring);
   outline-offset: 2px;
   border-radius: 4px;
 }
 /* Files clicables de taules */
 tr.clickable-row:focus-visible {
-  outline: 2px solid var(--lab-primary);
+  outline: 2px solid var(--lab-focus-ring);
   outline-offset: -2px;
 }
 
@@ -166,9 +251,7 @@ tr.clickable-row:focus-visible {
 
 /* Defensiu: botons petits no s'han d'estirar a tot l'ample */
 .btn-sm,
-.btn-sm[role="button"],
-.btn-xs,
-.btn-xs[role="button"] {
+.btn-sm[role="button"] {
   width: auto !important;
 }
 
@@ -215,7 +298,7 @@ tr.clickable-row:focus-visible {
   align-items: center;
   justify-content: center;
   color: var(--lab-primary);
-  background: var(--lab-blue-50);
+  background: var(--lab-primary-subtle);
   border: 1px solid color-mix(in srgb, var(--lab-primary) 25%, transparent);
   border-radius: var(--lab-radius-sm);
   padding: 0.05rem 0.25rem;
@@ -225,7 +308,7 @@ tr.clickable-row:focus-visible {
 }
 [data-theme="dark"] .formula-badge {
   background: color-mix(in srgb, var(--lab-primary) 15%, transparent);
-  color: var(--lab-blue-300);
+  color: var(--lab-primary-on-dark);
 }
 .form-camp-calc input[readonly] {
   background: var(--lab-bg-subtle);
@@ -281,9 +364,9 @@ button.estat-badge { margin-bottom: 0; }
   background: #7f1d1d; color: #fee2e2; border-color: #dc2626;
 }
 .estat-badge.estat-apte-apte {
-  background: #dbeafe;
-  color: #1e40af;
-  border-color: #93c5fd;
+  background: var(--lab-apte-bg);
+  color: var(--lab-apte-fg);
+  border-color: var(--lab-apte-border);
 }
 .estat-badge.estat-apte-no_apte {
   background: #fee2e2;
@@ -295,9 +378,6 @@ button.estat-badge { margin-bottom: 0; }
   color: var(--lab-text-muted);
   border-color: var(--lab-border);
   border-style: dashed;
-}
-[data-theme="dark"] .estat-badge.estat-apte-apte {
-  background: #1e3a8a; color: #dbeafe; border-color: #2563eb;
 }
 [data-theme="dark"] .estat-badge.estat-apte-no_apte {
   background: #7f1d1d; color: #fee2e2; border-color: #dc2626;
@@ -400,9 +480,8 @@ button.estat-badge { margin-bottom: 0; }
   display: inline-block;
   line-height: 1;
 }
-.row-apte-icon.is-apte { color: #1e40af; }
+.row-apte-icon.is-apte { color: var(--lab-apte-icon); }
 .row-apte-icon.is-no-apte { color: #dc2626; }
-[data-theme="dark"] .row-apte-icon.is-apte { color: #60a5fa; }
 [data-theme="dark"] .row-apte-icon.is-no-apte { color: #f87171; }
 
 /* --- Pantalla de recepció (rol recepcio) --- */
@@ -476,7 +555,7 @@ button.estat-badge { margin-bottom: 0; }
 .recepcio-notif-btn:hover { background: color-mix(in srgb, var(--lab-primary) 10%, transparent); }
 .recepcio-notif-btn.is-on {
   background: var(--lab-primary);
-  color: #ffffff;
+  color: var(--lab-on-primary);
   border-color: var(--lab-primary);
 }
 .recepcio-notif-btn.is-on:hover {
@@ -614,7 +693,7 @@ button.estat-badge { margin-bottom: 0; }
 .recepcio-tab.is-active { background: var(--lab-text); color: var(--lab-bg-card); border-color: var(--lab-text); }
 .recepcio-tab.is-active .recepcio-tab-count { background: rgba(255,255,255,0.2); color: inherit; }
 .recepcio-tab.is-active.is-pendent { background: #64748b; border-color: #64748b; }
-.recepcio-tab.is-active.is-apte { background: #1e40af; border-color: #1e40af; }
+.recepcio-tab.is-active.is-apte { background: var(--lab-apte-solid); border-color: var(--lab-apte-solid); }
 .recepcio-tab.is-active.is-no_apte { background: #991b1b; border-color: #991b1b; }
 
 .recepcio-rows {
@@ -632,7 +711,7 @@ button.estat-badge { margin-bottom: 0; }
   background: var(--lab-bg-card);
   overflow: hidden;
 }
-.recepcio-row-item.is-apte { border-left-color: #1e40af; }
+.recepcio-row-item.is-apte { border-left-color: var(--lab-apte-solid); }
 .recepcio-row-item.is-no_apte { border-left-color: #dc2626; background: #fef7f7; }
 .recepcio-row-item.is-pendent { border-left-color: #94a3b8; border-left-style: dashed; }
 .recepcio-row-item.is-open { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
@@ -692,7 +771,7 @@ button.estat-badge { margin-bottom: 0; }
   white-space: nowrap;
   letter-spacing: 0.02em;
 }
-.recepcio-badge.is-apte { background: #1e40af; color: #ffffff; }
+.recepcio-badge.is-apte { background: var(--lab-apte-solid); color: var(--lab-on-apte); }
 .recepcio-badge.is-no_apte { background: #991b1b; color: #ffffff; }
 .recepcio-badge.is-pendent {
   background: transparent;
@@ -715,8 +794,7 @@ button.estat-badge { margin-bottom: 0; }
 
 /* Dark mode */
 [data-theme="dark"] .recepcio-row-item.is-no_apte { background: #1a0808; }
-[data-theme="dark"] .recepcio-tab.is-active { background: var(--lab-slate-200); color: var(--lab-slate-800); border-color: var(--lab-slate-200); }
-[data-theme="dark"] .recepcio-badge.is-apte { background: #2563eb; }
+[data-theme="dark"] .recepcio-tab.is-active:not(.is-pendent):not(.is-apte):not(.is-no_apte) { background: var(--lab-slate-200); color: var(--lab-slate-800); border-color: var(--lab-slate-200); }
 [data-theme="dark"] .recepcio-badge.is-no_apte { background: #dc2626; }
 
 /* Responsive mòbil */
@@ -740,9 +818,16 @@ button.estat-badge { margin-bottom: 0; }
 .analisis-list-table {
   font-size: 0.88rem;
   table-layout: auto;
-  width: auto;        /* clau: deixa que la taula creixi tant com necessitin
-                         les columnes en lloc d'omplir 100% del contenidor */
+  width: 100%;
   max-width: 100%;
+}
+/* La taula omple l'amplada, però l'espai sobrant se'l queda l'última
+   columna en lloc de repartir-se entre totes: així el marc arriba fins
+   al final sense separar les dades i fer-les difícils de seguir.
+   Funciona amb qualsevol conjunt de columnes, que aquí és dinàmic. */
+.analisis-list-table thead th:last-child,
+.analisis-list-table tbody td:last-child {
+  width: 100%;
 }
 .analisis-list-table th,
 .analisis-list-table td {
@@ -831,28 +916,12 @@ button.estat-badge { margin-bottom: 0; }
   align-items: center;
 }
 
-.btn-sm,
-.btn-sm[role="button"] {
-  padding: 0.2rem 0.45rem;
-  font-size: 0.72rem;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.btn-xs,
-.btn-xs[role="button"] {
-  padding: 0.15rem 0.35rem;
-  font-size: 0.65rem;
-  margin: 0;
-  line-height: 1.2;
-}
-
 /* Sticky nav */
 .nav-sticky {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--pico-background-color);
+  background: var(--lab-bg-card);
   border-bottom: 1px solid var(--lab-border);
 }
 
@@ -917,12 +986,12 @@ button.estat-badge { margin-bottom: 0; }
 }
 
 .nav-link.is-active {
-  background: var(--lab-blue-50);
+  background: var(--lab-primary-subtle);
   color: var(--lab-primary);
 }
 [data-theme="dark"] .nav-link.is-active {
   background: color-mix(in srgb, var(--lab-primary) 20%, transparent);
-  color: var(--lab-blue-300);
+  color: var(--lab-primary-on-dark);
 }
 
 .lang-switcher {
@@ -940,7 +1009,7 @@ button.estat-badge { margin-bottom: 0; }
 
 .lang-switcher:hover {
   background: var(--lab-primary);
-  color: #fff;
+  color: var(--lab-on-primary);
   border-color: var(--lab-primary);
 }
 
@@ -960,7 +1029,7 @@ button.estat-badge { margin-bottom: 0; }
 }
 
 .nav-link-logout {
-  color: var(--lab-text-faint);
+  color: var(--lab-text-secondary);
   font-size: 0.8rem;
 }
 
@@ -1003,13 +1072,13 @@ button.estat-badge { margin-bottom: 0; }
 }
 
 .nav-dropdown-item.is-active {
-  background: var(--lab-blue-50);
+  background: var(--lab-primary-subtle);
   color: var(--lab-primary);
   font-weight: 500;
 }
 [data-theme="dark"] .nav-dropdown-item.is-active {
   background: color-mix(in srgb, var(--lab-primary) 20%, transparent);
-  color: var(--lab-blue-300);
+  color: var(--lab-primary-on-dark);
 }
 
 /* Home toolbar */
@@ -1031,25 +1100,28 @@ button.estat-badge { margin-bottom: 0; }
 /* Tipus table on homepage */
 .tipus-table-wrapper {
   border: 1px solid var(--lab-border);
-  border-radius: 0.5rem;
-  background: var(--pico-background-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: var(--lab-radius-lg);
+  background: var(--lab-bg-card);
+  box-shadow: var(--lab-shadow-sm);
 }
 
 .tipus-table {
   margin-bottom: 0;
 }
 
-.tipus-table thead {
-  background: var(--lab-primary);
-}
-
 .tipus-table thead th {
-  font-size: 0.75rem;
+  background: var(--lab-slate-100);
+  color: var(--lab-text-secondary);
+  font-size: var(--lab-text-xs);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #fff;
-  border-bottom: none;
+  /* Filet de menta sota la capçalera: l'únic accent de la taula. */
+  border-bottom: 2px solid var(--lab-teal-500);
+}
+[data-theme="dark"] .tipus-table thead th {
+  background: var(--lab-slate-700);
+  color: var(--lab-text-secondary);
 }
 
 .tipus-table tbody tr:hover {
@@ -1155,8 +1227,10 @@ button.estat-badge { margin-bottom: 0; }
 }
 
 .seccio-titol {
+  position: relative;
   margin: 0 0 0.35rem 0;
   padding-bottom: 0.25rem;
+  padding-left: 0.7rem;
   border-bottom: 2px solid var(--lab-primary);
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -1264,12 +1338,29 @@ button.estat-badge { margin-bottom: 0; }
 }
 
 .form-seccio-legend {
+  position: relative;
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--lab-primary);
-  padding: 0 0.3rem;
+  padding: 0 0.3rem 0 0.7rem;
+}
+
+/* --- Marca d'eixos ---
+   El logo és una corba d'alveògraf sobre uns eixos P/L. Aquest angle recte
+   n'és la mateixa figura reduïda a marcador: vertical + horitzontal, en la
+   menta del logo. És l'únic ornament de la interfície. */
+.form-seccio-legend::before,
+.seccio-titol::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  width: 0.5em;
+  height: 0.55em;
+  border-left: 1.5px solid var(--lab-teal-500);
+  border-bottom: 1.5px solid var(--lab-teal-500);
 }
 
 .form-camps-grid {
@@ -1575,15 +1666,26 @@ button.estat-badge { margin-bottom: 0; }
   animation: lab-spin 0.9s linear infinite;
 }
 
+/* PicoCSS estira els <button> a tot l'ample amb la mateixa especificitat
+   que .btn, i guanya per ordre al full. Qualificant amb l'element pugem
+   l'especificitat i ho resolem un sol cop, sense !important. */
+button.btn,
+a.btn,
+input.btn {
+  width: auto;
+  display: inline-flex;
+  margin: 0;
+}
+
 /* Sizes */
-.btn-sm { padding: 0.3rem 0.65rem; font-size: var(--lab-text-xs); }
-.btn-md { padding: 0.5rem 0.9rem;  font-size: var(--lab-text-sm); }
-.btn-lg { padding: 0.7rem 1.15rem; font-size: var(--lab-text-base); }
+.btn-sm, .btn-sm[role="button"] { padding: 0.3rem 0.65rem; font-size: var(--lab-text-xs); }
+.btn-md, .btn-md[role="button"] { padding: 0.5rem 0.9rem;  font-size: var(--lab-text-sm); }
+.btn-lg, .btn-lg[role="button"] { padding: 0.7rem 1.15rem; font-size: var(--lab-text-base); }
 
 /* Variants */
 .btn-primary {
   background: var(--lab-primary);
-  color: #fff;
+  color: var(--lab-on-primary);
   border-color: var(--lab-primary);
 }
 .btn-primary:hover:not([disabled]) {
@@ -1898,7 +2000,7 @@ button.estat-badge { margin-bottom: 0; }
   align-items: center;
   justify-content: center;
   color: var(--lab-primary);
-  background: var(--lab-blue-50);
+  background: var(--lab-primary-subtle);
   width: 32px;
   height: 32px;
   border-radius: var(--lab-radius-md);
@@ -1927,7 +2029,17 @@ button.estat-badge { margin-bottom: 0; }
 }
 .search-input-wrap input {
   margin-bottom: 0;
-  padding-left: 2rem;
+  /* PicoCSS estilitza input[type="search"] amb un selector més específic
+     que aquest (hi encadena :not()), i hi posa la seva pròpia lupa i un
+     farciment esquerre gran. Com que la icona la posem nosaltres, cal
+     anul·lar-ho explícitament o en surten dues. */
+  background-image: none !important;
+  padding-left: 2rem !important;
+  border-radius: var(--lab-radius-md);
+}
+.search-input-wrap input::-webkit-search-decoration,
+.search-input-wrap input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
 }
 .search-input-icon {
   position: absolute;
@@ -2000,7 +2112,7 @@ button.estat-badge { margin-bottom: 0; }
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  border-bottom: 1px solid var(--lab-border);
+  border-bottom: 2px solid var(--lab-teal-500);
 }
 [data-theme="dark"] .analisis-list-table thead th {
   background: var(--lab-slate-700);
@@ -2013,7 +2125,7 @@ button.estat-badge { margin-bottom: 0; }
   background: color-mix(in srgb, var(--lab-slate-700) 40%, transparent);
 }
 .analisis-list-table tbody tr:hover {
-  background: var(--lab-blue-50) !important;
+  background: var(--lab-primary-subtle) !important;
 }
 [data-theme="dark"] .analisis-list-table tbody tr:hover {
   background: color-mix(in srgb, var(--lab-primary) 15%, transparent) !important;
@@ -2262,6 +2374,18 @@ button.estat-badge { margin-bottom: 0; }
   background: color-mix(in srgb, var(--lab-danger-500) 15%, transparent);
   color: #fecaca;
 }
+[data-theme="dark"] .alert-success {
+  background: color-mix(in srgb, var(--lab-success-500) 15%, transparent);
+  color: #a7f3d0;
+}
+[data-theme="dark"] .alert-warning {
+  background: color-mix(in srgb, var(--lab-warning-500) 15%, transparent);
+  color: #fde68a;
+}
+[data-theme="dark"] .alert-info {
+  background: color-mix(in srgb, var(--lab-info-500) 18%, transparent);
+  color: var(--lab-primary-on-dark);
+}
 .alert-success {
   background: var(--lab-success-50);
   color: var(--lab-success-700);
@@ -2420,7 +2544,7 @@ button.estat-badge { margin-bottom: 0; }
 }
 .rangs-card-step.is-active .rangs-card-step-num {
   background: var(--lab-primary);
-  color: #fff;
+  color: var(--lab-on-primary);
 }
 .rangs-card-step.is-done .rangs-card-step-num {
   background: #10b981;
@@ -2548,7 +2672,7 @@ button.estat-badge { margin-bottom: 0; }
 .rangs-wizard-tab:hover { background: var(--lab-bg-subtle); }
 .rangs-wizard-tab.is-active {
   background: var(--lab-primary);
-  color: #fff;
+  color: var(--lab-on-primary);
   border-color: var(--lab-primary);
 }
 .rangs-wizard-tab-count {
@@ -2993,14 +3117,13 @@ button.estat-badge { margin-bottom: 0; }
 .detall-valoracio-btn.is-alerta-on { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
 .detall-valoracio-btn.is-alerta-off { border-style: dashed; color: var(--lab-text-muted); }
 /* Estats APTE */
-.detall-valoracio-btn.is-apte-apte { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+.detall-valoracio-btn.is-apte-apte { background: var(--lab-apte-bg); border-color: var(--lab-apte-border); color: var(--lab-apte-fg); }
 .detall-valoracio-btn.is-apte-no_apte { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
 .detall-valoracio-btn.is-apte-pendent { border-style: dashed; color: var(--lab-text-muted); }
 /* Dark mode */
 [data-theme="dark"] .detall-valoracio-btn.is-finalitzat-on { background: #064e3b; border-color: #047857; color: #d1fae5; }
 [data-theme="dark"] .detall-valoracio-btn.is-finalitzat-off { background: #78350f; border-color: #b45309; color: #fef3c7; }
 [data-theme="dark"] .detall-valoracio-btn.is-alerta-on { background: #7f1d1d; border-color: #dc2626; color: #fee2e2; }
-[data-theme="dark"] .detall-valoracio-btn.is-apte-apte { background: #1e3a8a; border-color: #2563eb; color: #dbeafe; }
 [data-theme="dark"] .detall-valoracio-btn.is-apte-no_apte { background: #7f1d1d; border-color: #dc2626; color: #fee2e2; }
 @media (max-width: 640px) {
   .detall-valoracio-buttons { grid-template-columns: 1fr; }
@@ -3416,7 +3539,7 @@ button.estat-badge { margin-bottom: 0; }
 }
 .ajuda-sidebar-nav .ajuda-toc-item.is-active .ajuda-toc-num {
   background: var(--lab-primary);
-  color: #fff;
+  color: var(--lab-on-primary);
 }
 .ajuda-toc-label {
   flex: 1;
@@ -3657,9 +3780,9 @@ button.estat-badge { margin-bottom: 0; }
 }
 
 .ajuda-info {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1e40af;
+  background: var(--lab-primary-subtle);
+  border: 1px solid var(--lab-primary-subtle-border);
+  color: var(--lab-primary-strong);
 }
 
 .ajuda-tip {
@@ -3689,8 +3812,8 @@ button.estat-badge { margin-bottom: 0; }
 }
 
 .ajuda-info-icon {
-  background: #2563eb;
-  color: #fff;
+  background: var(--lab-primary);
+  color: var(--lab-on-primary);
 }
 
 .ajuda-tip-icon {
@@ -3786,7 +3909,7 @@ button.estat-badge { margin-bottom: 0; }
 }
 
 .ajuda-role-editor {
-  background: #eff6ff;
+  background: var(--lab-primary-subtle);
 }
 
 .ajuda-role-editor .ajuda-role-title {
@@ -3965,8 +4088,9 @@ button.estat-badge { margin-bottom: 0; }
   font-size: 1.1rem;
   padding: 0.2rem 0.45rem;
   border: 1px solid var(--lab-border);
-  border-radius: 0.25rem;
+  border-radius: var(--lab-radius-sm);
   background: transparent;
+  color: var(--lab-text-secondary);
   cursor: pointer;
   line-height: 1;
   transition: background 0.15s;
@@ -3978,9 +4102,9 @@ button.estat-badge { margin-bottom: 0; }
 
 /* Dark mode overrides for colored boxes */
 [data-theme="dark"] .ajuda-info {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #93c5fd;
+  background: color-mix(in srgb, var(--lab-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--lab-primary) 30%, transparent);
+  color: var(--lab-primary-on-dark);
 }
 
 [data-theme="dark"] .ajuda-tip {
