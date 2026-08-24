@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { crearAnalisi, obtenirConfig } from '../api/analisis'
 import AnalisisForm from '../components/AnalisisForm'
+import Icon from '../components/Icon'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import LoadingBlock from '../components/ui/LoadingBlock'
 import { useToast } from '../context/ToastContext'
@@ -41,7 +42,12 @@ export default function NouAnalisiPage() {
   }
 
   if (loading) return <LoadingBlock label={t('common.carregant')} />
-  if (error && !config) return <p>Error: {error}</p>
+  if (error && !config) return (
+    <div className="alert alert-danger">
+      <Icon name="AlertCircle" size={14} />
+      <span>{error}</span>
+    </div>
+  )
 
   return (
     <>

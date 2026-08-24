@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { obtenirAnalisi, editarAnalisi, obtenirConfig, acquireLock, releaseLock } from '../api/analisis'
 import AnalisisForm from '../components/AnalisisForm'
+import Icon from '../components/Icon'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
+import Button from '../components/ui/Button'
 import LoadingBlock from '../components/ui/LoadingBlock'
 import { useToast } from '../context/ToastContext'
 
@@ -107,7 +109,12 @@ export default function EditarAnalisiPage() {
   }
 
   if (loading) return <LoadingBlock label={t('common.carregant')} />
-  if (error && !config) return <p>Error: {error}</p>
+  if (error && !config) return (
+    <div className="alert alert-danger">
+      <Icon name="AlertCircle" size={14} />
+      <span>{error}</span>
+    </div>
+  )
   if (!analisi) return <p>{t('common.no_trobat')}</p>
 
   const analisiRef = config.columnes_llista?.[0] && analisi[config.columnes_llista[0]]
@@ -132,27 +139,28 @@ export default function EditarAnalisiPage() {
       </h2>
 
       {otherUser && (
-        <article style={{ background: 'var(--pico-mark-background-color, #fff3cd)', padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '4px' }}>
-          <strong>{t('form.conflicte')}:</strong> {t('form.atencio_altre_usuari', { user: otherUser })}
-        </article>
+        <div className="alert alert-warning">
+          <Icon name="AlertTriangle" size={14} />
+          <span><strong>{t('form.conflicte')}:</strong> {t('form.atencio_altre_usuari', { user: otherUser })}</span>
+        </div>
       )}
 
       {conflict && (
-        <article style={{ background: '#f8d7da', padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '4px' }}>
-          <p style={{ margin: 0 }}>
-            <strong>{t('form.conflicte')}:</strong> {error}
-          </p>
-          <button
-            onClick={handleReload}
-            style={{ marginTop: '0.5rem' }}
-            className="outline"
-          >
+        <div className="alert alert-danger alert-amb-accio">
+          <Icon name="AlertCircle" size={14} />
+          <span><strong>{t('form.conflicte')}:</strong> {error}</span>
+          <Button variant="outline" size="sm" icon={<Icon name="RefreshCw" size={12} />} onClick={handleReload}>
             {t('form.recarregar_dades')}
-          </button>
-        </article>
+          </Button>
+        </div>
       )}
 
-      {error && !conflict && <p style={{ color: 'var(--pico-del-color)' }}>{error}</p>}
+      {error && !conflict && (
+        <div className="alert alert-danger">
+          <Icon name="AlertCircle" size={14} />
+          <span>{error}</span>
+        </div>
+      )}
 
       <AnalisisForm
         seccions={config.seccions}

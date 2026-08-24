@@ -224,7 +224,12 @@ export default function DetallPage() {
       ))}
     </div>
   )
-  if (error) return <p>Error: {error}</p>
+  if (error) return (
+    <div className="alert alert-danger">
+      <Icon name="AlertCircle" size={14} />
+      <span>{error}</span>
+    </div>
+  )
   if (!analisi) return <p>{t('common.no_trobat')}</p>
 
   const titleValue = titleField ? (analisi[titleField] || `#${analisi.id}`) : `#${analisi.id}`

@@ -8,7 +8,6 @@ import Icon from '../components/Icon'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
-import LoadingBlock from '../components/ui/LoadingBlock'
 import TableSkeleton from '../components/ui/TableSkeleton'
 
 export default function AdminUsersPage() {
@@ -170,7 +169,9 @@ export default function AdminUsersPage() {
                 <option value="recepcio">{t('admin_users.rol_recepcio')}</option>
               </select>
             </label>
-            <button type="submit">{editingId ? t('common.desar_canvis') : t('common.crear')}</button>
+            <Button type="submit" icon={<Icon name="Save" size={14} />}>
+              {editingId ? t('common.desar_canvis') : t('common.crear')}
+            </Button>
           </fieldset>
         </form>
       )}

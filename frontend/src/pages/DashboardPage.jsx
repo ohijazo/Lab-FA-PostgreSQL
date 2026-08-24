@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { fetchDashboard } from '../api/dashboard'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import LoadingBlock from '../components/ui/LoadingBlock'
@@ -69,29 +69,28 @@ export default function DashboardPage() {
           { label: t('nav.dashboard') },
         ]}
       />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-        <h2 style={{ margin: 0 }}>{t('dashboard_page.dashboard', { nom: data?.nom || tipus })}</h2>
-        <Link to={`/${tipus}`} role="button" className="outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85em' }}>
+      <div className="dashboard-header">
+        <h2>{t('dashboard_page.dashboard', { nom: data?.nom || tipus })}</h2>
+        <Link to={`/${tipus}`} className="btn btn-outline btn-sm">
           {t('dashboard_page.tornar_llista')}
         </Link>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'end', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        <label style={{ margin: 0 }}>
+      <div className="dashboard-filtres">
+        <label>
           <small>{t('dashboard_page.data_inici')}</small>
-          <input type="date" value={dataInici} onChange={(e) => handleDataIniciChange(e.target.value)} style={{ marginBottom: 0 }} />
+          <input type="date" value={dataInici} onChange={(e) => handleDataIniciChange(e.target.value)} />
         </label>
-        <label style={{ margin: 0 }}>
+        <label>
           <small>{t('dashboard_page.data_fi')}</small>
-          <input type="date" value={dataFi} onChange={(e) => handleDataFiChange(e.target.value)} style={{ marginBottom: 0 }} />
+          <input type="date" value={dataFi} onChange={(e) => handleDataFiChange(e.target.value)} />
         </label>
         {filtersInfo.filter(f => f.options.length > 0).map((fi) => (
-          <label key={fi.field} style={{ margin: 0 }}>
+          <label key={fi.field}>
             <small>{fi.label}</small>
             <select
               value={filtres[fi.field] || ''}
               onChange={(e) => handleFilterChange(fi.field, e.target.value)}
-              style={{ marginBottom: 0 }}
             >
               <option value="">{t('common.totes')}</option>
               {fi.options.map((opt) => (
@@ -102,10 +101,18 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {loading && <LoadingBlock label={t('dashboard_page.carregant')} />}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {/* Només a la primera càrrega. En canviar un filtre es manté el
+          gràfic anterior atenuat: substituir-lo per un bloc de càrrega
+          feia parpellejar tota la pàgina a cada tria. */}
+      {loading && !data && <LoadingBlock label={t('dashboard_page.carregant')} />}
+      {error && (
+        <div className="alert alert-danger">
+          <Icon name="AlertCircle" size={14} />
+          <span>{error}</span>
+        </div>
+      )}
 
-      {data && !loading && data.total_registres === 0 && (
+      {data && data.total_registres === 0 && (
         <EmptyState
           icon={<Icon name="BarChart3" size={48} />}
           title={t('dashboard_page.no_dades')}
@@ -119,13 +126,18 @@ export default function DashboardPage() {
         />
       )}
 
-      {data && !loading && data.total_registres > 0 && (
-        <>
+      {data && data.total_registres > 0 && (
+        <div className={`dashboard-contingut${loading ? ' is-refrescant' : ''}`} aria-busy={loading || undefined}>
           <p>
-            <strong>{data.total_registres}</strong> {t('dashboard_page.registres')}
-            {data.rang_dates?.min && (
-              <> — del {data.rang_dates.min} al {data.rang_dates.max}</>
-            )}
+            {/* La clau 'dashboard_page.registres' no existeix a cap dels
+                dos idiomes i sortia crua; 'registres_rang' sí que hi és i
+                ja estava escrita per a <Trans>. */}
+            <Trans
+              i18nKey="dashboard_page.registres_rang"
+              values={{ total: data.total_registres }}
+              components={[<strong key="0" />]}
+            />
+            {data.rang_dates?.min && t('dashboard_page.del_al', { min: data.rang_dates.min, max: data.rang_dates.max })}
           </p>
 
           <KpiCards kpis={data.kpis} kpiOrder={data.kpi_order} fieldSeccio={data.field_seccio} />
@@ -164,7 +176,7 @@ export default function DashboardPage() {
               metricLabels={data.metric_labels}
             />
           ))}
-        </>
+        </div>
       )}
     </>
   )

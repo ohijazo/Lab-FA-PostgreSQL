@@ -11,7 +11,6 @@ import Icon from '../components/Icon'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
-import LoadingBlock from '../components/ui/LoadingBlock'
 import TableSkeleton from '../components/ui/TableSkeleton'
 import { Tabs, Tab } from '../components/ui/Tabs'
 

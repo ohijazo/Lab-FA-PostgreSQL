@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { groupCamps } from '../utils/groupCamps'
 import { getAlertaColor, getRangInfo } from '../utils/alertes'
 import { recomputeFormulas } from '../utils/formula'
+import { useConfirm } from '../context/ConfirmContext'
 import Icon from './Icon'
 import Button from './ui/Button'
 
@@ -26,6 +27,31 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
     }
     return { ...defaults, ...initialData }
   })
+
+  const confirm = useConfirm()
+  // Fotografia de l'estat de partida. Va en useState i no en useRef
+  // perquè llegir una ref durant el render no és legítim; l'inicialitzador
+  // mandrós només corre un cop, així que queda congelat igualment.
+  const [inicialSerialitzat] = useState(() => JSON.stringify(form))
+  const teCanvis = useMemo(
+    () => JSON.stringify(form) !== inicialSerialitzat,
+    [form, inicialSerialitzat]
+  )
+
+  // Cancel·lar descartava els canvis sense avisar.
+  async function handleCancel() {
+    if (teCanvis) {
+      const ok = await confirm({
+        title: t('form.descartar_titol'),
+        message: t('form.descartar_msg'),
+        confirmLabel: t('form.descartar_confirm'),
+        cancelLabel: t('form.descartar_seguir'),
+        variant: 'danger',
+      })
+      if (!ok) return
+    }
+    onCancel()
+  }
 
   // Recalcula tots els camps amb fórmula a partir dels valors actuals.
   // Així si l'usuari canvia un input, els calculats s'actualitzen.
@@ -194,7 +220,7 @@ export default function AnalisisForm({ seccions, initialData = {}, onSubmit, onC
           {submitting ? t('common.desant') : t('common.desar')}
         </Button>
         {onCancel && (
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
+          <Button type="button" variant="ghost" onClick={handleCancel} disabled={submitting}>
             {t('common.cancellar')}
           </Button>
         )}

@@ -7,7 +7,7 @@ import { useConfirm } from '../context/ConfirmContext'
 import Icon from '../components/Icon'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
-import LoadingBlock from '../components/ui/LoadingBlock'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
 import TableSkeleton from '../components/ui/TableSkeleton'
 
 export default function AdminTipusPage() {
@@ -123,18 +123,26 @@ export default function AdminTipusPage() {
 
   return (
     <>
+      <Breadcrumbs
+        items={[
+          { label: t('nav.inici'), to: '/' },
+          { label: t('nav.tipus_analisi') },
+        ]}
+      />
+
       <div className="admin-header">
         <hgroup>
           <h1>{t('admin_tipus.titol')}</h1>
           <p>{t('admin_tipus.subtitol')}</p>
         </hgroup>
         <div className="admin-header-actions">
-          <button
-            className={showForm ? 'secondary' : ''}
+          <Button
+            variant={showForm ? 'ghost' : 'primary'}
+            icon={<Icon name={showForm ? 'X' : 'Plus'} size={14} />}
             onClick={() => { resetForm(); setShowForm(!showForm) }}
           >
             {showForm ? t('common.cancellar') : t('admin_tipus.nou_tipus')}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -166,7 +174,9 @@ export default function AdminTipusPage() {
                 onChange={e => setForm({ ...form, descripcio: e.target.value })}
               />
             </label>
-            <button type="submit">{editingId ? t('common.desar_canvis') : t('common.crear')}</button>
+            <Button type="submit" icon={<Icon name="Save" size={14} />}>
+              {editingId ? t('common.desar_canvis') : t('common.crear')}
+            </Button>
           </fieldset>
         </form>
       )}

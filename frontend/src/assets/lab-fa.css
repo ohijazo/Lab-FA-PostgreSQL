@@ -1596,6 +1596,42 @@ button.nav-link:not(.lang-switcher) {
   margin-top: 0.05rem;
 }
 
+/* --- DashboardPage: capçalera, filtres i refresc --- */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--lab-space-2);
+  margin-bottom: var(--lab-space-4);
+}
+.dashboard-header h2 {
+  margin: 0;
+}
+
+.dashboard-filtres {
+  display: flex;
+  gap: var(--lab-space-3);
+  align-items: end;
+  flex-wrap: wrap;
+  margin-bottom: var(--lab-space-4);
+}
+.dashboard-filtres label {
+  margin: 0;
+}
+.dashboard-filtres input,
+.dashboard-filtres select {
+  margin-bottom: 0;
+}
+
+/* En canviar un filtre el contingut anterior es manté atenuat en lloc de
+   desaparèixer: així la pàgina no salta a cada tria. */
+.dashboard-contingut.is-refrescant {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
 .dashboard-charts {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2447,6 +2483,14 @@ input.btn {
   font-size: var(--lab-text-sm);
   margin-bottom: var(--lab-space-3);
 }
+/* Avís que porta una acció al final (p. ex. "recarregar dades") */
+.alert-amb-accio {
+  flex-wrap: wrap;
+}
+.alert-amb-accio .btn {
+  margin-left: auto;
+}
+
 .alert-danger {
   background: var(--lab-danger-50);
   color: var(--lab-danger-700);

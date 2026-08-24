@@ -10,6 +10,7 @@ import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import Skeleton from '../components/ui/Skeleton'
 import LoadingBlock from '../components/ui/LoadingBlock'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import useShortcut from '../hooks/useShortcut'
@@ -249,11 +250,22 @@ export default function LlistaPage() {
   }
 
   if (loading && !config) return <LoadingBlock label={t('common.carregant')} />
-  if (error) return <p>Error: {error}</p>
+  if (error) return (
+    <div className="alert alert-danger">
+      <Icon name="AlertCircle" size={14} />
+      <span>{error}</span>
+    </div>
+  )
   if (!config) return <p>{t('common.tipus_no_trobat')}</p>
 
   return (
     <>
+      <Breadcrumbs
+        items={[
+          { label: t('nav.inici'), to: '/' },
+          { label: config.nom },
+        ]}
+      />
       <hgroup>
         <h1>{config.nom}</h1>
         <p>{t('llista.analisis_count', { count: data.total })}</p>

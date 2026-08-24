@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
@@ -16,7 +16,6 @@ function MockNavbar() {
       <text x="44" y="22" fill="#fff" fontSize="13" fontWeight="700">Lab FC</text>
       <text x="44" y="34" fill="#94a3b8" fontSize="8">Gestió d'anàlisis</text>
       {/* links */}
-      <text x="320" y="26" fill="#94a3b8" fontSize="10">Escàner</text>
       <text x="385" y="26" fill="#94a3b8" fontSize="10">Exportar Excel</text>
       <text x="485" y="26" fill="#94a3b8" fontSize="10">Ajuda</text>
       <rect x="530" y="12" width="85" height="20" rx="4" fill="#334155" />
@@ -355,33 +354,6 @@ function MockExportDialog() {
   )
 }
 
-function MockScannerDialog() {
-  return (
-    <svg viewBox="0 0 320 240" className="ajuda-mock" style={{ maxWidth: 360 }}>
-      <rect width="320" height="240" rx="10" fill="#1e293b" />
-      <text x="160" y="24" fill="#fff" fontSize="12" fontWeight="700" textAnchor="middle">Escàner de codis</text>
-      <text x="300" y="20" fill="#94a3b8" fontSize="14">×</text>
-      {/* camera view */}
-      <rect x="20" y="36" width="280" height="160" rx="6" fill="#0f172a" />
-      {/* scan line */}
-      <line x1="60" y1="116" x2="260" y2="116" stroke="#3b82f6" strokeWidth="2" opacity="0.7" />
-      {/* corners */}
-      <path d="M60,76 L60,60 L76,60" fill="none" stroke="#3b82f6" strokeWidth="2" />
-      <path d="M260,76 L260,60 L244,60" fill="none" stroke="#3b82f6" strokeWidth="2" />
-      <path d="M60,156 L60,172 L76,172" fill="none" stroke="#3b82f6" strokeWidth="2" />
-      <path d="M260,156 L260,172 L244,172" fill="none" stroke="#3b82f6" strokeWidth="2" />
-      {/* barcode illustration */}
-      {[100,105,108,114,118,120,126,130,134,138,142,148,152,156,160,166,170,174,178,182,188,192,196,200,206,210,214,220].map((x, i) => (
-        <rect key={i} x={x} y="90" width={i % 3 === 0 ? 3 : 1.5} height="52" fill="#94a3b8" opacity="0.3" />
-      ))}
-      {/* status */}
-      <text x="160" y="212" fill="#94a3b8" fontSize="9" textAnchor="middle">Apunta la càmera al codi de barres</text>
-      <rect x="80" y="220" width="160" height="14" rx="3" fill="#334155" />
-      <text x="160" y="231" fill="#94a3b8" fontSize="8" textAnchor="middle">O escriu el codi manualment...</text>
-    </svg>
-  )
-}
-
 /* ── Info/tip boxes ── */
 
 function InfoBox({ children }) {
@@ -472,7 +444,6 @@ export default function AjudaPage() {
     { id: 'detall', title: t('ajuda.seccio_detall') },
     { id: 'email', title: t('ajuda.seccio_email') },
     { id: 'dashboard', title: t('ajuda.seccio_dashboard') },
-    { id: 'escaner', title: t('ajuda.seccio_escaner') },
     { id: 'exportar', title: t('ajuda.seccio_exportar') },
     ...(isAdmin ? [
       { id: 'admin-tipus', title: t('ajuda.seccio_admin_tipus') },
@@ -558,11 +529,6 @@ export default function AjudaPage() {
             <strong>{t('ajuda.feature_excel')}</strong>
             <p>{t('ajuda.feature_excel_desc')}</p>
           </div>
-          <div className="ajuda-feature">
-            <div className="ajuda-feature-icon">&#128247;</div>
-            <strong>{t('ajuda.feature_escaner')}</strong>
-            <p>{t('ajuda.feature_escaner_desc')}</p>
-          </div>
         </div>
       </section>
 
@@ -586,7 +552,6 @@ export default function AjudaPage() {
           </thead>
           <tbody>
             <tr><td><strong>{t('ajuda.nav_logo')}</strong></td><td>{t('ajuda.nav_logo_desc')}</td></tr>
-            <tr><td><strong>{t('ajuda.nav_escaner')}</strong></td><td>{t('ajuda.nav_escaner_desc')}</td></tr>
             <tr><td><strong>{t('ajuda.nav_exportar')}</strong></td><td>{t('ajuda.nav_exportar_desc')}</td></tr>
             <tr><td><strong>{t('ajuda.nav_ajuda')}</strong></td><td>{t('ajuda.nav_ajuda_desc')}</td></tr>
             {isAdmin && <tr><td><strong>{t('ajuda.nav_config')}</strong></td><td>{t('ajuda.nav_config_desc')}</td></tr>}
@@ -758,36 +723,10 @@ export default function AjudaPage() {
         </ul>
       </section>
 
-      {/* 9. Escàner */}
-      <section id="escaner" className="ajuda-section">
-        <div className="ajuda-section-header">
-          <span className="ajuda-section-num">9</span>
-          <h2>{t('ajuda.escaner_title')}</h2>
-        </div>
-        <div className="ajuda-two-cols">
-          <div>
-            <p>
-              {t('ajuda.escaner_desc')}
-            </p>
-            <StepList steps={[
-              <Trans i18nKey="ajuda.escaner_pas1"><strong>Escàner</strong></Trans>,
-              t('ajuda.escaner_pas2'),
-              t('ajuda.escaner_pas3'),
-              t('ajuda.escaner_pas4'),
-            ]} />
-            <InfoBox>{t('ajuda.escaner_info')}</InfoBox>
-          </div>
-          <figure className="ajuda-figure" style={{ margin: 0 }}>
-            <MockScannerDialog />
-            <figcaption>{t('ajuda.escaner_fig')}</figcaption>
-          </figure>
-        </div>
-      </section>
-
-      {/* 10. Exportar */}
+      {/* 9. Exportar */}
       <section id="exportar" className="ajuda-section">
         <div className="ajuda-section-header">
-          <span className="ajuda-section-num">10</span>
+          <span className="ajuda-section-num">9</span>
           <h2>{t('ajuda.exportar_title')}</h2>
         </div>
         <div className="ajuda-two-cols">
@@ -818,7 +757,7 @@ export default function AjudaPage() {
           {/* 11. Admin: Tipus */}
           <section id="admin-tipus" className="ajuda-section">
             <div className="ajuda-section-header">
-              <span className="ajuda-section-num">11</span>
+              <span className="ajuda-section-num">10</span>
               <h2>{t('ajuda.admin_tipus_title')}</h2>
             </div>
             <p>
@@ -850,7 +789,7 @@ export default function AjudaPage() {
           {/* 12. Admin: Seccions i camps */}
           <section id="admin-camps" className="ajuda-section">
             <div className="ajuda-section-header">
-              <span className="ajuda-section-num">12</span>
+              <span className="ajuda-section-num">11</span>
               <h2>{t('ajuda.admin_camps_title')}</h2>
             </div>
             <h3>{t('ajuda.admin_camps_seccions')}</h3>
@@ -900,7 +839,7 @@ export default function AjudaPage() {
           {/* 13. Admin: Importar */}
           <section id="admin-importar" className="ajuda-section">
             <div className="ajuda-section-header">
-              <span className="ajuda-section-num">13</span>
+              <span className="ajuda-section-num">12</span>
               <h2>{t('ajuda.admin_importar_title')}</h2>
             </div>
             <p>
@@ -925,7 +864,7 @@ export default function AjudaPage() {
           {/* 14. Admin: Usuaris */}
           <section id="admin-usuaris" className="ajuda-section">
             <div className="ajuda-section-header">
-              <span className="ajuda-section-num">14</span>
+              <span className="ajuda-section-num">13</span>
               <h2>{t('ajuda.admin_usuaris_title')}</h2>
             </div>
             <p>
@@ -956,7 +895,7 @@ export default function AjudaPage() {
       {/* Rols */}
       <section id="rols" className="ajuda-section">
         <div className="ajuda-section-header">
-          <span className="ajuda-section-num">{isAdmin ? 15 : 11}</span>
+          <span className="ajuda-section-num">{isAdmin ? 14 : 10}</span>
           <h2>{t('ajuda.rols_title')}</h2>
         </div>
         <p>{t('ajuda.rols_desc')}</p>

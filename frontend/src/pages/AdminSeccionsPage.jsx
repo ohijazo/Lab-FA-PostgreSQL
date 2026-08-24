@@ -11,7 +11,6 @@ import Icon from '../components/Icon'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
-import LoadingBlock from '../components/ui/LoadingBlock'
 import TableSkeleton from '../components/ui/TableSkeleton'
 
 function SortableRow({ id, children }) {
@@ -194,12 +193,13 @@ export default function AdminSeccionsPage() {
           <p>{t('admin_seccions.subtitol')}</p>
         </hgroup>
         <div className="admin-header-actions">
-          <button
-            className={showForm ? 'secondary' : ''}
+          <Button
+            variant={showForm ? 'ghost' : 'primary'}
+            icon={<Icon name={showForm ? 'X' : 'Plus'} size={14} />}
             onClick={() => { resetForm(); setShowForm(!showForm) }}
           >
             {showForm ? t('common.cancellar') : t('admin_seccions.nova_seccio')}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -223,7 +223,9 @@ export default function AdminSeccionsPage() {
                 required
               />
             </label>
-            <button type="submit">{editingId ? t('common.desar_canvis') : t('common.crear')}</button>
+            <Button type="submit" icon={<Icon name="Save" size={14} />}>
+              {editingId ? t('common.desar_canvis') : t('common.crear')}
+            </Button>
           </fieldset>
         </form>
       )}
