@@ -1938,8 +1938,26 @@ input.btn {
   margin-top: var(--lab-space-2);
 }
 
-/* --- Modal (dialog) --- */
+/* --- Modal (dialog) ---
+   PicoCSS tracta qualsevol <dialog> com si fos la capa de fons: li posa
+   display:flex, min-width:100% i min-height:100%. Aquí el <dialog> és la
+   targeta, no la capa, i el min-width guanya al max-width (així ho mana la
+   cascada de mides), de manera que la targeta ocupava tota l'amplada i la
+   capçalera, el cos i el peu quedaven en filera. Cal desfer-ho.
+   El [open] és necessari: sense ell, el display:block també mostraria els
+   modals tancats, que s'amaguen amb el display:none del navegador. */
+.lab-modal[open] {
+  display: block;
+}
 .lab-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  min-width: 0;
+  min-height: 0;
+  /* fit-content i no auto: amb inset:0 a dalt i a baix, una alçada auto
+     s'estira per omplir el buit i el margin:auto ja no centra res. */
+  height: fit-content;
   padding: 0;
   border: 1px solid var(--lab-border);
   border-radius: var(--lab-radius-lg);
@@ -1947,7 +1965,8 @@ input.btn {
   color: var(--lab-text);
   box-shadow: var(--lab-shadow-xl);
   max-height: 90vh;
-  width: 100%;
+  /* el marge evita que toqui les vores en pantalla estreta */
+  width: calc(100% - 2rem);
 }
 .lab-modal-sm { max-width: 420px; }
 .lab-modal-md { max-width: 560px; }
