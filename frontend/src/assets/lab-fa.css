@@ -309,14 +309,21 @@ tr.clickable-row:focus-visible,
   line-height: 1;
   vertical-align: middle;
 }
-/* Al detall el badge va amb el valor, no amb l'etiqueta */
+/* Al detall el badge va amb el valor i sense caixa: la columna es estreta
+   i la vora + el fons hi costaven 26px, que feien saltar de linia */
 .camp-value .formula-badge {
+  background: none;
+  border: none;
+  padding: 0;
   margin-left: 0;
-  margin-right: 0.3rem;
+  margin-right: 0.15rem;
 }
 [data-theme="dark"] .formula-badge {
   background: color-mix(in srgb, var(--lab-primary) 15%, transparent);
   color: var(--lab-primary-on-dark);
+}
+[data-theme="dark"] .camp-value .formula-badge {
+  background: none;
 }
 .form-camp-calc input[readonly] {
   background: var(--lab-bg-subtle);
@@ -1355,7 +1362,9 @@ button.nav-link:not(.lang-switcher) {
 .camp-item {
   display: flex;
   align-items: baseline;
-  gap: 0.3rem;
+  /* si etiqueta + valor no caben, baixa el valor sencer en comptes de partir cap dels dos */
+  flex-wrap: wrap;
+  gap: 0.25rem;
   padding: 0.15rem 0;
   border-bottom: 1px solid var(--lab-line);
   min-width: 0;
