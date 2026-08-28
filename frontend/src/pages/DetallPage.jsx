@@ -105,6 +105,8 @@ export default function DetallPage() {
 
   // Shortcut: 'e' obre edició (només editors)
   useShortcut(['e', 'E'], () => { if (!isViewer) navigate(`/${tipus}/${id}/editar`) })
+  // Shortcut: 'n' crea un nou anàlisi (només editors)
+  useShortcut(['n', 'N'], () => { if (!isViewer) navigate(`/${tipus}/nou`) })
 
   async function handleToggleFinalitzat() {
     if (togglingFinalitzat) return
@@ -342,6 +344,11 @@ export default function DetallPage() {
           )}
         </div>
         <div className="detall-toolbar-actions">
+          {!isViewer && (
+            <Button variant="outline" size="sm" icon={<Icon name="Plus" size={12} />} onClick={() => navigate(`/${tipus}/nou`)}>
+              {t('llista.nou_analisi')}
+            </Button>
+          )}
           <Button variant="ghost" size="sm" icon={<Icon name="ArrowLeft" size={12} />} onClick={() => navigate(`/${tipus}`)}>
             {t('detall.tornar_llista')}
           </Button>
