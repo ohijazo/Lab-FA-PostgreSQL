@@ -15,6 +15,20 @@ import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import useShortcut from '../hooks/useShortcut'
 
+// Operadors del constructor de condicions, per tipus de camp.
+// El valor de cada operador és el sufix del paràmetre que entén el backend
+// ('' = igualtat); 'entre' és el cas especial que n'emet dos.
+const OPERADORS = {
+  number: ['gt', 'lt', 'from', 'to', 'eq', 'ne', 'entre'],
+  text: ['like', 'eq', 'ne'],
+  textarea: ['like', 'eq', 'ne'],
+  date: ['from', 'to', 'eq', 'entre'],
+  select: ['eq', 'ne'],
+  checkbox: ['eq'],
+}
+
+const SUFIX_OP = { gt: '_gt', lt: '_lt', from: '_from', to: '_to', ne: '_ne', like: '_like', eq: '' }
+
 function SortableColumnItem({ id, label, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
   const style = {
@@ -56,6 +70,12 @@ export default function LlistaPage() {
   const [filters, setFilters] = useState({})
   const [estat, setEstat] = useState('')  // '' = tots, 'pendent', 'finalitzat'
 
+  // Constructor de condicions: `condicions` és el que s'edita, `condicionsAplicades`
+  // el que es consulta. Separats perquè el valor s'escriu tecla a tecla i cal debounce.
+  const [condicions, setCondicions] = useState([])
+  const [condicionsAplicades, setCondicionsAplicades] = useState([])
+  const condicioId = useRef(0)
+
   const [exportOpen, setExportOpen] = useState(false)
   const [exportDateFrom, setExportDateFrom] = useState('')
   const [exportDateTo, setExportDateTo] = useState('')
@@ -70,13 +90,31 @@ export default function LlistaPage() {
     useSensor(KeyboardSensor)
   )
 
+  // Paràmetres que generen les condicions, i la unió amb els filtres de dalt.
+  // Els filtres explícits de data/select guanyen si hi ha col·lisió de clau.
+  const condicioParams = useMemo(() => {
+    const p = {}
+    for (const c of condicionsAplicades) {
+      if (!c.camp || !c.op || c.val === '') continue
+      if (c.op === 'entre') {
+        p[`f_${c.camp}_from`] = c.val
+        if (c.val2) p[`f_${c.camp}_to`] = c.val2
+      } else {
+        p[`f_${c.camp}${SUFIX_OP[c.op]}`] = c.val
+      }
+    }
+    return p
+  }, [condicionsAplicades])
+
+  const allFilters = useMemo(() => ({ ...condicioParams, ...filters }), [condicioParams, filters])
+
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const [cfg, result] = await Promise.all([
         obtenirConfig(tipus),
-        llistarAnalisis(tipus, { page, q, sort: sortCol, sort_dir: sortDir, filters, estat }),
+        llistarAnalisis(tipus, { page, q, sort: sortCol, sort_dir: sortDir, filters: allFilters, estat }),
       ])
       setConfig(cfg)
       setData(result)
@@ -85,7 +123,7 @@ export default function LlistaPage() {
     } finally {
       setLoading(false)
     }
-  }, [tipus, page, q, sortCol, sortDir, filters, estat])
+  }, [tipus, page, q, sortCol, sortDir, allFilters, estat])
 
   useEffect(() => {
     setPage(1)
@@ -94,9 +132,21 @@ export default function LlistaPage() {
     setSortCol('')
     setSortDir('')
     setFilters({})
+    setCondicions([])
+    setCondicionsAplicades([])
     setShowFilters(false)
     setEstat('')
   }, [tipus])
+
+  // Debounce de les condicions: el valor s'escriu caràcter a caràcter i sense
+  // això cada tecla dispararia una consulta.
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setPage(1)
+      setCondicionsAplicades(condicions)
+    }, 350)
+    return () => clearTimeout(timeout)
+  }, [condicions])
 
   function changeEstat(nou) {
     setPage(1)
@@ -150,6 +200,11 @@ export default function LlistaPage() {
   function handleExport() {
     const params = new URLSearchParams({ all_fields: '1' })
     if (q) params.set('q', q)
+    if (estat) params.set('estat', estat)
+    // L'Excel ha de contenir exactament les files que es veuen a pantalla
+    for (const [key, val] of Object.entries(allFilters)) {
+      if (val) params.set(key, val)
+    }
     if (exportDateFrom) params.set('date_from', exportDateFrom)
     if (exportDateTo) params.set('date_to', exportDateTo)
     window.location.href = `/api/analisis/${tipus}/export?${params.toString()}`
@@ -170,7 +225,59 @@ export default function LlistaPage() {
     return camps
   }, [config])
 
-  const activeFilterCount = Object.values(filters).filter(Boolean).length
+  // Per al constructor: tots els camps del tipus, agrupats per secció
+  // (n'hi ha 40 i escaig, sense agrupar el desplegable és inservible).
+  const conditionSeccions = useMemo(() => {
+    if (!config) return []
+    return config.seccions
+      .map((sec) => ({
+        titol: sec.titol,
+        camps: sec.camps.filter((c) => OPERADORS[c.type]),
+      }))
+      .filter((sec) => sec.camps.length > 0)
+  }, [config])
+
+  const condicioCamps = useMemo(() => {
+    const map = {}
+    for (const sec of conditionSeccions) for (const c of sec.camps) map[c.name] = c
+    return map
+  }, [conditionSeccions])
+
+  const condicionsValides = condicions.filter((c) => c.camp && c.op && c.val !== '')
+
+  const activeFilterCount =
+    Object.values(filters).filter(Boolean).length + condicionsValides.length
+
+  function afegirCondicio() {
+    const primer = conditionSeccions[0]?.camps[0]
+    if (!primer) return
+    condicioId.current += 1
+    setCondicions((prev) => [
+      ...prev,
+      { id: condicioId.current, camp: primer.name, op: OPERADORS[primer.type][0], val: '', val2: '' },
+    ])
+  }
+
+  function actualitzarCondicio(id, canvis) {
+    setCondicions((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c
+        const nova = { ...c, ...canvis }
+        // Si canvia el camp i l'operador ja no li serveix, es cau al primer vàlid.
+        if (canvis.camp) {
+          const ops = OPERADORS[condicioCamps[canvis.camp]?.type] || ['eq']
+          if (!ops.includes(nova.op)) nova.op = ops[0]
+          nova.val = ''
+          nova.val2 = ''
+        }
+        return nova
+      })
+    )
+  }
+
+  function treureCondicio(id) {
+    setCondicions((prev) => prev.filter((c) => c.id !== id))
+  }
 
   function updateFilter(key, val) {
     setPage(1)
@@ -184,6 +291,8 @@ export default function LlistaPage() {
   function clearFilters() {
     setPage(1)
     setFilters({})
+    setCondicions([])
+    setCondicionsAplicades([])
   }
 
   // --- Configuració de columnes per usuari ---
@@ -310,7 +419,7 @@ export default function LlistaPage() {
           >{t('llista.estat_finalitzats')}</button>
         </div>
         <div className="llista-toolbar-actions">
-          {filterableCamps.length > 0 && (
+          {(filterableCamps.length > 0 || conditionSeccions.length > 0) && (
             <Button
               variant={activeFilterCount > 0 ? 'primary' : 'outline'}
               size="sm"
@@ -346,7 +455,7 @@ export default function LlistaPage() {
         </div>
       </div>
 
-      {showFilters && filterableCamps.length > 0 && (
+      {showFilters && (filterableCamps.length > 0 || conditionSeccions.length > 0) && (
         <div className="llista-filters-panel">
           <div className="llista-filters-header">
             <strong>{t('llista.filtres_avancats')}</strong>
@@ -400,6 +509,106 @@ export default function LlistaPage() {
               return null
             })}
           </div>
+
+          {conditionSeccions.length > 0 && (
+            <div className="filter-conditions">
+              {condicions.map((c) => {
+                const camp = condicioCamps[c.camp]
+                const ops = OPERADORS[camp?.type] || ['eq']
+                const esNumero = camp?.type === 'number'
+                return (
+                  <div key={c.id} className="filter-condition-row">
+                    <select
+                      className="filter-input filter-condition-camp"
+                      value={c.camp}
+                      onChange={(e) => actualitzarCondicio(c.id, { camp: e.target.value })}
+                      aria-label={t('llista.tria_camp')}
+                    >
+                      {conditionSeccions.map((sec) => (
+                        <optgroup key={sec.titol} label={sec.titol}>
+                          {sec.camps.map((cc) => (
+                            <option key={cc.name} value={cc.name}>{cc.label}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+
+                    <select
+                      className="filter-input filter-condition-op"
+                      value={c.op}
+                      onChange={(e) => actualitzarCondicio(c.id, { op: e.target.value })}
+                      aria-label={t('llista.tria_operador')}
+                    >
+                      {ops.map((op) => (
+                        <option key={op} value={op}>{t(`llista.op_${op}`)}</option>
+                      ))}
+                    </select>
+
+                    {camp?.type === 'select' ? (
+                      <select
+                        className="filter-input filter-condition-val"
+                        value={c.val}
+                        onChange={(e) => actualitzarCondicio(c.id, { val: e.target.value })}
+                        aria-label={t('llista.valor')}
+                      >
+                        <option value="">{t('common.selecciona')}</option>
+                        {(camp.opcions || []).map((op) => (
+                          <option key={op} value={op}>{op}</option>
+                        ))}
+                      </select>
+                    ) : camp?.type === 'checkbox' ? (
+                      <select
+                        className="filter-input filter-condition-val"
+                        value={c.val}
+                        onChange={(e) => actualitzarCondicio(c.id, { val: e.target.value })}
+                        aria-label={t('llista.valor')}
+                      >
+                        <option value="">{t('common.selecciona')}</option>
+                        <option value="true">{t('common.si')}</option>
+                        <option value="false">{t('common.no')}</option>
+                      </select>
+                    ) : (
+                      <input
+                        className="filter-input filter-condition-val"
+                        type={camp?.type === 'date' ? 'date' : 'text'}
+                        inputMode={esNumero ? 'decimal' : undefined}
+                        value={c.val}
+                        onChange={(e) => actualitzarCondicio(c.id, { val: e.target.value })}
+                        placeholder={t('llista.valor')}
+                        aria-label={t('llista.valor')}
+                      />
+                    )}
+
+                    {c.op === 'entre' && (
+                      <>
+                        <span className="filter-date-sep">—</span>
+                        <input
+                          className="filter-input filter-condition-val"
+                          type={camp?.type === 'date' ? 'date' : 'text'}
+                          inputMode={esNumero ? 'decimal' : undefined}
+                          value={c.val2}
+                          onChange={(e) => actualitzarCondicio(c.id, { val2: e.target.value })}
+                          placeholder={t('llista.valor')}
+                          aria-label={t('llista.valor')}
+                        />
+                      </>
+                    )}
+
+                    <button
+                      type="button"
+                      className="filter-condition-remove"
+                      onClick={() => treureCondicio(c.id)}
+                      aria-label={t('llista.treure_condicio')}
+                    ><Icon name="X" size={14} /></button>
+                  </div>
+                )
+              })}
+
+              <Button variant="ghost" size="sm" icon={<Icon name="Plus" size={12} />} onClick={afegirCondicio}>
+                {t('llista.afegir_condicio')}
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

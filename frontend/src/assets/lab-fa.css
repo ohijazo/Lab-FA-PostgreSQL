@@ -2350,6 +2350,46 @@ input.btn {
   color: var(--lab-text-muted);
 }
 
+/* Constructor de condicions (camp + operador + valor) */
+.filter-conditions {
+  margin-top: var(--lab-space-3);
+  padding-top: var(--lab-space-2);
+  border-top: 1px solid var(--lab-border);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--lab-space-2);
+}
+.filter-condition-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lab-space-2);
+  width: 100%;
+}
+.filter-condition-camp { flex: 2 1 180px; min-width: 0; }
+.filter-condition-op { flex: 1 1 150px; min-width: 0; }
+.filter-condition-val { flex: 1 1 110px; min-width: 0; }
+.filter-condition-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--lab-border);
+  border-radius: var(--lab-radius-sm);
+  background: var(--lab-bg-card);
+  color: var(--lab-text-muted);
+  cursor: pointer;
+}
+.filter-condition-remove:hover {
+  color: var(--lab-danger-500);
+  border-color: var(--lab-danger-500);
+}
+
 /* Loading skeleton for LlistaPage */
 .llista-skeleton {
   border: 1px solid var(--lab-border);

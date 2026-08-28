@@ -49,6 +49,102 @@ def _get_tipus_or_404(slug):
     return tp
 
 
+# --------------- Filtres de llista (compartits amb l'exportació) ---------------
+
+# Un valor numèric desat com a text: admet coma o punt decimal i espais.
+_NUM_RE = r'^\s*-?[0-9]+([.,][0-9]+)?\s*$'
+
+_COMPARADORS = {
+    "eq": lambda e, v: e == v,
+    "ne": lambda e, v: e != v,
+    "from": lambda e, v: e >= v,
+    "to": lambda e, v: e <= v,
+    "gt": lambda e, v: e > v,
+    "lt": lambda e, v: e < v,
+}
+
+
+def _camps_by_name(tp):
+    """{camp.name: camp} de tots els camps del tipus."""
+    return {c.name: c for s in tp.seccions for c in s.camps}
+
+
+def _num_expr(field):
+    """Valor numèric d'un camp de `dades`, o NULL si el que hi ha desat no és un número.
+
+    El CASE és imprescindible: un cast directe peta tota la consulta amb
+    'invalid input syntax for type double precision' si una sola fila té text
+    en un camp numèric.
+    """
+    txt = Analisi.dades[field].as_string()
+    return db.case(
+        (txt.op("~")(_NUM_RE), db.cast(db.func.replace(txt, ',', '.'), db.Float)),
+        else_=None,
+    )
+
+
+def _aplica_filtres(query, tp, args):
+    """Aplica cerca lliure, estat i filtres per camp (f_*) a una query d'anàlisis.
+
+    Convenció de paràmetres (les tres primeres ja les feia servir el frontend):
+      f_<camp>        igualtat
+      f_<camp>_from   des de (>=)
+      f_<camp>_to     fins a (<=)
+      f_<camp>_gt     més gran que (>)
+      f_<camp>_lt     més petit que (<)
+      f_<camp>_ne     diferent de
+      f_<camp>_like   conté
+
+    Els camps de tipus `number` es comparen numèricament; la resta, com a text.
+    """
+    q = args.get("q", "").strip().lower()
+    if q:
+        query = query.filter(Analisi.dades.cast(db.Text).ilike(f"%{q}%"))
+
+    estat = args.get("estat", "").strip().lower()
+    if estat == "pendent":
+        query = query.filter(Analisi.finalitzat.is_(False))
+    elif estat == "finalitzat":
+        query = query.filter(Analisi.finalitzat.is_(True))
+
+    camps = _camps_by_name(tp)
+
+    for key, val in args.items():
+        if not key.startswith("f_") or not val.strip():
+            continue
+        val = val.strip()
+
+        # Es mira primer el nom sencer: així un camp que es digui, p. ex.,
+        # "data_from" no es confon amb el sufix _from d'un camp "data".
+        field, op = key[2:], "eq"
+        if field not in camps:
+            for suf in ("_from", "_to", "_gt", "_lt", "_ne", "_like"):
+                if field.endswith(suf) and field[: -len(suf)] in camps:
+                    field, op = field[: -len(suf)], suf[1:]
+                    break
+
+        camp = camps.get(field)
+        if camp is None:
+            continue
+
+        if camp.type == "number" and op != "like":
+            try:
+                num = float(val.replace(",", "."))
+            except ValueError:
+                continue  # valor a mig escriure: s'ignora la condició
+            expr = _num_expr(field)
+            query = query.filter(_COMPARADORS[op](expr, num))
+            continue
+
+        txt = Analisi.dades[field].as_string()
+        if op == "like":
+            query = query.filter(txt.ilike(f"%{val}%"))
+        else:
+            query = query.filter(_COMPARADORS[op](txt, val))
+
+    return query
+
+
 # --------------- Cerca per codi (escàner) ---------------
 
 @bp.route("/api/analisis/find-by-codi", methods=["GET"])
@@ -138,53 +234,20 @@ def llistar(slug):
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 25, type=int)
-    q = request.args.get("q", "").strip().lower()
     sort = request.args.get("sort", "").strip()
     sort_dir = request.args.get("sort_dir", "desc").strip().lower()
 
     query = Analisi.query.filter_by(tipus=slug)
-
-    estat = request.args.get("estat", "").strip().lower()
-    if estat == "pendent":
-        query = query.filter(Analisi.finalitzat.is_(False))
-    elif estat == "finalitzat":
-        query = query.filter(Analisi.finalitzat.is_(True))
-
-    if q:
-        query = query.filter(
-            Analisi.dades.cast(db.Text).ilike(f"%{q}%")
-        )
-
-    # Advanced filters: f_{name}=val, f_{name}_from=val, f_{name}_to=val
-    for key, val in request.args.items():
-        if not key.startswith("f_") or not val.strip():
-            continue
-        val = val.strip()
-        if key.endswith("_from"):
-            field = key[2:-5]  # strip f_ and _from
-            query = query.filter(Analisi.dades[field].as_string() >= val)
-        elif key.endswith("_to"):
-            field = key[2:-3]  # strip f_ and _to
-            query = query.filter(Analisi.dades[field].as_string() <= val)
-        else:
-            field = key[2:]  # strip f_
-            query = query.filter(Analisi.dades[field].as_string() == val)
+    query = _aplica_filtres(query, t, request.args)
 
     total = query.count()
 
     if sort:
         # Determine field type to sort numerically when appropriate
-        camp_type = None
-        for seccio in t.seccions:
-            for camp in seccio.camps:
-                if camp.name == sort:
-                    camp_type = camp.type
-                    break
-            if camp_type:
-                break
+        camp = _camps_by_name(t).get(sort)
 
-        if camp_type == "number":
-            sort_expr = Analisi.dades[sort].as_float()
+        if camp is not None and camp.type == "number":
+            sort_expr = _num_expr(sort)
         else:
             sort_expr = Analisi.dades[sort].as_string()
 
@@ -268,14 +331,13 @@ def _build_export_sheet(ws, tipus_obj, analisis_list):
 @login_required
 def exportar(slug):
     t = _get_tipus_or_404(slug)
-    q = request.args.get("q", "").strip().lower()
     date_from = request.args.get("date_from", "").strip()
     date_to = request.args.get("date_to", "").strip()
     all_fields = request.args.get("all_fields", "0").strip() == "1"
 
+    # Mateixos filtres que la llista: l'Excel conté exactament el que es veu.
     query = Analisi.query.filter_by(tipus=slug)
-    if q:
-        query = query.filter(Analisi.dades.cast(db.Text).ilike(f"%{q}%"))
+    query = _aplica_filtres(query, t, request.args)
     if date_from:
         query = query.filter(Analisi.dades["data"].as_string() >= date_from)
     if date_to:
