@@ -309,6 +309,11 @@ tr.clickable-row:focus-visible,
   line-height: 1;
   vertical-align: middle;
 }
+/* Al detall el badge va amb el valor, no amb l'etiqueta */
+.camp-value .formula-badge {
+  margin-left: 0;
+  margin-right: 0.3rem;
+}
 [data-theme="dark"] .formula-badge {
   background: color-mix(in srgb, var(--lab-primary) 15%, transparent);
   color: var(--lab-primary-on-dark);

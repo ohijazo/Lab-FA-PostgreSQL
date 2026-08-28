@@ -38,9 +38,9 @@ export default function AnalisisDetail({ seccions, analisi, tipusConfig }) {
       <div key={camp.name} className={`camp-item${isWideItem ? ' camp-item-wide' : ''}${camp.type === 'textarea' ? ' camp-item-textarea' : ''}`}>
         <span className="camp-label">
           {camp.label}:
-          {isCalc && <span className="formula-badge" title={camp.formula}><Icon name="Sigma" size={11} /></span>}
         </span>
         <span className="camp-value" style={style}>
+          {isCalc && <span className="formula-badge" title={camp.formula}><Icon name="Sigma" size={11} /></span>}
           {formatValue(camp, val)}
           {showRang && (
             <small className="camp-rang-hint"> ({t('form.rang_esperat', { rang: rangInfo.label })})</small>
