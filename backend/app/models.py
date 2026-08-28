@@ -174,6 +174,13 @@ class Analisi(db.Model):
     alerta_motiu = db.Column(db.String(500), nullable=True)
     apte = db.Column(db.String(10), nullable=True, default=None, index=True)
 
+    # passive_deletes: qui esborra les files és el ON DELETE CASCADE de Postgres,
+    # no cal carregar-les. Els fitxers del disc sí que s'esborren explícitament.
+    adjunts = db.relationship(
+        "Adjunt", backref="analisi", cascade="all, delete-orphan",
+        passive_deletes=True, order_by="Adjunt.id",
+    )
+
     def get_dades(self):
         return self.dades or {}
 
@@ -217,6 +224,40 @@ class EmailLog(db.Model):
             "assumpte": self.assumpte,
             "enviat_per": self.enviat_per,
             "enviat_at": self.enviat_at.isoformat() if self.enviat_at else None,
+        }
+
+
+# --------------- Adjunts (imatges i vídeos d'un anàlisi) ---------------
+
+class Adjunt(db.Model):
+    __tablename__ = "adjunt"
+
+    id = db.Column(db.Integer, primary_key=True)
+    analisi_id = db.Column(db.Integer, db.ForeignKey("analisi.id", ondelete="CASCADE"), nullable=False, index=True)
+    tipus_slug = db.Column(db.String(50), nullable=False, default="")
+    nom = db.Column(db.String(255), nullable=False)            # nom original, per mostrar i descarregar
+    fitxer = db.Column(db.String(120), nullable=False)         # uuid + extensió: el nom real al disc
+    fitxer_thumb = db.Column(db.String(120), nullable=True)    # miniatura, si el navegador n'ha pogut fer
+    mime = db.Column(db.String(100), nullable=False, default="")
+    kind = db.Column(db.String(10), nullable=False, default="image")  # 'image' | 'video'
+    mida = db.Column(db.Integer, nullable=False, default=0)    # bytes
+    comentari = db.Column(db.String(300), nullable=True)
+    pujat_per = db.Column(db.String(120), nullable=False, default="")
+    pujat_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "analisi_id": self.analisi_id,
+            "nom": self.nom,
+            "mime": self.mime,
+            "kind": self.kind,
+            "mida": self.mida,
+            "comentari": self.comentari,
+            "pujat_per": self.pujat_per,
+            "pujat_at": self.pujat_at.isoformat() if self.pujat_at else None,
+            "url": f"/api/adjunts/{self.id}/fitxer",
+            "thumb_url": f"/api/adjunts/{self.id}/thumb" if self.fitxer_thumb else None,
         }
 
 

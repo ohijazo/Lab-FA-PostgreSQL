@@ -512,6 +512,7 @@ export default function LlistaPage() {
 
           {conditionSeccions.length > 0 && (
             <div className="filter-conditions">
+              <span className="filter-conditions-titol">{t('llista.condicions')}</span>
               {condicions.map((c) => {
                 const camp = condicioCamps[c.camp]
                 const ops = OPERADORS[camp?.type] || ['eq']
@@ -544,6 +545,7 @@ export default function LlistaPage() {
                       ))}
                     </select>
 
+                    <div className="filter-condition-vals">
                     {camp?.type === 'select' ? (
                       <select
                         className="filter-input filter-condition-val"
@@ -593,6 +595,7 @@ export default function LlistaPage() {
                         />
                       </>
                     )}
+                    </div>
 
                     <button
                       type="button"

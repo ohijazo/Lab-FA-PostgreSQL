@@ -64,6 +64,7 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
             <th className="col-check" title={t('llista.col_finalitzat')}><Icon name="Check" size={14} /></th>
             <th className="col-check" title={t('llista.col_alerta')}><Icon name="AlertTriangle" size={14} /></th>
             <th className="col-check" title={t('llista.col_apte')}><Icon name="ShieldCheck" size={14} /></th>
+            <th className="col-check" title={t('llista.col_adjunts')}><Icon name="Paperclip" size={14} /></th>
             {columnes.map((col) => (
               <th
                 key={col}
@@ -118,6 +119,12 @@ export default function AnalisisList({ tipus, analisis, columnes, seccions, sort
               >
                 {a.apte === 'apte' && <span className="row-apte-icon is-apte"><Icon name="Check" size={14} /></span>}
                 {a.apte === 'no_apte' && <span className="row-apte-icon is-no-apte"><Icon name="X" size={14} /></span>}
+              </td>
+              <td
+                className="col-check"
+                title={a.n_adjunts > 0 ? t('llista.col_adjunts_n', { count: a.n_adjunts }) : ''}
+              >
+                {a.n_adjunts > 0 && <span className="row-adjunt-icon"><Icon name="Paperclip" size={14} /></span>}
               </td>
               {columnes.map((col) => {
                 const camp = campMap[col]

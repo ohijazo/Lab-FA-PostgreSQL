@@ -6,6 +6,8 @@ import { obtenirAnalisi, eliminarAnalisi, obtenirConfig, enviarEmail, obtenirEma
 import useShortcut from '../hooks/useShortcut'
 import Skeleton from '../components/ui/Skeleton'
 import AnalisisDetail from '../components/AnalisisDetail'
+import AdjuntsGaleria from '../components/AdjuntsGaleria'
+import { llistarAdjunts } from '../api/adjunts'
 import Icon from '../components/Icon'
 import QRCode from '../components/QRCode'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
@@ -58,6 +60,8 @@ export default function DetallPage() {
   const [emailAssumpte, setEmailAssumpte] = useState('')
   const [emailSending, setEmailSending] = useState(false)
   const [emailError, setEmailError] = useState('')
+  const [emailImatges, setEmailImatges] = useState([])   // imatges que es poden adjuntar
+  const [emailAdjunts, setEmailAdjunts] = useState([])   // ids triats
   const [emailLogs, setEmailLogs] = useState([])
 
   useEffect(() => {
@@ -179,6 +183,11 @@ export default function DetallPage() {
     setEmailAssumpte(`${config.nom} - ${tv}`)
     setEmailError('')
     setEmailModalOpen(true)
+    // Només imatges: els vídeos no s'adjunten mai al correu (mida)
+    llistarAdjunts(tipus, id)
+      .then((res) => setEmailImatges(res.filter((a) => a.kind === 'image')))
+      .catch(() => setEmailImatges([]))
+    setEmailAdjunts([])
   }
 
   async function handleSendEmail(e) {
@@ -186,7 +195,7 @@ export default function DetallPage() {
     setEmailSending(true)
     setEmailError('')
     try {
-      await enviarEmail(tipus, id, emailDestinatari, emailAssumpte)
+      await enviarEmail(tipus, id, emailDestinatari, emailAssumpte, emailAdjunts)
       setEmailModalOpen(false)
       addToast(t('detall.email_enviat'))
       obtenirEmailsAnalisi(tipus, id).then(setEmailLogs)
@@ -385,6 +394,7 @@ export default function DetallPage() {
         </div>
       </div>
       <AnalisisDetail seccions={config.seccions} analisi={analisi} tipusConfig={config} />
+      <AdjuntsGaleria tipus={tipus} id={id} readOnly={isViewer} />
       {!isViewer && (
         <div className="detall-valoracio no-print">
           <h3 className="detall-valoracio-title">{t('detall.valoracio_titol')}</h3>
@@ -542,6 +552,23 @@ export default function DetallPage() {
               onChange={e => setEmailAssumpte(e.target.value)}
             />
           </label>
+          {emailImatges.length > 0 && (
+            <fieldset className="email-adjunts">
+              <legend>{t('detall.email_adjuntar')}</legend>
+              {emailImatges.map((a) => (
+                <label key={a.id} className="email-adjunt-item">
+                  <input
+                    type="checkbox"
+                    checked={emailAdjunts.includes(a.id)}
+                    onChange={(e) => setEmailAdjunts((prev) =>
+                      e.target.checked ? [...prev, a.id] : prev.filter((x) => x !== a.id)
+                    )}
+                  />
+                  <span>{a.nom}</span>
+                </label>
+              ))}
+            </fieldset>
+          )}
           {emailError && <p className="form-error-text">{emailError}</p>}
         </form>
       </Modal>

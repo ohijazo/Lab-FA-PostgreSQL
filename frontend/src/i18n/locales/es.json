@@ -129,7 +129,9 @@
     "col_alerta": "Alerta",
     "col_apte": "Valoración APTO / NO APTO",
     "marcar_finalitzat": "Marcar como finalizado",
-    "marcar_pendent": "Marcar como pendiente"
+    "marcar_pendent": "Marcar como pendiente",
+    "col_adjunts": "Adjuntos",
+    "col_adjunts_n": "{{count}} adjunto(s)"
   },
   "detall": {
     "informe_analisi": "Informe de análisis",
@@ -172,7 +174,8 @@
     "marcat_apte": "Marcado como APTO",
     "marcat_no_apte": "Marcado como NO APTO",
     "marcat_pendent_apte": "Valoración borrada (pendiente)",
-    "valoracio_titol": "Valoración"
+    "valoracio_titol": "Valoración",
+    "email_adjuntar": "Adjuntar imágenes"
   },
   "form": {
     "nou_analisi": "Nuevo Análisis — {{nom}}",
@@ -482,7 +485,10 @@
     "carregant_usuaris": "Error cargando usuarios",
     "creant_usuari": "Error creando usuario",
     "editant_usuari": "Error editando usuario",
-    "eliminant_usuari": "Error eliminando usuario"
+    "eliminant_usuari": "Error eliminando usuario",
+    "carregant_adjunts": "Error cargando los adjuntos",
+    "pujant_adjunt": "Error subiendo el archivo",
+    "eliminant_adjunt": "Error eliminando el adjunto"
   },
   "dashboard": {
     "no_kpis": "No hay datos para mostrar KPIs.",
@@ -740,5 +746,20 @@
     "actualitzar_processant": "Actualizando...",
     "actualitzar_ok": "Aplicación actualizada correctamente. La página se recargará en unos segundos.",
     "actualitzar_info": "Esta opción descarga la última versión del código y reinicia el servicio."
+  },
+  "adjunts": {
+    "titol": "Adjuntos",
+    "afegir": "Añadir archivos",
+    "fer_foto": "Hacer foto",
+    "qualitat_original": "Calidad original",
+    "cap": "Este análisis no tiene ningún adjunto.",
+    "cap_arrossega": "Sin adjuntos todavía. Arrastra aquí imágenes o vídeos, o usa los botones.",
+    "eliminar_titol": "Eliminar adjunto",
+    "eliminar_confirm": "¿Seguro que quieres eliminar \"{{nom}}\"? No se puede deshacer.",
+    "eliminat": "Adjunto eliminado",
+    "pujat_per": "subido por {{nom}}",
+    "anterior": "Anterior",
+    "seguent": "Siguiente",
+    "videos_impresos": "Vídeos adjuntos: {{noms}}"
   }
 }

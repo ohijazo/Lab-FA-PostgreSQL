@@ -157,12 +157,12 @@ export async function obtenirEmailsAnalisi(tipus, id) {
   return res.json()
 }
 
-export async function enviarEmail(tipus, id, destinatari, assumpte) {
+export async function enviarEmail(tipus, id, destinatari, assumpte, adjuntsIds = []) {
   const res = await fetch(`/api/analisis/${tipus}/${id}/email`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...langHeaders() },
     credentials: 'include',
-    body: JSON.stringify({ destinatari, assumpte }),
+    body: JSON.stringify({ destinatari, assumpte, adjunts_ids: adjuntsIds }),
   })
   if (!res.ok) {
     const info = await res.json().catch(() => null)

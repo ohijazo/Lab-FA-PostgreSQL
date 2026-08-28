@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -20,6 +20,7 @@ def create_app():
     ).split(",")
     CORS(app, supports_credentials=True, origins=allowed_origins)
 
+    from app.routes.adjunts import bp as adjunts_bp
     from app.routes.analisis import bp as analisis_bp
     from app.routes.admin import bp as admin_bp
     from app.routes.auth import bp as auth_bp
@@ -27,9 +28,16 @@ def create_app():
     from app.routes.recepcio import bp as recepcio_bp
 
     app.register_blueprint(analisis_bp)
+    app.register_blueprint(adjunts_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(recepcio_bp)
+
+    @app.errorhandler(413)
+    def _payload_massa_gran(e):
+        # Sense això Werkzeug torna HTML i el frontend, que espera JSON, peta
+        from app.i18n import t
+        return jsonify({"error": t('adjunt_massa_gran', mb=app.config["MAX_ADJUNT_MB"])}), 413
 
     return app

@@ -1,5 +1,7 @@
+import base64
 import io
 import json
+import os
 import urllib.request
 import urllib.error
 from datetime import date, datetime
@@ -10,7 +12,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 from app import db
-from app.models import Analisi, EditLock, EmailLog, TipusAnalisi, User
+from app.models import Adjunt, Analisi, EditLock, EmailLog, TipusAnalisi, User
 from app.i18n import t
 
 bp = Blueprint("analisis", __name__)
@@ -260,8 +262,24 @@ def llistar(slug):
 
     analisis = query.offset((page - 1) * per_page).limit(per_page).all()
 
+    # Quantes adjunts té cada fila: una sola consulta agregada per pàgina
+    # (posar-ho dins de to_dict() seria una consulta per fila).
+    ids = [a.id for a in analisis]
+    n_adjunts = dict(
+        db.session.query(Adjunt.analisi_id, db.func.count(Adjunt.id))
+        .filter(Adjunt.analisi_id.in_(ids))
+        .group_by(Adjunt.analisi_id)
+        .all()
+    ) if ids else {}
+
+    items = []
+    for a in analisis:
+        d = a.to_dict()
+        d["n_adjunts"] = n_adjunts.get(a.id, 0)
+        items.append(d)
+
     return jsonify({
-        "items": [a.to_dict() for a in analisis],
+        "items": items,
         "total": total,
         "page": page,
         "per_page": per_page,
@@ -519,8 +537,13 @@ def eliminar(slug, id):
         abort(404)
     # Clean up any locks for this analisi
     EditLock.query.filter_by(analisi_id=id).delete()
+    # Les files d'adjunt les esborra el CASCADE, però els fitxers del disc no:
+    # es llegeixen les rutes abans i s'esborren després del commit.
+    from app.routes.adjunts import _path, _esborra_fitxers
+    paths = [p for adj in a.adjunts for p in (_path(adj), _path(adj, thumb=True))]
     db.session.delete(a)
     db.session.commit()
+    _esborra_fitxers(paths)
     return jsonify({"ok": True})
 
 
@@ -742,13 +765,43 @@ def enviar_email(slug, id):
     if not assumpte:
         assumpte = tp.nom
 
-    payload = json.dumps({
+    cos = {
         "destinatari": destinatari,
         "assumpte": assumpte,
         "cos_html": html_body,
         "remitent_nom": user.nom,
         "remitent_email": user.email,
-    }).encode("utf-8")
+    }
+
+    # Imatges adjuntes: el flux de Power Automate les ha de mapar a Attachments
+    # (Name = nom, ContentBytes = contingut_base64). Mentre no estigui fet,
+    # EMAIL_ADJUNTS_ENABLED es queda a 0 i el correu s'envia igual, sense fotos.
+    ids_adjunts = data.get("adjunts_ids") or []
+    if ids_adjunts and current_app.config.get("EMAIL_ADJUNTS_ENABLED"):
+        from app.routes.adjunts import _path
+        adjunts = Adjunt.query.filter(
+            Adjunt.analisi_id == a.id,
+            Adjunt.id.in_(ids_adjunts),
+            Adjunt.kind == "image",   # els vídeos no s'adjunten mai: massa grans
+        ).all()
+        max_mb = current_app.config.get("MAX_EMAIL_ADJUNTS_MB", 8)
+        if sum(x.mida for x in adjunts) > max_mb * 1024 * 1024:
+            return jsonify({"error": t('adjunts_email_massa_grans', mb=max_mb)}), 400
+        llista = []
+        for x in adjunts:
+            ruta = _path(x)
+            if not ruta or not os.path.exists(ruta):
+                continue
+            with open(ruta, "rb") as fh:
+                llista.append({
+                    "nom": x.nom,
+                    "mime": x.mime,
+                    "contingut_base64": base64.b64encode(fh.read()).decode("ascii"),
+                })
+        if llista:
+            cos["adjunts"] = llista
+
+    payload = json.dumps(cos).encode("utf-8")
 
     try:
         req = urllib.request.Request(

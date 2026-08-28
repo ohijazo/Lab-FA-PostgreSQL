@@ -129,7 +129,9 @@
     "col_alerta": "Alerta",
     "col_apte": "Valoració APTE / NO APTE",
     "marcar_finalitzat": "Marcar com a finalitzat",
-    "marcar_pendent": "Marcar com a pendent"
+    "marcar_pendent": "Marcar com a pendent",
+    "col_adjunts": "Adjunts",
+    "col_adjunts_n": "{{count}} adjunt(s)"
   },
   "detall": {
     "informe_analisi": "Informe d'anàlisi",
@@ -172,7 +174,8 @@
     "marcat_apte": "Marcat com a APTE",
     "marcat_no_apte": "Marcat com a NO APTE",
     "marcat_pendent_apte": "Valoració esborrada (pendent)",
-    "valoracio_titol": "Valoració"
+    "valoracio_titol": "Valoració",
+    "email_adjuntar": "Adjuntar imatges"
   },
   "form": {
     "nou_analisi": "Nou Anàlisi — {{nom}}",
@@ -482,7 +485,10 @@
     "carregant_usuaris": "Error carregant usuaris",
     "creant_usuari": "Error creant usuari",
     "editant_usuari": "Error editant usuari",
-    "eliminant_usuari": "Error eliminant usuari"
+    "eliminant_usuari": "Error eliminant usuari",
+    "carregant_adjunts": "Error carregant els adjunts",
+    "pujant_adjunt": "Error pujant el fitxer",
+    "eliminant_adjunt": "Error eliminant l'adjunt"
   },
   "dashboard": {
     "no_kpis": "No hi ha dades per mostrar KPIs.",
@@ -740,5 +746,20 @@
     "actualitzar_processant": "Actualitzant...",
     "actualitzar_ok": "Aplicació actualitzada correctament. La pàgina es recarregarà en uns segons.",
     "actualitzar_info": "Aquesta opció descarrega la darrera versió del codi i reinicia el servei."
+  },
+  "adjunts": {
+    "titol": "Adjunts",
+    "afegir": "Afegir fitxers",
+    "fer_foto": "Fer foto",
+    "qualitat_original": "Qualitat original",
+    "cap": "Aquesta anàlisi no té cap adjunt.",
+    "cap_arrossega": "Cap adjunt encara. Arrossega-hi imatges o vídeos, o fes servir els botons.",
+    "eliminar_titol": "Eliminar adjunt",
+    "eliminar_confirm": "Segur que vols eliminar \"{{nom}}\"? No es pot desfer.",
+    "eliminat": "Adjunt eliminat",
+    "pujat_per": "pujat per {{nom}}",
+    "anterior": "Anterior",
+    "seguent": "Següent",
+    "videos_impresos": "Vídeos adjunts: {{noms}}"
   }
 }
